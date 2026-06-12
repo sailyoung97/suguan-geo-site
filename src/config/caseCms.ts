@@ -47,8 +47,8 @@ const defaultImagePaths: Record<string, Partial<Pick<CaseCmsItem, "coverImage" |
   "ufx-yaan": {
     coverImage: "/uploads/case-ufx-cover.jpg",
     heroImage: "/uploads/case-ufx-hero.jpg",
-    sceneImage01: "/uploads/case-ufx-scene-01.jpg",
-    sceneImage02: "/uploads/case-ufx-scene-02.jpg"
+    sceneImage01: "/uploads/case-ufx-scene-01.png",
+    sceneImage02: "/uploads/case-ufx-scene-02.png"
   },
   baicaohuxiang: {
     coverImage: "/uploads/case-baicaohuxiang-cover.jpg",

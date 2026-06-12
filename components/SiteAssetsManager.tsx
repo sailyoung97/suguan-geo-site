@@ -29,37 +29,36 @@ const caseDetailRows: AssetRow[] = [
   {
     title: "重庆开埠遗址公园",
     key: "kaibu-heritage-park",
-    filePrefix: "case-kaibu",
+    paths: ["/uploads/case-kaibu-hero.png", "/uploads/case-kaibu-scene-01.png", "/uploads/case-kaibu-scene-02.jpg"],
     fallbackLabel: "Case Detail 01"
   },
   {
     title: "山城坝坝",
     key: "shancheng-baba",
-    filePrefix: "case-shancheng-baba",
+    paths: ["/uploads/case-shanchengbaba-hero.png", "/uploads/case-shanchengbaba-scene-01.png", "/uploads/case-shanchengbaba-scene-02.png"],
     fallbackLabel: "Case Detail 02"
   },
   {
     title: "UFX 飞翔星球大本营",
     key: "ufx-yaan",
-    filePrefix: "case-ufx",
+    paths: ["/uploads/case-ufx-hero.jpg", "/uploads/case-ufx-scene-01.png", "/uploads/case-ufx-scene-02.png"],
     fallbackLabel: "Case Detail 03"
   },
   {
     title: "璧山百草湖乡",
     key: "baicaohuxiang",
-    filePrefix: "case-baicaohuxiang",
+    paths: ["/uploads/case-baicaohuxiang-hero.png", "/uploads/case-baicaohuxiang-scene-01.jpg", "/uploads/case-baicaohuxiang-scene-02.jpg"],
     fallbackLabel: "Case Detail 04"
   },
   {
     title: "小桑田亲子农场",
     key: "xiaosangtian",
-    filePrefix: "case-xiaosangtian",
+    paths: ["/uploads/case-xiaosangtian-hero.png", "/uploads/case-xiaosangtian-scene-01.jpg", "/uploads/case-xiaosangtian-scene-02.jpg"],
     fallbackLabel: "Case Detail 05"
   }
 ].flatMap((item) => {
   const details = siteAssets.cases[item.key].details;
   const labels = ["详情主图", "场景图 1", "场景图 2"];
-  const fileNames = ["hero", "scene-01", "scene-02"];
 
   return details.map((asset, index) => ({
     name: `${item.title}${labels[index]}`,
@@ -68,7 +67,7 @@ const caseDetailRows: AssetRow[] = [
     size: index === 0 ? "1920 x 960px，适配详情页顶部宽图" : "1600 x 900px，16:9",
     note: index === 0 ? "详情页顶部大图；未配置时会自动使用该案例封面图。" : "详情页场景补充图；未配置时会自动使用该案例封面图。",
     fallbackLabel: `${item.fallbackLabel}-${index + 1}`,
-    recommendedPath: `/uploads/${item.filePrefix}-${fileNames[index]}.jpg`
+    recommendedPath: item.paths[index]
   }));
 });
 
@@ -80,7 +79,7 @@ const assetRows: AssetRow[] = [
     size: "建议 SVG 或 512 x 512px 透明 PNG",
     note: "用于全站品牌露出，深浅底色下都需保持清晰。",
     fallbackLabel: "观",
-    recommendedPath: "/uploads/logo.png",
+    recommendedPath: "/uploads/logo.jpg",
     variant: "mark"
   },
   {
@@ -90,7 +89,7 @@ const assetRows: AssetRow[] = [
     size: "1920 x 1400px 或更高，适配裁切",
     note: "大图建议放入 public/uploads 后填写路径，不建议使用本地临时预览。",
     fallbackLabel: "Home Hero Image",
-    recommendedPath: "/uploads/home-hero.jpg"
+    recommendedPath: "/uploads/home-hero.png"
   },
   {
     name: "首页首屏超宽底图",
@@ -99,7 +98,7 @@ const assetRows: AssetRow[] = [
     size: "1920 x 700px 或更宽的横图",
     note: "用于首页首屏超大 SUGUAN 字下方的横向品牌视觉底图，建议使用超宽横图并放入 public/uploads 后填写路径。",
     fallbackLabel: "首页首屏超宽底图待上传",
-    recommendedPath: "/uploads/home-hero-wide.jpg"
+    recommendedPath: "/uploads/home-hero.png"
   },
   {
     name: "品牌资产矩阵图",
@@ -108,7 +107,7 @@ const assetRows: AssetRow[] = [
     size: "1920 x 1080px 或 1920 x 1200px",
     note: "由平面设计同事制作整张 Logo / 品牌资产矩阵大图，放入 public/uploads 后填写路径即可。",
     fallbackLabel: "品牌资产矩阵图待上传",
-    recommendedPath: "/uploads/brand-assets-matrix.jpg"
+    recommendedPath: "/uploads/brand-assets-matrix.png"
   },
   {
     name: "关于溯观首屏图",
@@ -126,7 +125,7 @@ const assetRows: AssetRow[] = [
     size: "1600 x 1000px，16:10",
     note: "建议使用开埠文化、历史遗址、滨江公共空间或城市文化场景。",
     fallbackLabel: "Case Cover 01",
-    recommendedPath: "/uploads/case-kaibu-cover.jpg"
+    recommendedPath: "/uploads/case-kaibu-cover.png"
   },
   {
     name: "山城坝坝案例封面",
@@ -135,7 +134,7 @@ const assetRows: AssetRow[] = [
     size: "1600 x 1000px，16:10",
     note: "建议使用山城巷街巷、坝坝生活或公共空间场景。",
     fallbackLabel: "Case Cover 02",
-    recommendedPath: "/uploads/case-shancheng-baba-cover.jpg"
+    recommendedPath: "/uploads/case-shanchengbaba-cover.png"
   },
   {
     name: "UFX 飞翔星球大本营案例封面",
@@ -162,7 +161,7 @@ const assetRows: AssetRow[] = [
     size: "1600 x 1000px，16:10",
     note: "建议使用亲子活动、自然教育或农场运营场景。",
     fallbackLabel: "Case Cover 05",
-    recommendedPath: "/uploads/case-xiaosangtian-cover.jpg"
+    recommendedPath: "/uploads/case-xiaosangtian-cover.png"
   },
   ...caseDetailRows,
   {
