@@ -77,8 +77,8 @@ export function SiteAssetImage({
     <div className={`relative overflow-hidden bg-[#d9d7d1] ${className}`}>
       <div className="absolute inset-0 bg-[linear-gradient(135deg,rgba(255,255,255,0.34),transparent_34%),linear-gradient(45deg,rgba(31,36,33,0.1)_0%,transparent_42%),linear-gradient(180deg,transparent,rgba(31,36,33,0.12))]" />
       <div className="absolute inset-5 border border-paper/60" />
-      <div className="absolute bottom-5 left-5 text-xs uppercase tracking-[0.24em] text-ink/42">
-        {fallbackLabel || asset?.alt || "Image Placeholder"}
+      <div className="absolute bottom-5 left-5 right-5 text-xs uppercase tracking-[0.18em] text-ink/48">
+        图片未配置或路径失效
       </div>
     </div>
   );

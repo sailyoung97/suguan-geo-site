@@ -36,7 +36,7 @@ export const siteAssets: SiteAssets = {
   homeHeroImage: asset("homeHeroImage", "溯观首页主视觉图"),
   homeHero: asset("homeHeroImage", "溯观首页主视觉图"),
   homeHeroWideImage: asset("homeHeroWideImage", "首页首屏 SUGUAN 下方超宽底图"),
-  brandAssetsImage: asset("brandAssetsImage", "溯观品牌与项目资产矩阵图", "/uploads/brand-assets-matrix.jpg"),
+  brandAssetsImage: asset("brandAssetsImage", "溯观品牌与项目资产矩阵图", "/uploads/brand-assets-matrix.png"),
   aboutHeroImage: asset("aboutHeroImage", "关于溯观首屏图", "/uploads/about-hero.jpg"),
   aboutHero: asset("aboutHero", "溯观团队与项目现场图片"),
   qrcodes: {

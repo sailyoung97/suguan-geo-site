@@ -15,7 +15,14 @@ export function validateUploadImage(file: File) {
   return "";
 }
 
-export async function uploadImageToBlob(file: File) {
+type UploadImageOptions = {
+  scope?: "site-assets" | "cases";
+  assetKey?: string;
+  caseSlug?: string;
+  fieldKey?: string;
+};
+
+export async function uploadImageToBlob(file: File, options: UploadImageOptions = {}) {
   const validationError = validateUploadImage(file);
   if (validationError) {
     throw new Error(validationError);
@@ -23,6 +30,10 @@ export async function uploadImageToBlob(file: File) {
 
   const formData = new FormData();
   formData.append("file", file);
+  if (options.scope) formData.append("scope", options.scope);
+  if (options.assetKey) formData.append("assetKey", options.assetKey);
+  if (options.caseSlug) formData.append("caseSlug", options.caseSlug);
+  if (options.fieldKey) formData.append("fieldKey", options.fieldKey);
 
   const response = await fetch("/api/upload", {
     method: "POST",

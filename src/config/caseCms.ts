@@ -33,16 +33,16 @@ export type CaseCmsItem = {
 
 const defaultImagePaths: Record<string, Partial<Pick<CaseCmsItem, "coverImage" | "heroImage" | "sceneImage01" | "sceneImage02">>> = {
   "kaibu-heritage-park": {
-    coverImage: "/uploads/case-kaibu-cover.jpg",
-    heroImage: "/uploads/case-kaibu-hero.jpg",
-    sceneImage01: "/uploads/case-kaibu-scene-01.jpg",
+    coverImage: "/uploads/case-kaibu-cover.png",
+    heroImage: "/uploads/case-kaibu-hero.png",
+    sceneImage01: "/uploads/case-kaibu-scene-01.png",
     sceneImage02: "/uploads/case-kaibu-scene-02.jpg"
   },
   "shancheng-baba": {
     coverImage: "/uploads/case-shanchengbaba-cover.png",
-    heroImage: "/uploads/case-shancheng-baba-hero.jpg",
-    sceneImage01: "/uploads/case-shancheng-baba-scene-01.jpg",
-    sceneImage02: "/uploads/case-shancheng-baba-scene-02.jpg"
+    heroImage: "/uploads/case-shanchengbaba-hero.png",
+    sceneImage01: "/uploads/case-shanchengbaba-scene-01.png",
+    sceneImage02: "/uploads/case-shanchengbaba-scene-02.png"
   },
   "ufx-yaan": {
     coverImage: "/uploads/case-ufx-cover.jpg",
@@ -52,13 +52,13 @@ const defaultImagePaths: Record<string, Partial<Pick<CaseCmsItem, "coverImage" |
   },
   baicaohuxiang: {
     coverImage: "/uploads/case-baicaohuxiang-cover.jpg",
-    heroImage: "/uploads/case-baicaohuxiang-hero.jpg",
+    heroImage: "/uploads/case-baicaohuxiang-hero.png",
     sceneImage01: "/uploads/case-baicaohuxiang-scene-01.jpg",
     sceneImage02: "/uploads/case-baicaohuxiang-scene-02.jpg"
   },
   xiaosangtian: {
     coverImage: "/uploads/case-xiaosangtian-cover.png",
-    heroImage: "/uploads/case-xiaosangtian-hero.jpg",
+    heroImage: "/uploads/case-xiaosangtian-hero.png",
     sceneImage01: "/uploads/case-xiaosangtian-scene-01.jpg",
     sceneImage02: "/uploads/case-xiaosangtian-scene-02.jpg"
   }

@@ -93,7 +93,11 @@ export function CaseCmsManager() {
     setMessage("图片正在上传到 Vercel Blob...");
 
     try {
-      const url = await uploadImageToBlob(file);
+      const url = await uploadImageToBlob(file, {
+        scope: "cases",
+        caseSlug: editingCase?.slug || editingCase?.projectName || "case",
+        fieldKey
+      });
       updateField(fieldKey, url);
       setMessage("图片上传成功，已自动写入公网 URL。");
     } catch (error) {

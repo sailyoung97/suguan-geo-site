@@ -23,6 +23,8 @@ const warningPreviewInputSize = 1 * 1024 * 1024;
 const maxCanvasWidth = 1600;
 const previewQuality = 0.75;
 
+type ImageAccessStatus = "idle" | "checking" | "missing" | "ok" | "error";
+
 const caseDetailRows: AssetRow[] = [
   {
     title: "重庆开埠遗址公园",
@@ -302,11 +304,33 @@ function AssetCard({
   const uploadInputRef = useRef<HTMLInputElement>(null);
   const [pathValue, setPathValue] = useState(storedPath);
   const [isUploading, setIsUploading] = useState(false);
+  const [accessStatus, setAccessStatus] = useState<ImageAccessStatus>("idle");
   const { setAssetPath, removeAsset } = useSiteAssets();
+  const savedImageSrc = storedPath || item.asset.src || "";
 
   useEffect(() => {
     setPathValue(storedPath);
   }, [storedPath]);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    if (!savedImageSrc) {
+      setAccessStatus("missing");
+      return;
+    }
+
+    setAccessStatus("checking");
+    validateImagePath(savedImageSrc).then((isValid) => {
+      if (!cancelled) {
+        setAccessStatus(isValid ? "ok" : "error");
+      }
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [savedImageSrc]);
 
   const savePath = async () => {
     const cleanPath = pathValue.trim();
@@ -317,7 +341,6 @@ function AssetCard({
 
     const isValid = await validateImagePath(cleanPath);
     if (!isValid) {
-      removeAsset(item.asset.key);
       onMessage("图片路径无效或图片不存在。");
       return;
     }
@@ -401,7 +424,13 @@ function AssetCard({
     onMessage(`正在上传：${item.name}`);
 
     try {
-      const url = await uploadImageToBlob(file);
+      const url = await uploadImageToBlob(file, {
+        scope: "site-assets",
+        assetKey: item.asset.key
+      });
+      if (!url || url.startsWith("blob:") || url.startsWith("data:")) {
+        throw new Error("上传未返回有效公网图片 URL。");
+      }
       const result = setAssetPath(item.asset.key, url);
       setPathValue(url);
       onPreviewReady("");
@@ -422,6 +451,20 @@ function AssetCard({
     : item.asset.src
       ? `默认配置：${item.asset.src}`
       : "未配置路径，当前显示默认占位图";
+  const accessStatusText: Record<ImageAccessStatus, string> = {
+    idle: "未检查",
+    checking: "检查中",
+    missing: "未配置",
+    ok: "可访问",
+    error: "路径失效"
+  };
+  const accessStatusClassName: Record<ImageAccessStatus, string> = {
+    idle: "border-line text-ink/54",
+    checking: "border-line text-ink/54",
+    missing: "border-line text-ink/54",
+    ok: "border-moss/35 bg-moss/10 text-moss",
+    error: "border-clay/45 bg-clay/10 text-clay"
+  };
 
   return (
     <article className="grid gap-5 border border-line bg-paper p-5 lg:grid-cols-[16rem_1fr]">
@@ -450,6 +493,12 @@ function AssetCard({
               <dt className="text-ink/42">当前路径 / 本地上传状态</dt>
               <dd className="mt-1 break-all border border-line bg-rice px-3 py-2 font-mono text-xs text-ink/62">
                 {status}
+              </dd>
+            </div>
+            <div>
+              <dt className="text-ink/42">图片可访问性</dt>
+              <dd className={`mt-1 inline-flex border px-3 py-1 text-xs font-medium ${accessStatusClassName[accessStatus]}`}>
+                {accessStatusText[accessStatus]}
               </dd>
             </div>
             <div>
@@ -483,6 +532,24 @@ function AssetCard({
             </button>
             <button type="button" onClick={removePath} className="border border-line px-4 py-3 text-sm font-medium text-ink/64 transition hover:border-ink hover:text-ink">
               移除图片
+            </button>
+            <button
+              type="button"
+              onClick={async () => {
+                const targetPath = pathValue.trim() || savedImageSrc;
+                if (!targetPath) {
+                  setAccessStatus("missing");
+                  onMessage("当前素材未配置图片。");
+                  return;
+                }
+                setAccessStatus("checking");
+                const isValid = await validateImagePath(targetPath);
+                setAccessStatus(isValid ? "ok" : "error");
+                onMessage(isValid ? "图片可访问。" : "图片路径无效或图片不存在。");
+              }}
+              className="border border-line px-4 py-3 text-sm font-medium text-ink/64 transition hover:border-ink hover:text-ink"
+            >
+              检查图片是否可访问
             </button>
           </div>
 
