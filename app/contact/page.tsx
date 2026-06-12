@@ -1,0 +1,158 @@
+import { ProjectConsultForm } from "@/components/ProjectConsultForm";
+import { SiteAssetImage } from "@/components/SiteAssetImage";
+import { SiteContentText } from "@/components/SiteContentText";
+import { SiteHeader } from "@/components/SiteHeader";
+import type { SiteAsset } from "@/src/config/siteAssets";
+import { siteAssets } from "@/src/config/siteAssets";
+import { siteContentDefaults } from "@/src/config/siteContent";
+
+const contactCards = [
+  {
+    label: "商务电话",
+    value: "023-0000-1980",
+    hint: "工作日 10:00-18:00"
+  },
+  {
+    label: "邮箱",
+    value: "hello@suguan-geo.com",
+    hint: "用于原型展示的占位邮箱"
+  },
+  {
+    label: "公司地址",
+    value: "重庆市渝中区",
+    hint: "具体地址先以占位信息展示"
+  }
+];
+
+const consultDirections = [
+  "城市更新 / 商业街区",
+  "乡村振兴 / 农文旅融合",
+  "低空经济 / 无人机研学",
+  "亲子农场 / 自然教育",
+  "品牌文创 / 活动运营",
+  "招商运营 / 项目提升"
+];
+
+const resourcePacks = [
+  "公司介绍资料包",
+  "城市更新案例资料包",
+  "乡村振兴与农文旅资料包",
+  "低空经济与研学营地资料包",
+  "亲子农场与自然教育资料包"
+];
+
+function QrPlaceholder({ title, subtitle, asset }: { title: string; subtitle: string; asset: SiteAsset }) {
+  return (
+    <div className="border border-line bg-rice p-4">
+      <SiteAssetImage
+        asset={asset}
+        className="aspect-square border border-line"
+        fallbackLabel="QR"
+        variant="qr"
+      />
+      <div className="mt-4 text-sm font-semibold text-ink">{title}</div>
+      <div className="mt-1 text-xs text-ink/52">{subtitle}</div>
+    </div>
+  );
+}
+
+export default function ContactPage() {
+  return (
+    <main>
+      <SiteHeader />
+
+      <section className="mx-auto max-w-7xl px-4 pb-12 pt-16 sm:px-6 lg:px-8">
+        <div className="grid gap-10 lg:grid-cols-[0.82fr_1fr] lg:items-end">
+          <div>
+            <p className="text-sm font-medium tracking-[0.24em] text-clay">CONTACT SUGUAN</p>
+            <h1 className="mt-5 font-serif text-5xl font-semibold leading-tight text-ink sm:text-6xl">
+              <SiteContentText fieldKey="contact.title" defaultText={siteContentDefaults["contact.title"]} />
+            </h1>
+          </div>
+          <p className="max-w-2xl text-base leading-8 text-ink/64 lg:justify-self-end">
+            <SiteContentText fieldKey="contact.description" defaultText={siteContentDefaults["contact.description"]} />
+          </p>
+        </div>
+
+        <div className="mt-10 flex flex-wrap gap-2">
+          {consultDirections.map((item) => (
+            <span key={item} className="border border-line bg-paper px-3 py-1.5 text-xs text-ink/64">
+              {item}
+            </span>
+          ))}
+        </div>
+      </section>
+
+      <section className="mx-auto grid max-w-7xl gap-8 px-4 py-8 sm:px-6 lg:grid-cols-[0.85fr_1.15fr] lg:px-8">
+        <aside className="space-y-6">
+          <div className="border border-line bg-paper p-6">
+            <p className="text-sm font-medium text-clay">BUSINESS</p>
+            <h2 className="mt-3 font-serif text-3xl font-semibold text-ink">联系方式</h2>
+            <div className="mt-6 grid gap-px overflow-hidden border border-line bg-line">
+              {contactCards.map((item) => (
+                <div key={item.label} className="bg-paper p-5">
+                  <div className="text-xs text-ink/46">{item.label}</div>
+                  <div className="mt-2 break-words text-xl font-semibold text-ink">{item.value}</div>
+                  <div className="mt-2 text-xs text-moss">{item.hint}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="border border-line bg-paper p-6">
+            <p className="text-sm font-medium text-clay">QR CONTACT</p>
+            <h2 className="mt-3 font-serif text-3xl font-semibold text-ink">扫码联系</h2>
+            <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2">
+              <QrPlaceholder
+                title="公众号二维码"
+                subtitle="获取观点文章与案例更新"
+                asset={siteAssets.qrcodes.wechatOfficial}
+              />
+              <QrPlaceholder
+                title="企业微信二维码"
+                subtitle="添加顾问领取公司资料包"
+                asset={siteAssets.qrcodes.enterpriseWechat}
+              />
+            </div>
+          </div>
+        </aside>
+
+        <section id="project-consultation" className="border border-line bg-paper p-6 sm:p-8">
+          <div className="mb-8">
+            <p className="text-sm font-medium text-clay">PROJECT CONSULTATION</p>
+            <h2 className="mt-3 font-serif text-4xl font-semibold text-ink">项目咨询表单</h2>
+            <p className="mt-4 text-sm leading-6 text-ink/60">
+              当前为原型表单，先使用前端状态展示提交反馈，不接入真实后端或数据库。
+            </p>
+          </div>
+          <ProjectConsultForm />
+        </section>
+      </section>
+
+      <section id="resource-pack" className="mx-auto max-w-7xl px-4 pb-16 pt-8 sm:px-6 lg:px-8">
+        <div className="border border-line bg-paper p-6 sm:p-8">
+          <div className="mb-8 flex flex-col justify-between gap-4 md:flex-row md:items-end">
+            <div>
+              <p className="text-sm font-medium text-clay">RESOURCE PACK</p>
+              <h2 className="mt-3 font-serif text-4xl font-semibold text-ink">资料包领取</h2>
+            </div>
+            <p className="max-w-xl text-sm leading-6 text-ink/60">
+              可在项目咨询表单中备注希望领取的资料包类型，后续可接入资料包自动发送和 CRM 线索归档。
+            </p>
+          </div>
+          <div className="grid gap-px overflow-hidden border border-line bg-line md:grid-cols-2 lg:grid-cols-5">
+            {resourcePacks.map((item, index) => (
+              <article key={item} className="bg-paper p-5">
+                <div className="font-serif text-3xl text-ink/12">0{index + 1}</div>
+                <h3 className="mt-8 min-h-14 text-lg font-semibold leading-7 text-ink">{item}</h3>
+                <p className="mt-4 text-sm leading-6 text-ink/58">
+                  适合用于项目前期了解溯观服务边界、代表案例和可输出成果。
+                </p>
+              </article>
+            ))}
+          </div>
+        </div>
+      </section>
+    </main>
+  );
+}
