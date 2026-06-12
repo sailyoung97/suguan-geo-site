@@ -11,6 +11,7 @@ type CaseAssetGroup = {
 
 type SiteAssets = {
   logo: SiteAsset;
+  homeHeroImage: SiteAsset;
   homeHero: SiteAsset;
   homeHeroWideImage: SiteAsset;
   brandAssetsImage: SiteAsset;
@@ -32,7 +33,8 @@ function asset(key: string, alt: string, src = ""): SiteAsset {
 
 export const siteAssets: SiteAssets = {
   logo: asset("logo", "溯观 Logo"),
-  homeHero: asset("homeHero", "溯观首页主视觉图"),
+  homeHeroImage: asset("homeHeroImage", "溯观首页主视觉图"),
+  homeHero: asset("homeHeroImage", "溯观首页主视觉图"),
   homeHeroWideImage: asset("homeHeroWideImage", "首页首屏 SUGUAN 下方超宽底图"),
   brandAssetsImage: asset("brandAssetsImage", "溯观品牌与项目资产矩阵图", "/uploads/brand-assets-matrix.jpg"),
   aboutHeroImage: asset("aboutHeroImage", "关于溯观首屏图", "/uploads/about-hero.jpg"),

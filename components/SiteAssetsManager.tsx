@@ -5,6 +5,7 @@ import { SiteAssetImage } from "@/components/SiteAssetImage";
 import type { SiteAsset } from "@/src/config/siteAssets";
 import { siteAssets } from "@/src/config/siteAssets";
 import { useSiteAssets } from "@/src/hooks/useSiteAssets";
+import { uploadImageToBlob } from "@/src/lib/uploadImage";
 
 type AssetRow = {
   name: string;
@@ -83,7 +84,7 @@ const assetRows: AssetRow[] = [
   {
     name: "首页主视觉图",
     usage: "首页首屏右侧主视觉区域",
-    asset: siteAssets.homeHero,
+    asset: siteAssets.homeHeroImage,
     size: "1920 x 1400px 或更高，适配裁切",
     note: "大图建议放入 public/uploads 后填写路径，不建议使用本地临时预览。",
     fallbackLabel: "Home Hero Image",
@@ -234,9 +235,9 @@ export function SiteAssetsManager() {
           <div>
             <h1 className="font-serif text-4xl font-semibold text-ink">网站素材管理</h1>
             <p className="mt-4 max-w-3xl text-sm leading-7 text-ink/62">
-              大图建议放入 <span className="font-mono text-ink">public/uploads</span> 文件夹，
-              然后在素材项中填写 <span className="font-mono text-ink">/uploads/文件名</span>。
-              小图可以使用“选择本地图片预览”，该预览仅在当前浏览器临时显示，不会把大图 base64 写入 localStorage。
+              线上展示建议直接上传到 Vercel Blob，上传成功后会自动保存公网图片 URL。
+              也可以手动填写图片 URL 或 <span className="font-mono text-ink">/uploads/文件名</span> 做临时调试。
+              本地预览仅在当前浏览器临时显示，不会把大图 base64 写入 localStorage。
             </p>
           </div>
           <div className="grid gap-3 sm:grid-cols-2 lg:block">
@@ -256,9 +257,9 @@ export function SiteAssetsManager() {
         </div>
 
         <div className="mt-6 grid gap-3 text-sm text-ink/62 md:grid-cols-3">
-          <div className="border border-line bg-rice p-4">大图：放入 public/uploads，再填写 /uploads/文件名。</div>
-          <div className="border border-line bg-rice p-4">路径模式：localStorage 只保存路径和更新时间等元数据。</div>
-          <div className="border border-line bg-rice p-4">本地预览：仅小图适用，超过 2MB 会被拦截。</div>
+          <div className="border border-line bg-rice p-4">正式上传：图片存入 Vercel Blob，前台读取公网 URL。</div>
+          <div className="border border-line bg-rice p-4">手动 URL：仍可填写 /uploads/文件名或完整图片地址。</div>
+          <div className="border border-line bg-rice p-4">本地预览：仅小图适用，不保存 base64，不作为线上图片。</div>
         </div>
 
         {message ? (
@@ -298,7 +299,9 @@ function AssetCard({
   onMessage: (message: string) => void;
 }) {
   const inputRef = useRef<HTMLInputElement>(null);
+  const uploadInputRef = useRef<HTMLInputElement>(null);
   const [pathValue, setPathValue] = useState(storedPath);
+  const [isUploading, setIsUploading] = useState(false);
   const { setAssetPath, removeAsset } = useSiteAssets();
 
   useEffect(() => {
@@ -386,6 +389,34 @@ function AssetCard({
     }
   };
 
+  const handleBlobUploadChange = async (event: ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    event.target.value = "";
+
+    if (!file) {
+      return;
+    }
+
+    setIsUploading(true);
+    onMessage(`正在上传：${item.name}`);
+
+    try {
+      const url = await uploadImageToBlob(file);
+      const result = setAssetPath(item.asset.key, url);
+      setPathValue(url);
+      onPreviewReady("");
+      onMessage(
+        result.ok
+          ? `上传成功，已保存公网 URL：${item.name}`
+          : "图片已上传，但本地保存失败，请复制返回 URL 后重试。"
+      );
+    } catch (error) {
+      onMessage(error instanceof Error ? error.message : "图片上传失败，请稍后重试。");
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
   const status = storedPath
     ? `已配置路径：${storedPath}`
     : item.asset.src
@@ -452,6 +483,28 @@ function AssetCard({
             </button>
             <button type="button" onClick={removePath} className="border border-line px-4 py-3 text-sm font-medium text-ink/64 transition hover:border-ink hover:text-ink">
               移除图片
+            </button>
+          </div>
+
+          <div className="border-t border-line pt-4">
+            <div className="text-xs font-medium text-clay">上传到 Vercel Blob</div>
+            <p className="mt-2 text-xs leading-5 text-ink/52">
+              支持 jpg、jpeg、png、webp，单张不超过 10MB。上传成功后自动写入公网 URL，并同步前台显示。
+            </p>
+            <input
+              ref={uploadInputRef}
+              type="file"
+              accept="image/jpeg,image/png,image/webp"
+              className="hidden"
+              onChange={handleBlobUploadChange}
+            />
+            <button
+              type="button"
+              disabled={isUploading}
+              onClick={() => uploadInputRef.current?.click()}
+              className="mt-3 w-full border border-ink bg-ink px-4 py-3 text-sm font-medium text-paper transition hover:bg-moss disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              {isUploading ? "上传中..." : "上传图片"}
             </button>
           </div>
 

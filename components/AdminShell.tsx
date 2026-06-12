@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { clearAdminAuth, readAdminAuth } from "@/src/lib/adminAuth";
+import { clearAdminAuth, readAdminAuth, writeAdminAuth } from "@/src/lib/adminAuth";
 
 const adminNav = [
   { href: "/admin/leads", label: "客户线索 CRM" },
@@ -26,6 +26,9 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
     if (!auth) {
       router.replace(`/login?redirect=${encodeURIComponent(pathname || "/admin/leads")}`);
       return;
+    }
+    if (typeof auth.username === "string") {
+      writeAdminAuth(auth.username);
     }
     setIsReady(true);
   }, [pathname, router]);

@@ -6,6 +6,7 @@ import { CaseImage } from "@/components/CaseImage";
 import { createEmptyCaseCmsItem, type CaseCmsItem } from "@/src/config/caseCms";
 import { businessCategories } from "@/src/data/cases";
 import { useCaseCms } from "@/src/hooks/useCaseCms";
+import { uploadImageToBlob } from "@/src/lib/uploadImage";
 
 type TextArrayField = "painPoints" | "services" | "strategy" | "results" | "capabilities" | "suitableClients" | "geoKeywords" | "tags";
 type TextField = keyof Omit<CaseCmsItem, TextArrayField | "order" | "isPublished" | "isFeatured" | "businessCategory">;
@@ -54,6 +55,8 @@ export function CaseCmsManager() {
   const [originalSlug, setOriginalSlug] = useState("");
   const [message, setMessage] = useState("当前为本地案例 CMS，数据保存到浏览器 localStorage。");
   const importInputRef = useRef<HTMLInputElement>(null);
+  const imageUploadInputRefs = useRef<Record<string, HTMLInputElement | null>>({});
+  const [uploadingImageField, setUploadingImageField] = useState<string>("");
 
   const sortedCases = useMemo(() => [...cases].sort((a, b) => a.order - b.order), [cases]);
 
@@ -78,6 +81,25 @@ export function CaseCmsManager() {
     updateField(key, value as CaseCmsItem[TextField]);
     if (key === "projectName" && editingCase && !editingCase.slug) {
       updateField("slug", slugify(value));
+    }
+  }
+
+  async function handleImageUpload(fieldKey: (typeof imageFields)[number]["key"], file?: File) {
+    if (!file) {
+      return;
+    }
+
+    setUploadingImageField(fieldKey);
+    setMessage("图片正在上传到 Vercel Blob...");
+
+    try {
+      const url = await uploadImageToBlob(file);
+      updateField(fieldKey, url);
+      setMessage("图片上传成功，已自动写入公网 URL。");
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : "图片上传失败，请稍后重试。");
+    } finally {
+      setUploadingImageField("");
     }
   }
 
@@ -294,6 +316,38 @@ export function CaseCmsManager() {
                     className="mt-2 w-full border border-line bg-paper px-4 py-3 text-sm text-ink outline-none transition focus:border-ink"
                   />
                 </label>
+                <div className="mt-3 grid gap-2 sm:grid-cols-2">
+                  <input
+                    ref={(node) => {
+                      imageUploadInputRefs.current[field.key] = node;
+                    }}
+                    type="file"
+                    accept="image/jpeg,image/png,image/webp"
+                    className="hidden"
+                    onChange={(event) => {
+                      handleImageUpload(field.key, event.target.files?.[0]);
+                      event.target.value = "";
+                    }}
+                  />
+                  <button
+                    type="button"
+                    disabled={uploadingImageField === field.key}
+                    onClick={() => imageUploadInputRefs.current[field.key]?.click()}
+                    className="border border-ink bg-ink px-4 py-3 text-sm font-medium text-paper transition hover:bg-moss disabled:cursor-not-allowed disabled:opacity-60"
+                  >
+                    {uploadingImageField === field.key ? "上传中..." : "上传图片"}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => updateField(field.key, "")}
+                    className="border border-line px-4 py-3 text-sm font-medium text-ink/64 transition hover:border-ink hover:text-ink"
+                  >
+                    清空图片
+                  </button>
+                </div>
+                <p className="mt-2 text-xs leading-5 text-ink/46">
+                  支持手动填写 URL，也可上传到 Vercel Blob。保存案例后前台会读取该图片地址。
+                </p>
                 <div className="mt-3 text-xs text-ink/46">建议尺寸：{field.size}</div>
                 <CaseImage src={editingCase[field.key]} className="mt-4 aspect-[16/9]" fallbackLabel={field.label} />
               </div>
