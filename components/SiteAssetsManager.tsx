@@ -5,7 +5,6 @@ import { SiteAssetImage } from "@/components/SiteAssetImage";
 import type { SiteAsset } from "@/src/config/siteAssets";
 import { siteAssets } from "@/src/config/siteAssets";
 import { useSiteAssets } from "@/src/hooks/useSiteAssets";
-import { uploadImageToBlob } from "@/src/lib/uploadImage";
 
 type AssetRow = {
   name: string;
@@ -236,9 +235,8 @@ export function SiteAssetsManager() {
           <div>
             <h1 className="font-serif text-4xl font-semibold text-ink">网站素材管理</h1>
             <p className="mt-4 max-w-3xl text-sm leading-7 text-ink/62">
-              线上展示建议直接上传到 Vercel Blob，上传成功后会自动保存公网图片 URL。
-              也可以手动填写图片 URL 或 <span className="font-mono text-ink">/uploads/文件名</span> 做临时调试。
-              本地预览仅在当前浏览器临时显示，不会把大图 base64 写入 localStorage。
+              Netlify 临时展示版建议使用静态图片路径。请将图片放入 <span className="font-mono text-ink">public/uploads</span> 目录，
+              并在这里填写 <span className="font-mono text-ink">/uploads/文件名</span>。修改后推送 GitHub，Netlify 会自动重新部署。
             </p>
           </div>
           <div className="grid gap-3 sm:grid-cols-2 lg:block">
@@ -258,9 +256,9 @@ export function SiteAssetsManager() {
         </div>
 
         <div className="mt-6 grid gap-3 text-sm text-ink/62 md:grid-cols-3">
-          <div className="border border-line bg-rice p-4">正式上传：图片存入 Vercel Blob，前台读取公网 URL。</div>
-          <div className="border border-line bg-rice p-4">手动 URL：仍可填写 /uploads/文件名或完整图片地址。</div>
-          <div className="border border-line bg-rice p-4">本地预览：仅小图适用，不保存 base64，不作为线上图片。</div>
+          <div className="border border-line bg-rice p-4">静态图片：请先把图片放入 public/uploads。</div>
+          <div className="border border-line bg-rice p-4">路径填写：支持 /uploads/logo.jpg、/uploads/about-hero.jpg 等路径。</div>
+          <div className="border border-line bg-rice p-4">本地预览：只用于当前浏览器看效果，不会真正上传到公网。</div>
         </div>
 
         {message ? (
@@ -300,9 +298,7 @@ function AssetCard({
   onMessage: (message: string) => void;
 }) {
   const inputRef = useRef<HTMLInputElement>(null);
-  const uploadInputRef = useRef<HTMLInputElement>(null);
   const [pathValue, setPathValue] = useState(storedPath);
-  const [isUploading, setIsUploading] = useState(false);
   const [accessStatus, setAccessStatus] = useState<ImageAccessStatus>("idle");
   const { setAssetPath, removeAsset } = useSiteAssets();
   const savedImageSrc = storedPath || item.asset.src || "";
@@ -408,40 +404,6 @@ function AssetCard({
       const objectUrl = URL.createObjectURL(file);
       onPreviewReady(objectUrl);
       onMessage(`图片压缩失败，已使用原图临时预览，并自动填写路径：${inferredUploadPath}`);
-    }
-  };
-
-  const handleBlobUploadChange = async (event: ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    event.target.value = "";
-
-    if (!file) {
-      return;
-    }
-
-    setIsUploading(true);
-    onMessage(`正在上传：${item.name}`);
-
-    try {
-      const url = await uploadImageToBlob(file, {
-        scope: "site-assets",
-        assetKey: item.asset.key
-      });
-      if (!url || url.startsWith("blob:") || url.startsWith("data:")) {
-        throw new Error("上传未返回有效公网图片 URL。");
-      }
-      const result = setAssetPath(item.asset.key, url);
-      setPathValue(url);
-      onPreviewReady("");
-      onMessage(
-        result.ok
-          ? `上传成功，已保存公网 URL：${item.name}`
-          : "图片已上传，但本地保存失败，请复制返回 URL 后重试。"
-      );
-    } catch (error) {
-      onMessage(error instanceof Error ? error.message : "图片上传失败，请稍后重试。");
-    } finally {
-      setIsUploading(false);
     }
   };
 
@@ -553,31 +515,9 @@ function AssetCard({
           </div>
 
           <div className="border-t border-line pt-4">
-            <div className="text-xs font-medium text-clay">上传到 Vercel Blob</div>
-            <p className="mt-2 text-xs leading-5 text-ink/52">
-              支持 jpg、jpeg、png、webp，单张不超过 10MB。上传成功后自动写入公网 URL，并同步前台显示。
-            </p>
-            <input
-              ref={uploadInputRef}
-              type="file"
-              accept="image/jpeg,image/png,image/webp"
-              className="hidden"
-              onChange={handleBlobUploadChange}
-            />
-            <button
-              type="button"
-              disabled={isUploading}
-              onClick={() => uploadInputRef.current?.click()}
-              className="mt-3 w-full border border-ink bg-ink px-4 py-3 text-sm font-medium text-paper transition hover:bg-moss disabled:cursor-not-allowed disabled:opacity-60"
-            >
-              {isUploading ? "上传中..." : "上传图片"}
-            </button>
-          </div>
-
-          <div className="border-t border-line pt-4">
             <div className="text-xs font-medium text-clay">仅本地临时预览，小图适用</div>
             <p className="mt-2 text-xs leading-5 text-ink/52">
-              选择图片后会压缩为 webp/jpeg、最大宽度 1600px、质量 0.75，并使用 object URL 临时预览，不写入 localStorage。
+              选择图片后只会生成 object URL 临时预览，不会真正上传到公网。需要公网展示时，请将图片放入 public/uploads 并推送 GitHub。
             </p>
             <input ref={inputRef} type="file" accept="image/*" className="hidden" onChange={handleFileChange} />
             <button
