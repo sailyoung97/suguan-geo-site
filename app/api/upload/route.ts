@@ -64,6 +64,14 @@ export async function POST(request: NextRequest) {
   }
 
   try {
+    const blobToken = process.env.BLOB_READ_WRITE_TOKEN;
+    if (!blobToken) {
+      return NextResponse.json(
+        { error: "服务端未配置 BLOB_READ_WRITE_TOKEN，请在 Vercel 项目环境变量中添加后重新部署。" },
+        { status: 500 }
+      );
+    }
+
     const formData = await request.formData();
     const file = formData.get("file");
 
@@ -81,7 +89,8 @@ export async function POST(request: NextRequest) {
 
     const pathname = buildBlobPath(formData, file);
     const blob = await put(pathname, file, {
-      access: "public"
+      access: "public",
+      token: blobToken
     });
 
     return NextResponse.json({ url: blob.url });
