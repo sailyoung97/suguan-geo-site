@@ -6,8 +6,10 @@ import {
   caseCmsChangedEvent,
   caseCmsStorageKey,
   clearStoredCases,
+  readRemoteCases,
   readStoredCases,
   sortCaseCmsItems,
+  writeRemoteCases,
   writeStoredCases
 } from "@/src/lib/caseCmsStore";
 
@@ -18,6 +20,12 @@ export function useCaseCms() {
     const syncCases = () => setCasesState(readStoredCases());
 
     syncCases();
+    readRemoteCases().then((remoteCases) => {
+      if (remoteCases.length) {
+        writeStoredCases(remoteCases);
+        setCasesState(remoteCases);
+      }
+    });
     window.addEventListener("storage", syncCases);
     window.addEventListener(caseCmsChangedEvent, syncCases);
 
@@ -31,6 +39,7 @@ export function useCaseCms() {
     const sortedCases = sortCaseCmsItems(nextCases);
     writeStoredCases(sortedCases);
     setCasesState(sortedCases);
+    writeRemoteCases(sortedCases);
   }, []);
 
   const upsertCase = useCallback(
@@ -51,6 +60,7 @@ export function useCaseCms() {
   const restoreDefaults = useCallback(() => {
     clearStoredCases();
     setCasesState(defaultCaseCmsItems);
+    writeRemoteCases(defaultCaseCmsItems);
   }, []);
 
   const publishedCases = useMemo(

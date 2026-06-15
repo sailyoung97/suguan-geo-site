@@ -90,3 +90,31 @@ export function clearStoredCases() {
   window.localStorage.removeItem(caseCmsStorageKey);
   window.dispatchEvent(new Event(caseCmsChangedEvent));
 }
+
+export async function readRemoteCases(): Promise<CaseCmsItem[]> {
+  try {
+    const response = await fetch("/.netlify/functions/cases", {
+      cache: "no-store"
+    });
+    if (!response.ok) return [];
+    const parsed = await response.json();
+    if (!Array.isArray(parsed)) return [];
+    return sortCaseCmsItems(parsed.map(normalizeCase));
+  } catch {
+    return [];
+  }
+}
+
+export async function writeRemoteCases(items: CaseCmsItem[]) {
+  try {
+    await fetch("/.netlify/functions/cases", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ cases: sortCaseCmsItems(items.map(normalizeCase)) })
+    });
+  } catch {
+    // Remote sync is best-effort; local state still updates immediately.
+  }
+}

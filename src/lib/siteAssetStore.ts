@@ -95,3 +95,29 @@ export function clearStoredSiteAssets() {
     return { ok: false, error: "quota-exceeded" };
   }
 }
+
+export async function readRemoteSiteAssets(): Promise<StoredSiteAssets> {
+  try {
+    const response = await fetch("/.netlify/functions/site-assets", {
+      cache: "no-store"
+    });
+    if (!response.ok) return {};
+    return normalizeStoredAssets(await response.json());
+  } catch {
+    return {};
+  }
+}
+
+export async function writeRemoteSiteAssets(assets: StoredSiteAssets) {
+  try {
+    await fetch("/.netlify/functions/site-assets", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ assets })
+    });
+  } catch {
+    // Netlify remote sync is best-effort; local state still updates immediately.
+  }
+}

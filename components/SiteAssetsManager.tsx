@@ -5,6 +5,7 @@ import { SiteAssetImage } from "@/components/SiteAssetImage";
 import type { SiteAsset } from "@/src/config/siteAssets";
 import { siteAssets } from "@/src/config/siteAssets";
 import { useSiteAssets } from "@/src/hooks/useSiteAssets";
+import { uploadImage } from "@/src/lib/uploadImage";
 
 type AssetRow = {
   name: string;
@@ -235,8 +236,7 @@ export function SiteAssetsManager() {
           <div>
             <h1 className="font-serif text-4xl font-semibold text-ink">网站素材管理</h1>
             <p className="mt-4 max-w-3xl text-sm leading-7 text-ink/62">
-              Netlify 临时展示版建议使用静态图片路径。请将图片放入 <span className="font-mono text-ink">public/uploads</span> 目录，
-              并在这里填写 <span className="font-mono text-ink">/uploads/文件名</span>。修改后推送 GitHub，Netlify 会自动重新部署。
+              当前网站部署于 Netlify。后台图片上传将通过 Netlify Functions 存入线上存储，上传成功后会自动生成图片地址并写入当前字段。也可以手动填写已有图片 URL。
             </p>
           </div>
           <div className="grid gap-3 sm:grid-cols-2 lg:block">
@@ -256,9 +256,9 @@ export function SiteAssetsManager() {
         </div>
 
         <div className="mt-6 grid gap-3 text-sm text-ink/62 md:grid-cols-3">
-          <div className="border border-line bg-rice p-4">静态图片：请先把图片放入 public/uploads。</div>
-          <div className="border border-line bg-rice p-4">路径填写：支持 /uploads/logo.jpg、/uploads/about-hero.jpg 等路径。</div>
-          <div className="border border-line bg-rice p-4">本地预览：只用于当前浏览器看效果，不会真正上传到公网。</div>
+          <div className="border border-line bg-rice p-4">线上上传：通过 Netlify Functions 写入线上存储并返回图片 URL。</div>
+          <div className="border border-line bg-rice p-4">手动 URL：可填写已有图片地址或 /uploads 静态路径。</div>
+          <div className="border border-line bg-rice p-4">本地预览：只用于当前浏览器看效果，不会保存为公网图片。</div>
         </div>
 
         {message ? (
@@ -298,7 +298,9 @@ function AssetCard({
   onMessage: (message: string) => void;
 }) {
   const inputRef = useRef<HTMLInputElement>(null);
+  const uploadInputRef = useRef<HTMLInputElement>(null);
   const [pathValue, setPathValue] = useState(storedPath);
+  const [isUploading, setIsUploading] = useState(false);
   const [accessStatus, setAccessStatus] = useState<ImageAccessStatus>("idle");
   const { setAssetPath, removeAsset } = useSiteAssets();
   const savedImageSrc = storedPath || item.asset.src || "";
@@ -407,6 +409,38 @@ function AssetCard({
     }
   };
 
+  const handleUploadChange = async (event: ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    event.target.value = "";
+
+    if (!file) {
+      return;
+    }
+
+    setIsUploading(true);
+    onMessage(`正在上传：${item.name}`);
+
+    try {
+      const url = await uploadImage(file, {
+        scope: "site-assets",
+        assetKey: item.asset.key
+      });
+      const result = setAssetPath(item.asset.key, url);
+      setPathValue(url);
+      onPreviewReady("");
+      setAccessStatus("ok");
+      onMessage(
+        result.ok
+          ? `上传成功，已写入图片地址：${item.name}`
+          : "图片已上传，但本地保存失败，请复制返回 URL 后重试。"
+      );
+    } catch (error) {
+      onMessage(error instanceof Error ? error.message : "图片上传失败，请稍后重试。");
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
   const status = storedPath
     ? `已配置路径：${storedPath}`
     : item.asset.src
@@ -488,6 +522,21 @@ function AssetCard({
             <button type="button" onClick={savePath} className="bg-ink px-4 py-3 text-sm font-medium text-paper transition hover:bg-moss">
               保存路径
             </button>
+            <input
+              ref={uploadInputRef}
+              type="file"
+              accept="image/jpeg,image/png,image/webp"
+              className="hidden"
+              onChange={handleUploadChange}
+            />
+            <button
+              type="button"
+              disabled={isUploading}
+              onClick={() => uploadInputRef.current?.click()}
+              className="border border-ink bg-ink px-4 py-3 text-sm font-medium text-paper transition hover:bg-moss disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              {isUploading ? "上传中..." : "上传图片"}
+            </button>
             <button type="button" onClick={copyRecommendedPath} className="border border-line px-4 py-3 text-sm font-medium text-ink/64 transition hover:border-ink hover:text-ink">
               复制推荐文件名
             </button>
@@ -517,7 +566,7 @@ function AssetCard({
           <div className="border-t border-line pt-4">
             <div className="text-xs font-medium text-clay">仅本地临时预览，小图适用</div>
             <p className="mt-2 text-xs leading-5 text-ink/52">
-              选择图片后只会生成 object URL 临时预览，不会真正上传到公网。需要公网展示时，请将图片放入 public/uploads 并推送 GitHub。
+              选择图片后只会生成 object URL 临时预览，不会真正上传到公网。需要公网展示请使用上方“上传图片”。
             </p>
             <input ref={inputRef} type="file" accept="image/*" className="hidden" onChange={handleFileChange} />
             <button

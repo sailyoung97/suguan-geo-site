@@ -6,7 +6,7 @@ import { CaseImage } from "@/components/CaseImage";
 import { createEmptyCaseCmsItem, type CaseCmsItem } from "@/src/config/caseCms";
 import { businessCategories } from "@/src/data/cases";
 import { useCaseCms } from "@/src/hooks/useCaseCms";
-import { uploadImageToBlob } from "@/src/lib/uploadImage";
+import { uploadImage } from "@/src/lib/uploadImage";
 
 type TextArrayField = "painPoints" | "services" | "strategy" | "results" | "capabilities" | "suitableClients" | "geoKeywords" | "tags";
 type TextField = keyof Omit<CaseCmsItem, TextArrayField | "order" | "isPublished" | "isFeatured" | "businessCategory">;
@@ -47,6 +47,15 @@ function slugify(value: string) {
     .toLowerCase()
     .replace(/[^a-z0-9\u4e00-\u9fa5]+/g, "-")
     .replace(/^-+|-+$/g, "");
+}
+
+function validateImagePath(path: string) {
+  return new Promise<boolean>((resolve) => {
+    const image = new Image();
+    image.onload = () => resolve(true);
+    image.onerror = () => resolve(false);
+    image.src = `${path}${path.includes("?") ? "&" : "?"}t=${Date.now()}`;
+  });
 }
 
 export function CaseCmsManager() {
@@ -90,10 +99,10 @@ export function CaseCmsManager() {
     }
 
     setUploadingImageField(fieldKey);
-    setMessage("图片正在上传到 Vercel Blob...");
+    setMessage("图片正在通过 Netlify Functions 上传...");
 
     try {
-      const url = await uploadImageToBlob(file, {
+      const url = await uploadImage(file, {
         scope: "cases",
         caseSlug: editingCase?.slug || editingCase?.projectName || "case",
         fieldKey
@@ -105,6 +114,16 @@ export function CaseCmsManager() {
     } finally {
       setUploadingImageField("");
     }
+  }
+
+  async function checkImageUrl(url: string) {
+    if (!url.trim()) {
+      setMessage("当前图片 URL 为空。");
+      return;
+    }
+
+    const isValid = await validateImagePath(url.trim());
+    setMessage(isValid ? "图片可访问。" : "图片路径无效或图片不存在。");
   }
 
   function handleSave() {
@@ -348,9 +367,16 @@ export function CaseCmsManager() {
                   >
                     清空图片
                   </button>
+                  <button
+                    type="button"
+                    onClick={() => checkImageUrl(editingCase[field.key])}
+                    className="border border-line px-4 py-3 text-sm font-medium text-ink/64 transition hover:border-ink hover:text-ink sm:col-span-2"
+                  >
+                    检查是否可访问
+                  </button>
                 </div>
                 <p className="mt-2 text-xs leading-5 text-ink/46">
-                  支持手动填写 URL，也可上传到 Vercel Blob。保存案例后前台会读取该图片地址。
+                  支持手动填写 URL，也可通过 Netlify Functions 上传图片。保存案例后前台会读取该图片地址。
                 </p>
                 <div className="mt-3 text-xs text-ink/46">建议尺寸：{field.size}</div>
                 <CaseImage src={editingCase[field.key]} className="mt-4 aspect-[16/9]" fallbackLabel={field.label} />
