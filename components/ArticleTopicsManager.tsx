@@ -48,6 +48,7 @@ const statusStyles: Record<string, string> = {
 
 const defaultForm: TopicForm = {
   title: "",
+  subtitle: "",
   slug: "",
   category: "观点文章",
   contentType: "官网文章",
@@ -376,6 +377,9 @@ function TopicModal({
           <FormSection title="基础信息">
             <Field label="内容标题">
               <input required value={form.title} onChange={(event) => onChange("title", event.target.value)} className={inputClassName} />
+            </Field>
+            <Field label="文章副标题 subtitle">
+              <input value={form.subtitle} onChange={(event) => onChange("subtitle", event.target.value)} placeholder="用于前台标题下方的导语式副标题" className={inputClassName} />
             </Field>
             <Field label="文章 slug">
               <input value={form.slug} onChange={(event) => onChange("slug", event.target.value)} placeholder="ai-search-cultural-tourism-recommendation" className={inputClassName} />
