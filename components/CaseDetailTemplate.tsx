@@ -10,7 +10,7 @@ type CaseDetailTemplateProps = {
 
 function DetailBlock({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <section className="border-t border-line py-9">
+    <section className="border-t border-line py-10">
       <h2 className="font-serif text-3xl font-semibold text-ink">{title}</h2>
       <div className="mt-5 text-base leading-8 text-ink/66">{children}</div>
     </section>
@@ -44,11 +44,7 @@ function TagList({ items, dark = false }: { items: string[]; dark?: boolean }) {
       {items.map((item) => (
         <span
           key={item}
-          className={
-            dark
-              ? "bg-ink px-3 py-1.5 text-sm text-paper"
-              : "border border-line bg-rice px-3 py-1.5 text-sm text-ink/66"
-          }
+          className={dark ? "bg-ink px-3 py-1.5 text-sm text-paper" : "border border-line bg-rice px-3 py-1.5 text-sm text-ink/66"}
         >
           {item}
         </span>
@@ -66,13 +62,8 @@ export function CaseDetailTemplate({ slug }: CaseDetailTemplateProps) {
       <section className="mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:px-8">
         <p className="text-sm font-medium tracking-[0.24em] text-clay">CASE NOT FOUND</p>
         <h1 className="mt-4 font-serif text-5xl font-semibold text-ink">案例未找到</h1>
-        <p className="mt-5 max-w-xl text-sm leading-6 text-ink/62">
-          该案例可能尚未发布，或已在后台案例管理中删除。
-        </p>
-        <Link
-          href="/cases"
-          className="mt-8 inline-block border border-ink px-5 py-3 text-sm font-medium text-ink transition hover:bg-ink hover:text-paper"
-        >
+        <p className="mt-5 max-w-xl text-sm leading-6 text-ink/62">该案例可能尚未发布，或已在后台案例管理中删除。</p>
+        <Link href="/cases" className="mt-8 inline-block border border-ink px-5 py-3 text-sm font-medium text-ink transition hover:bg-ink hover:text-paper">
           返回项目案例
         </Link>
       </section>
@@ -83,10 +74,14 @@ export function CaseDetailTemplate({ slug }: CaseDetailTemplateProps) {
     ["项目名称", item.projectName],
     ["项目地点", item.location],
     ["项目类型", item.projectType],
-    ["项目状态", item.status]
+    ["项目状态", item.status],
+    ["项目年份", item.year]
   ];
-
-  const sceneImages = [item.sceneImage01, item.sceneImage02, item.sceneImage03].filter(Boolean);
+  const galleryImages = [
+    { src: item.heroImage, label: "详情页图集 01" },
+    { src: item.sceneImage01, label: "详情页图集 02" },
+    { src: item.sceneImage02, label: "详情页图集 03" }
+  ].filter((image) => Boolean(image.src));
 
   return (
     <>
@@ -104,9 +99,7 @@ export function CaseDetailTemplate({ slug }: CaseDetailTemplateProps) {
               <span className="h-px w-8 bg-line" />
               <span>{item.status}</span>
             </div>
-            <h1 className="mt-6 max-w-4xl font-serif text-5xl font-semibold leading-tight text-ink sm:text-6xl">
-              {item.projectName}
-            </h1>
+            <h1 className="mt-6 max-w-4xl font-serif text-5xl font-semibold leading-tight text-ink sm:text-6xl">{item.projectName}</h1>
             <p className="mt-7 max-w-3xl text-lg leading-8 text-ink/66">{item.summary}</p>
           </div>
 
@@ -123,36 +116,24 @@ export function CaseDetailTemplate({ slug }: CaseDetailTemplateProps) {
           </aside>
         </div>
 
-        <div className="mt-12 grid gap-4 lg:grid-cols-[1.4fr_0.6fr]">
-          <CaseImage
-            src={item.heroImage}
-            fallbackSrc={item.coverImage}
-            className="aspect-[16/8] min-h-64"
-            fallbackLabel="Project Hero Image"
-          />
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-1">
-            {(sceneImages.length ? sceneImages.slice(0, 2) : [item.coverImage, item.coverImage]).map((src, index) => (
-              <CaseImage
-                key={`${src}-${index}`}
-                src={src}
-                fallbackSrc={item.coverImage}
-                className="aspect-[16/9] min-h-40"
-                fallbackLabel={`Scene Image ${String(index + 1).padStart(2, "0")}`}
-              />
+        <div className="mt-12">
+          <CaseImage src={item.coverImage} className="h-[360px] w-full sm:h-[520px] lg:h-[640px]" fallbackLabel="项目封面图未配置" />
+        </div>
+
+        {galleryImages.length > 0 ? (
+          <div className="mt-6 grid gap-4 md:grid-cols-3 lg:gap-6">
+            {galleryImages.map((image) => (
+              <CaseImage key={image.label} src={image.src} className="aspect-[4/3] w-full" fallbackLabel={image.label} />
             ))}
           </div>
-        </div>
-      </section>
+        ) : null}
 
-      <section className="border-y border-line bg-paper/72">
-        <div className="mx-auto grid max-w-7xl gap-px overflow-hidden px-4 sm:px-6 md:grid-cols-4 lg:px-8">
-          {metaItems.map(([label, value]) => (
-            <div key={label} className="py-6 md:border-r md:border-line md:last:border-r-0">
-              <div className="text-xs text-ink/44">{label}</div>
-              <div className="mt-2 text-sm font-semibold leading-6 text-ink">{value || "待补充"}</div>
-            </div>
-          ))}
-        </div>
+        {item.sceneImage03 ? (
+          <section className="mt-10">
+            <p className="mb-4 text-sm font-medium text-clay">更多项目现场</p>
+            <CaseImage src={item.sceneImage03} className="h-[300px] w-full sm:h-[420px]" fallbackLabel="详情页补充图" />
+          </section>
+        ) : null}
       </section>
 
       <section className="mx-auto grid max-w-7xl gap-12 px-4 py-12 sm:px-6 lg:grid-cols-[minmax(0,1fr)_20rem] lg:px-8">
@@ -161,19 +142,19 @@ export function CaseDetailTemplate({ slug }: CaseDetailTemplateProps) {
             <p>{item.background || "待补充"}</p>
           </DetailBlock>
 
-          <DetailBlock title="项目痛点">
+          <DetailBlock title="项目问题">
             <BulletList items={item.painPoints} />
           </DetailBlock>
 
-          <DetailBlock title="溯观服务内容">
+          <DetailBlock title="服务内容">
             <TagList items={item.services} />
           </DetailBlock>
 
-          <DetailBlock title="核心策略">
+          <DetailBlock title="策略方法">
             <BulletList items={item.strategy} />
           </DetailBlock>
 
-          <DetailBlock title="项目成果">
+          <DetailBlock title="项目结果">
             <BulletList items={item.results} />
           </DetailBlock>
 
@@ -198,9 +179,7 @@ export function CaseDetailTemplate({ slug }: CaseDetailTemplateProps) {
                 <Link
                   key={caseItem.slug}
                   href={`/cases/${caseItem.slug}`}
-                  className={`block text-sm leading-6 transition ${
-                    caseItem.slug === item.slug ? "font-semibold text-ink" : "text-ink/56 hover:text-ink"
-                  }`}
+                  className={`block text-sm leading-6 transition ${caseItem.slug === item.slug ? "font-semibold text-ink" : "text-ink/56 hover:text-ink"}`}
                 >
                   {caseItem.projectName}
                 </Link>
@@ -217,13 +196,8 @@ export function CaseDetailTemplate({ slug }: CaseDetailTemplateProps) {
 
           <div className="border border-line bg-ink p-5 text-paper">
             <h3 className="font-serif text-2xl font-semibold">想参考类似项目？</h3>
-            <p className="mt-4 text-sm leading-6 text-paper/66">
-              可提交项目所在地、资源条件和当前阶段，获取对应案例资料与初步判断。
-            </p>
-            <Link
-              href="/contact#project-consultation"
-              className="mt-6 block border border-paper/28 px-4 py-3 text-center text-sm font-medium text-paper transition hover:bg-paper hover:text-ink"
-            >
+            <p className="mt-4 text-sm leading-6 text-paper/66">可提交项目所在地、资源条件和当前阶段，获取对应案例资料与初步判断。</p>
+            <Link href="/contact#project-consultation" className="mt-6 block border border-paper/28 px-4 py-3 text-center text-sm font-medium text-paper transition hover:bg-paper hover:text-ink">
               提交项目咨询
             </Link>
           </div>

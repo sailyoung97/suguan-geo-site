@@ -12,11 +12,11 @@ type TextArrayField = "painPoints" | "services" | "strategy" | "results" | "capa
 type TextField = keyof Omit<CaseCmsItem, TextArrayField | "order" | "isPublished" | "isFeatured" | "businessCategory">;
 
 const imageFields: Array<{ key: "coverImage" | "heroImage" | "sceneImage01" | "sceneImage02" | "sceneImage03"; label: string; size: string }> = [
-  { key: "coverImage", label: "案例封面图", size: "1600 x 1000px，16:10" },
-  { key: "heroImage", label: "案例详情主图", size: "1920 x 960px，详情页顶部宽图" },
-  { key: "sceneImage01", label: "场景图 1", size: "1600 x 900px，16:9" },
-  { key: "sceneImage02", label: "场景图 2", size: "1600 x 900px，16:9" },
-  { key: "sceneImage03", label: "场景图 3，可选", size: "1600 x 900px，16:9" }
+  { key: "coverImage", label: "案例封面图 / 详情页主视觉大图", size: "1920 x 1200px，列表封面与详情页主视觉" },
+  { key: "heroImage", label: "详情页图集 01", size: "1600 x 1200px，4:3 或 16:10" },
+  { key: "sceneImage01", label: "详情页图集 02", size: "1600 x 1200px，4:3 或 16:10" },
+  { key: "sceneImage02", label: "详情页图集 03", size: "1600 x 1200px，4:3 或 16:10" },
+  { key: "sceneImage03", label: "详情页补充图", size: "1920 x 1080px，可选更多现场图" }
 ];
 
 const arrayFields: Array<{ key: TextArrayField; label: string; hint: string }> = [
