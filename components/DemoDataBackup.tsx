@@ -11,6 +11,7 @@ const backupKeys = [
   "suguan.siteAssets.v1",
   "suguan.siteContent.v1",
   "suguan.resources.v1",
+  "suguan.contentTopics.v1",
   "suguan.articles.v1"
 ] as const;
 
