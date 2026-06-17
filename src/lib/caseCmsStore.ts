@@ -12,6 +12,9 @@ function normalizeCase(item: Partial<CaseCmsItem>, index: number): CaseCmsItem {
   const slug = item.slug || `case-${index + 1}`;
   const officialMeta = officialCaseMeta[slug];
   const candidateCategory = item.businessCategory as BusinessCategory | undefined;
+  const legacyGalleryImages = [item.heroImage, item.sceneImage01, item.sceneImage02].filter(
+    (image): image is string => typeof image === "string" && Boolean(image)
+  );
 
   return {
     projectName: item.projectName || "",
@@ -32,6 +35,8 @@ function normalizeCase(item: Partial<CaseCmsItem>, index: number): CaseCmsItem {
     sceneImage01: item.sceneImage01 || "",
     sceneImage02: item.sceneImage02 || "",
     sceneImage03: item.sceneImage03 || "",
+    galleryImages: Array.isArray(item.galleryImages) ? item.galleryImages.filter(Boolean) : legacyGalleryImages,
+    assetImages: Array.isArray(item.assetImages) ? item.assetImages.filter(Boolean) : [],
     summary: item.summary || "",
     background: item.background || "",
     painPoints: Array.isArray(item.painPoints) ? item.painPoints : [],

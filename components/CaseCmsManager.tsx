@@ -9,7 +9,8 @@ import { useCaseCms } from "@/src/hooks/useCaseCms";
 import { uploadImage } from "@/src/lib/uploadImage";
 
 type TextArrayField = "painPoints" | "services" | "strategy" | "results" | "capabilities" | "suitableClients" | "geoKeywords" | "tags";
-type TextField = keyof Omit<CaseCmsItem, TextArrayField | "order" | "isPublished" | "isFeatured" | "businessCategory">;
+type MultiImageField = "galleryImages" | "assetImages";
+type TextField = keyof Omit<CaseCmsItem, TextArrayField | MultiImageField | "order" | "isPublished" | "isFeatured" | "businessCategory">;
 
 const imageFields: Array<{ key: "coverImage" | "heroImage" | "sceneImage01" | "sceneImage02" | "sceneImage03"; label: string; size: string }> = [
   { key: "coverImage", label: "案例封面图 / 详情页主视觉大图", size: "1920 x 1200px，列表封面与详情页主视觉" },
@@ -58,6 +59,81 @@ function validateImagePath(path: string) {
   });
 }
 
+function MultiImageSection({
+  title,
+  description,
+  fieldKey,
+  images,
+  inputRef,
+  isUploading,
+  onUpload,
+  onRemove,
+  onPick
+}: {
+  title: string;
+  description: string;
+  fieldKey: MultiImageField;
+  images: string[];
+  inputRef: (node: HTMLInputElement | null) => void;
+  isUploading: boolean;
+  onUpload: (files?: FileList | null) => void;
+  onRemove: (index: number) => void;
+  onPick: () => void;
+}) {
+  return (
+    <section className="border border-line bg-rice p-4">
+      <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-start">
+        <div>
+          <p className="text-sm font-semibold text-ink">{title}</p>
+          <p className="mt-2 text-xs leading-5 text-ink/50">{description}</p>
+          <p className="mt-2 font-mono text-xs text-ink/40">{fieldKey}: string[]</p>
+        </div>
+        <button
+          type="button"
+          disabled={isUploading}
+          onClick={onPick}
+          className="shrink-0 border border-ink bg-ink px-4 py-3 text-sm font-medium text-paper transition hover:bg-moss disabled:cursor-not-allowed disabled:opacity-60"
+        >
+          {isUploading ? "上传中..." : "上传多图"}
+        </button>
+      </div>
+
+      <input
+        ref={inputRef}
+        type="file"
+        multiple
+        accept="image/jpeg,image/png,image/webp"
+        className="hidden"
+        onChange={(event) => {
+          onUpload(event.target.files);
+          event.target.value = "";
+        }}
+      />
+
+      {images.length > 0 ? (
+        <div className="mt-4 grid gap-3 sm:grid-cols-2">
+          {images.map((src, index) => (
+            <div key={`${src}-${index}`} className="border border-line bg-paper p-3">
+              <CaseImage src={src} className="aspect-[4/3] w-full" fallbackLabel={`图片 ${index + 1}`} />
+              <div className="mt-3 flex items-center justify-between gap-2">
+                <span className="font-mono text-xs text-ink/42">#{index + 1}</span>
+                <button type="button" onClick={() => onRemove(index)} className="border border-line px-3 py-2 text-xs text-ink/62 transition hover:border-ink hover:text-ink">
+                  删除
+                </button>
+              </div>
+              <p className="mt-2 break-all text-xs leading-5 text-ink/40">{src}</p>
+            </div>
+          ))}
+        </div>
+      ) : (
+        <div className="mt-4 border border-dashed border-line bg-paper px-4 py-8 text-center text-sm text-ink/42">
+          暂未上传图片
+        </div>
+      )}
+    </section>
+  );
+}
+
 export function CaseCmsManager() {
   const { cases, upsertCase, deleteCase, saveCases, restoreDefaults, storageKey } = useCaseCms();
   const [editingCase, setEditingCase] = useState<CaseCmsItem | null>(null);
@@ -65,6 +141,10 @@ export function CaseCmsManager() {
   const [message, setMessage] = useState("当前为本地案例 CMS，数据保存到浏览器 localStorage。");
   const importInputRef = useRef<HTMLInputElement>(null);
   const imageUploadInputRefs = useRef<Record<string, HTMLInputElement | null>>({});
+  const multiImageUploadInputRefs = useRef<Record<MultiImageField, HTMLInputElement | null>>({
+    galleryImages: null,
+    assetImages: null
+  });
   const [uploadingImageField, setUploadingImageField] = useState<string>("");
 
   const sortedCases = useMemo(() => [...cases].sort((a, b) => a.order - b.order), [cases]);
@@ -114,6 +194,49 @@ export function CaseCmsManager() {
     } finally {
       setUploadingImageField("");
     }
+  }
+
+  async function handleMultiImageUpload(fieldKey: MultiImageField, files?: FileList | null) {
+    if (!files?.length) {
+      return;
+    }
+
+    const selectedFiles = Array.from(files);
+    setUploadingImageField(fieldKey);
+    setMessage(`${fieldKey === "galleryImages" ? "案例图集" : "产业 / 运营补充图"}正在上传...`);
+
+    try {
+      const uploadedUrls: string[] = [];
+      for (const [index, file] of selectedFiles.entries()) {
+        const url = await uploadImage(file, {
+          scope: "cases",
+          caseSlug: editingCase?.slug || editingCase?.projectName || "case",
+          fieldKey: `${fieldKey}-${Date.now()}-${index}`
+        });
+        uploadedUrls.push(url);
+      }
+
+      setEditingCase((current) => {
+        if (!current) return current;
+        const nextImages = [...(current[fieldKey] || []), ...uploadedUrls];
+        return { ...current, [fieldKey]: nextImages };
+      });
+      setMessage(`已上传 ${uploadedUrls.length} 张图片，并写入 ${fieldKey}。`);
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : "多图上传失败，请稍后重试。");
+    } finally {
+      setUploadingImageField("");
+    }
+  }
+
+  function removeMultiImage(fieldKey: MultiImageField, index: number) {
+    setEditingCase((current) => {
+      if (!current) return current;
+      return {
+        ...current,
+        [fieldKey]: current[fieldKey].filter((_, imageIndex) => imageIndex !== index)
+      };
+    });
   }
 
   async function checkImageUrl(url: string) {
@@ -382,6 +505,35 @@ export function CaseCmsManager() {
                 <CaseImage src={editingCase[field.key]} className="mt-4 aspect-[16/9]" fallbackLabel={field.label} />
               </div>
             ))}
+          </div>
+
+          <div className="mt-8 grid gap-5 lg:grid-cols-2">
+            <MultiImageSection
+              title="案例图集 Gallery Images（核心展示）"
+              description="用于前台案例详情页主图集展示，建议 3-8 张。支持一次选择多张，上传后可点击单张删除。"
+              fieldKey="galleryImages"
+              images={editingCase.galleryImages}
+              inputRef={(node) => {
+                multiImageUploadInputRefs.current.galleryImages = node;
+              }}
+              isUploading={uploadingImageField === "galleryImages"}
+              onUpload={(files) => handleMultiImageUpload("galleryImages", files)}
+              onRemove={(index) => removeMultiImage("galleryImages", index)}
+              onPick={() => multiImageUploadInputRefs.current.galleryImages?.click()}
+            />
+            <MultiImageSection
+              title="产业 / 运营补充图 Asset Images"
+              description="用于商业业态、产品细节、运营现场、人流活动、商铺展示等补充素材，建议不超过 20 张。"
+              fieldKey="assetImages"
+              images={editingCase.assetImages}
+              inputRef={(node) => {
+                multiImageUploadInputRefs.current.assetImages = node;
+              }}
+              isUploading={uploadingImageField === "assetImages"}
+              onUpload={(files) => handleMultiImageUpload("assetImages", files)}
+              onRemove={(index) => removeMultiImage("assetImages", index)}
+              onPick={() => multiImageUploadInputRefs.current.assetImages?.click()}
+            />
           </div>
 
           <div className="mt-8 grid gap-5">

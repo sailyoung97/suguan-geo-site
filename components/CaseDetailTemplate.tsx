@@ -1,11 +1,17 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 import { CaseImage } from "@/components/CaseImage";
 import { useCaseCms } from "@/src/hooks/useCaseCms";
 
 type CaseDetailTemplateProps = {
   slug: string;
+};
+
+type GalleryImage = {
+  src: string;
+  label: string;
 };
 
 function DetailBlock({ title, children }: { title: string; children: React.ReactNode }) {
@@ -18,9 +24,7 @@ function DetailBlock({ title, children }: { title: string; children: React.React
 }
 
 function BulletList({ items }: { items: string[] }) {
-  if (!items.length) {
-    return <p>待补充</p>;
-  }
+  if (!items.length) return <p>待补充</p>;
 
   return (
     <ul className="grid gap-3">
@@ -35,9 +39,7 @@ function BulletList({ items }: { items: string[] }) {
 }
 
 function TagList({ items, dark = false }: { items: string[]; dark?: boolean }) {
-  if (!items.length) {
-    return <p>待补充</p>;
-  }
+  if (!items.length) return <p>待补充</p>;
 
   return (
     <div className="flex flex-wrap gap-2">
@@ -55,6 +57,7 @@ function TagList({ items, dark = false }: { items: string[]; dark?: boolean }) {
 
 export function CaseDetailTemplate({ slug }: CaseDetailTemplateProps) {
   const { cases, publishedCases } = useCaseCms();
+  const [activeGalleryIndex, setActiveGalleryIndex] = useState<number | null>(null);
   const item = cases.find((caseItem) => caseItem.slug === slug);
 
   if (!item || !item.isPublished) {
@@ -77,12 +80,27 @@ export function CaseDetailTemplate({ slug }: CaseDetailTemplateProps) {
     ["项目状态", item.status],
     ["项目年份", item.year]
   ];
-  const galleryImages = [
-    { src: item.heroImage, label: "详情页图集 01" },
-    { src: item.sceneImage01, label: "详情页图集 02" },
-    { src: item.sceneImage02, label: "详情页图集 03" }
-  ].filter((image) => Boolean(image.src));
-  const metaLine = [item.location, item.projectType, item.status, item.year].filter(Boolean).join(" —— ");
+  const galleryImages: GalleryImage[] = (item.galleryImages?.length ? item.galleryImages : [item.heroImage, item.sceneImage01, item.sceneImage02])
+    .filter(Boolean)
+    .slice(0, 8)
+    .map((src, index) => ({ src, label: `项目图集 ${String(index + 1).padStart(2, "0")}` }));
+  const assetImages = (item.assetImages || []).filter(Boolean);
+  const metaLine = [item.location, item.projectType, item.status, item.year].filter(Boolean).join(" / ");
+  const activeImage = activeGalleryIndex === null ? null : galleryImages[activeGalleryIndex];
+
+  function showPreviousImage() {
+    setActiveGalleryIndex((current) => {
+      if (current === null) return current;
+      return current === 0 ? galleryImages.length - 1 : current - 1;
+    });
+  }
+
+  function showNextImage() {
+    setActiveGalleryIndex((current) => {
+      if (current === null) return current;
+      return current === galleryImages.length - 1 ? 0 : current + 1;
+    });
+  }
 
   return (
     <>
@@ -100,24 +118,56 @@ export function CaseDetailTemplate({ slug }: CaseDetailTemplateProps) {
         <div className="mt-14">
           <CaseImage src={item.coverImage} className="h-[360px] w-full sm:h-[520px] lg:h-[640px]" fallbackLabel="项目封面图未配置" />
         </div>
+
+        {galleryImages.length > 0 ? (
+          <section className="mt-10">
+            <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-end">
+              <div>
+                <p className="text-sm font-medium text-clay">PROJECT GALLERY</p>
+                <h2 className="mt-2 font-serif text-3xl font-semibold text-ink">项目图集</h2>
+              </div>
+              <p className="text-sm text-ink/50">点击图片可放大浏览</p>
+            </div>
+            <div className="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+              {galleryImages.map((image, index) => (
+                <button key={`${image.src}-${index}`} type="button" onClick={() => setActiveGalleryIndex(index)} className="group text-left">
+                  <CaseImage src={image.src} className="aspect-[4/3] w-full transition group-hover:opacity-90" fallbackLabel={image.label} />
+                  <p className="mt-2 text-xs text-ink/42">{image.label}</p>
+                </button>
+              ))}
+            </div>
+          </section>
+        ) : null}
       </section>
 
       <section className="mx-auto grid max-w-7xl gap-12 px-4 py-12 sm:px-6 lg:grid-cols-[minmax(0,1fr)_20rem] lg:px-8">
         <article className="bg-paper px-6 py-2 sm:px-10">
+          {assetImages.length > 0 ? (
+            <section className="py-10">
+              <p className="text-sm font-medium text-clay">ASSET IMAGES</p>
+              <h2 className="mt-2 font-serif text-3xl font-semibold text-ink">产业 / 运营补充图</h2>
+              <div className="mt-6 grid gap-4 sm:grid-cols-2">
+                {assetImages.map((src, index) => (
+                  <CaseImage key={`${src}-${index}`} src={src} className="aspect-[16/10] w-full" fallbackLabel={`补充图 ${index + 1}`} />
+                ))}
+              </div>
+            </section>
+          ) : null}
+
           <DetailBlock title="项目背景">
             <p>{item.background || "待补充"}</p>
           </DetailBlock>
 
-          <DetailBlock title="项目问题">
+          <DetailBlock title="问题定义">
             <BulletList items={item.painPoints} />
-          </DetailBlock>
-
-          <DetailBlock title="服务内容">
-            <TagList items={item.services} />
           </DetailBlock>
 
           <DetailBlock title="策略方法">
             <BulletList items={item.strategy} />
+          </DetailBlock>
+
+          <DetailBlock title="设计 / 运营过程">
+            <TagList items={item.services} />
           </DetailBlock>
 
           <DetailBlock title="项目结果">
@@ -127,24 +177,6 @@ export function CaseDetailTemplate({ slug }: CaseDetailTemplateProps) {
           <DetailBlock title="项目价值">
             <p>{item.value || "待补充"}</p>
           </DetailBlock>
-
-          {galleryImages.length > 0 ? (
-            <section className="border-t border-line py-10">
-              <h2 className="font-serif text-3xl font-semibold text-ink">项目图集</h2>
-              <div className="mt-6 grid gap-4 md:grid-cols-3 lg:gap-6">
-                {galleryImages.map((image) => (
-                  <CaseImage key={image.label} src={image.src} className="aspect-[4/3] w-full" fallbackLabel={image.label} />
-                ))}
-              </div>
-            </section>
-          ) : null}
-
-          {item.sceneImage03 ? (
-            <section className="border-t border-line py-10">
-              <h2 className="font-serif text-3xl font-semibold text-ink">更多项目现场</h2>
-              <CaseImage src={item.sceneImage03} className="mt-6 h-[300px] w-full sm:h-[420px]" fallbackLabel="详情页补充图" />
-            </section>
-          ) : null}
 
           <DetailBlock title="适合客户参考">
             <BulletList items={item.suitableClients} />
@@ -199,6 +231,36 @@ export function CaseDetailTemplate({ slug }: CaseDetailTemplateProps) {
           </div>
         </aside>
       </section>
+
+      {activeImage ? (
+        <div className="fixed inset-0 z-50 grid place-items-center bg-ink/88 px-4 py-6">
+          <button type="button" className="absolute inset-0 cursor-default" onClick={() => setActiveGalleryIndex(null)} aria-label="关闭图集" />
+          <div className="relative z-10 w-full max-w-6xl">
+            <div className="mb-4 flex items-center justify-between gap-4 text-paper">
+              <div>
+                <p className="text-xs uppercase tracking-[0.2em] text-paper/50">Gallery</p>
+                <p className="mt-1 text-sm">{activeImage.label}</p>
+              </div>
+              <button type="button" onClick={() => setActiveGalleryIndex(null)} className="border border-paper/30 px-4 py-2 text-sm text-paper transition hover:bg-paper hover:text-ink">
+                关闭
+              </button>
+            </div>
+            <div className="relative border border-paper/20 bg-ink">
+              <CaseImage src={activeImage.src} className="h-[72vh] w-full bg-ink" imageClassName="object-contain" fallbackLabel={activeImage.label} />
+              {galleryImages.length > 1 ? (
+                <>
+                  <button type="button" onClick={showPreviousImage} className="absolute left-3 top-1/2 -translate-y-1/2 border border-paper/30 bg-ink/50 px-4 py-3 text-paper transition hover:bg-paper hover:text-ink">
+                    上一张
+                  </button>
+                  <button type="button" onClick={showNextImage} className="absolute right-3 top-1/2 -translate-y-1/2 border border-paper/30 bg-ink/50 px-4 py-3 text-paper transition hover:bg-paper hover:text-ink">
+                    下一张
+                  </button>
+                </>
+              ) : null}
+            </div>
+          </div>
+        </div>
+      ) : null}
     </>
   );
 }

@@ -18,6 +18,8 @@ export type CaseCmsItem = {
   sceneImage01: string;
   sceneImage02: string;
   sceneImage03: string;
+  galleryImages: string[];
+  assetImages: string[];
   summary: string;
   background: string;
   painPoints: string[];
@@ -90,6 +92,8 @@ export const defaultCaseCmsItems: CaseCmsItem[] = caseStudies.map((item, index) 
     sceneImage01: imagePaths.sceneImage01 || "",
     sceneImage02: imagePaths.sceneImage02 || "",
     sceneImage03: "",
+    galleryImages: [imagePaths.heroImage, imagePaths.sceneImage01, imagePaths.sceneImage02].filter(Boolean) as string[],
+    assetImages: [],
     summary: item.brief,
     background: item.background,
     painPoints: item.painPoints,
@@ -122,6 +126,8 @@ export function createEmptyCaseCmsItem(order: number): CaseCmsItem {
     sceneImage01: "",
     sceneImage02: "",
     sceneImage03: "",
+    galleryImages: [],
+    assetImages: [],
     summary: "",
     background: "",
     painPoints: [],
