@@ -11,6 +11,18 @@ type ProfessionalProofProps = {
   compact?: boolean;
 };
 
+function ProjectTagGrid({ items }: { items: readonly string[] }) {
+  return (
+    <div className="mt-3 flex flex-wrap gap-2">
+      {items.map((item) => (
+        <span key={item} className="border border-line bg-paper px-3 py-2 text-sm leading-6 text-ink/68">
+          {item}
+        </span>
+      ))}
+    </div>
+  );
+}
+
 export function ProfessionalProof({ compact = false }: ProfessionalProofProps) {
   return (
     <section className={compact ? "border-y border-line bg-paper/74 py-14" : "border-y border-line bg-paper/74 py-16"}>
@@ -21,7 +33,7 @@ export function ProfessionalProof({ compact = false }: ProfessionalProofProps) {
             <h2 className="mt-3 font-serif text-4xl font-semibold text-ink">专业背书</h2>
           </div>
           <p className="max-w-2xl text-sm leading-7 text-ink/62 lg:justify-self-end">
-            从行业身份、代表项目、自持运营现场到方法论沉淀，形成溯观面向城市更新、乡村振兴、农文旅融合和文旅运营项目的可信表达。
+            从行业身份、代表项目、自持运营现场到方法论沉淀，形成溯观面向研学亲子营地、乡村文旅、农文旅融合和城市更新项目的可信表达。
           </p>
         </div>
 
@@ -84,20 +96,14 @@ export function ProfessionalProof({ compact = false }: ProfessionalProofProps) {
                       <p className="mt-2 text-xs leading-5 text-ink/44">按公司业务板块展开项目经验</p>
                     </div>
                     <p className="text-sm leading-6 text-ink/58">
-                      覆盖文化产业、都市文旅、乡村农文旅、非标商业与高校文创等方向。
+                      覆盖研学亲子营地、乡村文旅、农文旅融合、自持运营、品牌文创、城市更新与非标商业等方向。
                     </p>
                   </div>
                   <div className="grid gap-5">
                     {businessCaseSections.map((section) => (
                       <section key={section.category} className="border border-line bg-rice p-4">
                         <h4 className="text-sm font-semibold text-ink">{section.category}</h4>
-                        <div className="mt-3 grid gap-px overflow-hidden border border-line bg-line sm:grid-cols-2 xl:grid-cols-3">
-                          {section.items.map((item) => (
-                            <div key={`${section.category}-${item}`} className="bg-paper px-3 py-2 text-sm leading-6 text-ink/68">
-                              {item}
-                            </div>
-                          ))}
-                        </div>
+                        <ProjectTagGrid items={section.items} />
                       </section>
                     ))}
                   </div>
@@ -108,13 +114,7 @@ export function ProfessionalProof({ compact = false }: ProfessionalProofProps) {
                     <h3 className="text-xl font-semibold text-ink">自持运营项目</h3>
                     <span className="text-xs text-ink/44">真实运营经验反哺项目服务</span>
                   </div>
-                  <div className="grid gap-px overflow-hidden border border-line bg-line sm:grid-cols-2 lg:grid-cols-3">
-                    {operatedProjects.map((item) => (
-                      <div key={item} className="bg-paper px-4 py-3 text-sm text-ink/70">
-                        {item}
-                      </div>
-                    ))}
-                  </div>
+                  <ProjectTagGrid items={operatedProjects} />
                 </article>
               </div>
             </div>

@@ -128,23 +128,15 @@ export function CaseDetailTemplate({ slug }: CaseDetailTemplateProps) {
           返回项目案例
         </Link>
 
-        <div className="mt-10">
-          <div className="max-w-5xl text-sm leading-6 text-moss">{metaLine}</div>
-          <h1 className="mt-6 max-w-5xl font-serif text-5xl font-semibold leading-tight text-ink sm:text-6xl">{item.projectName}</h1>
-          <p className="mt-7 max-w-4xl text-lg leading-8 text-ink/66">{item.summary}</p>
-        </div>
-
-        <div className="mt-14">
-          <CaseImage src={item.coverImage} className="h-[360px] w-full sm:h-[520px] lg:h-[640px]" fallbackLabel="项目封面图未配置" />
+        <div className="mx-auto mt-10 max-w-5xl text-center">
+          <div className="text-sm leading-6 text-moss">{metaLine}</div>
+          <h1 className="mx-auto mt-6 max-w-5xl font-serif text-5xl font-semibold leading-tight text-ink sm:text-6xl">{item.projectName}</h1>
+          <p className="mx-auto mt-7 max-w-4xl text-lg leading-8 text-ink/66">{item.summary}</p>
         </div>
 
         {item.guideMapImage ? (
           <section className="mt-14">
-            <div className="mx-auto max-w-5xl text-center">
-              <p className="text-sm font-medium text-clay">PROJECT MAP</p>
-              <h2 className="mt-2 font-serif text-3xl font-semibold text-ink">项目导览图 / 总览图</h2>
-            </div>
-            <button type="button" onClick={() => openLightbox(guideMapImages, 0)} className="mx-auto mt-6 block w-full max-w-5xl text-left">
+            <button type="button" onClick={() => openLightbox(guideMapImages, 0)} className="mx-auto block w-full max-w-6xl text-left">
               <CaseImage
                 src={item.guideMapImage}
                 className="w-full border border-line bg-paper"
@@ -161,7 +153,7 @@ export function CaseDetailTemplate({ slug }: CaseDetailTemplateProps) {
             <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-end">
               <div>
                 <p className="text-sm font-medium text-clay">PROJECT GALLERY</p>
-                <h2 className="mt-2 font-serif text-3xl font-semibold text-ink">项目图集</h2>
+                <h2 className="mt-2 font-serif text-3xl font-semibold text-ink">项目实景图</h2>
               </div>
               <p className="text-sm text-ink/50">点击图片可放大浏览</p>
             </div>
@@ -179,7 +171,7 @@ export function CaseDetailTemplate({ slug }: CaseDetailTemplateProps) {
 
       <section className="mx-auto grid max-w-7xl gap-12 px-4 py-12 sm:px-6 lg:grid-cols-[minmax(0,1fr)_20rem] lg:px-8">
         <article className="bg-paper px-6 py-2 sm:px-10">
-          <DetailBlock title="项目背景">
+          <DetailBlock title="项目内容构成">
             <p>{item.background || "待补充"}</p>
           </DetailBlock>
 
@@ -207,7 +199,7 @@ export function CaseDetailTemplate({ slug }: CaseDetailTemplateProps) {
             <BulletList items={item.suitableClients} />
           </DetailBlock>
 
-          <DetailBlock title="关键词">
+          <DetailBlock title="核心关键词">
             <TagList items={item.geoKeywords} dark />
           </DetailBlock>
         </article>
