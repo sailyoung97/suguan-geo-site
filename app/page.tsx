@@ -22,18 +22,78 @@ const serviceHighlights = [
   }
 ];
 
+const heroContactInfo = {
+  phone01: "023-xxxxxxx",
+  phone02: "138xxxxxxxx",
+  companyAddress: "重庆市渝中区 / 公司实际地址待补充",
+  companyEmail: "contact@suguan.com"
+};
+
+function HeroQrCard({ label, asset }: { label: string; asset: typeof siteAssets.contactQrCode01 }) {
+  return (
+    <div className="flex items-center gap-4 bg-ink/58 p-4 backdrop-blur-sm sm:flex-col sm:items-start">
+      <SiteAssetImage
+        asset={asset}
+        className="h-[118px] w-[118px] shrink-0 border border-paper/14 bg-paper/8 sm:h-32 sm:w-32"
+        fit="contain"
+        fallbackLabel="二维码待上传"
+        variant="qr"
+      />
+      <div>
+        <p className="text-xs uppercase tracking-[0.24em] text-clay">QR CODE</p>
+        <p className="mt-2 text-sm font-medium text-paper">{label}</p>
+      </div>
+    </div>
+  );
+}
+
+function HeroContactPanel() {
+  return (
+    <div className="mt-12 grid gap-px overflow-hidden border border-paper/14 bg-paper/14 sm:mt-14 sm:grid-cols-2 lg:grid-cols-4">
+      <HeroQrCard label="公众号二维码" asset={siteAssets.contactQrCode01} />
+      <HeroQrCard label="项目咨询二维码" asset={siteAssets.contactQrCode02} />
+      <div className="bg-ink/58 p-4 backdrop-blur-sm">
+        <p className="text-xs uppercase tracking-[0.24em] text-clay">PHONE</p>
+        <div className="mt-4 space-y-3 text-sm leading-6 text-paper/78">
+          <p>
+            <span className="block text-paper/42">商务电话</span>
+            <span className="font-medium text-paper">{heroContactInfo.phone01}</span>
+          </p>
+          <p>
+            <span className="block text-paper/42">项目咨询</span>
+            <span className="font-medium text-paper">{heroContactInfo.phone02}</span>
+          </p>
+        </div>
+      </div>
+      <div className="bg-ink/58 p-4 backdrop-blur-sm">
+        <p className="text-xs uppercase tracking-[0.24em] text-clay">CONTACT</p>
+        <div className="mt-4 space-y-3 text-sm leading-6 text-paper/78">
+          <p>
+            <span className="block text-paper/42">公司地址</span>
+            <span>{heroContactInfo.companyAddress}</span>
+          </p>
+          <p>
+            <span className="block text-paper/42">公司邮箱</span>
+            <span>{heroContactInfo.companyEmail}</span>
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function HomePage() {
   return (
     <main>
       <section className="relative min-h-screen overflow-hidden border-b border-paper/10 bg-ink text-paper">
         <SiteHeader variant="dark" />
-        <div className="pointer-events-none absolute inset-x-[-4vw] top-[13vh] select-none overflow-hidden text-center font-sans text-[23vw] font-semibold uppercase leading-none tracking-[-0.055em] text-paper/[0.12] sm:top-[10vh] lg:text-[18vw]">
+        <div className="pointer-events-none absolute inset-x-0 top-[12vh] select-none overflow-hidden text-center font-sans text-[24vw] font-semibold uppercase leading-none tracking-[-0.055em] text-paper/[0.1] sm:top-[10vh] sm:text-[22vw] lg:text-[16vw] xl:text-[15vw]">
           SUGUAN
         </div>
         <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_72%_18%,rgba(154,94,55,0.18),transparent_32%),linear-gradient(180deg,rgba(31,36,33,0)_0%,rgba(31,36,33,0.46)_100%)]" />
 
         <div className="relative mx-auto grid min-h-[calc(100vh-74px)] max-w-7xl content-center px-4 pb-14 pt-28 sm:px-6 sm:pb-16 sm:pt-32 lg:px-8">
-          <div className="max-w-[720px] pt-[18vh] sm:pt-[22vh] lg:pt-[24vh]">
+          <div className="max-w-[760px] pt-[16vh] sm:pt-[20vh] lg:pt-[22vh]">
             <p className="text-sm font-medium uppercase tracking-[0.32em] text-clay">SUGUAN DESIGN</p>
             <h1 className="mt-6 font-serif text-4xl font-semibold leading-[1.12] text-paper sm:text-5xl lg:text-6xl">
               致力于打造具有持续生命力与社会价值的文化项目
@@ -56,14 +116,7 @@ export default function HomePage() {
               </Link>
             </div>
           </div>
-
-          <SiteAssetImage
-            asset={siteAssets.homeHeroWideImage}
-            className="mt-10 h-[180px] w-full border border-paper/18 bg-ink/70 sm:h-[250px] lg:h-[300px]"
-            imageClassName="opacity-90"
-            fit="cover"
-            hideFallback
-          />
+          <HeroContactPanel />
         </div>
       </section>
 

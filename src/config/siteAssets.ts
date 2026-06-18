@@ -17,6 +17,8 @@ type SiteAssets = {
   brandAssetsImage: SiteAsset;
   aboutHeroImage: SiteAsset;
   aboutHero: SiteAsset;
+  contactQrCode01: SiteAsset;
+  contactQrCode02: SiteAsset;
   qrcodes: {
     wechatOfficial: SiteAsset;
     enterpriseWechat: SiteAsset;
@@ -32,59 +34,61 @@ function asset(key: string, alt: string, src = ""): SiteAsset {
 }
 
 export const siteAssets: SiteAssets = {
-  logo: asset("logo", "溯观 Logo", "/uploads/logo.jpg"),
-  homeHeroImage: asset("homeHeroImage", "溯观首页主视觉图", "/uploads/home-hero.png"),
-  homeHero: asset("homeHeroImage", "溯观首页主视觉图", "/uploads/home-hero.png"),
-  homeHeroWideImage: asset("homeHeroWideImage", "首页首屏 SUGUAN 下方超宽底图", "/uploads/home-hero.png"),
-  brandAssetsImage: asset("brandAssetsImage", "溯观品牌与项目资产矩阵图", "/uploads/brand-assets-matrix.png"),
-  aboutHeroImage: asset("aboutHeroImage", "关于溯观首屏图", "/uploads/about-hero.jpg"),
-  aboutHero: asset("aboutHero", "溯观团队与项目现场图片"),
+  logo: asset("logo", "Suguan logo", "/uploads/logo.jpg"),
+  homeHeroImage: asset("homeHeroImage", "Homepage hero image", "/uploads/home-hero.png"),
+  homeHero: asset("homeHeroImage", "Homepage hero image", "/uploads/home-hero.png"),
+  homeHeroWideImage: asset("homeHeroWideImage", "Homepage wide hero image", "/uploads/home-hero.png"),
+  brandAssetsImage: asset("brandAssetsImage", "Brand assets matrix", "/uploads/brand-assets-matrix.png"),
+  aboutHeroImage: asset("aboutHeroImage", "About hero image", "/uploads/about-hero.jpg"),
+  aboutHero: asset("aboutHero", "About image"),
+  contactQrCode01: asset("contactQrCode01", "Official account QR code"),
+  contactQrCode02: asset("contactQrCode02", "Project consultation QR code"),
   qrcodes: {
-    wechatOfficial: asset("qrcode.wechatOfficial", "溯观公众号二维码"),
-    enterpriseWechat: asset("qrcode.enterpriseWechat", "溯观企业微信二维码")
+    wechatOfficial: asset("qrcode.wechatOfficial", "Official account QR code"),
+    enterpriseWechat: asset("qrcode.enterpriseWechat", "Enterprise WeChat QR code")
   },
   professionalProof: {
-    certificate: asset("professionalProof.certificate", "溯观专业背书证书图")
+    certificate: asset("professionalProof.certificate", "Professional proof certificate")
   },
   cases: {
     "kaibu-heritage-park": {
-      cover: asset("case-kaibu-cover", "重庆开埠遗址公园案例封面"),
+      cover: asset("case-kaibu-cover", "Kaibu Heritage Park case cover"),
       details: [
-        asset("case-kaibu-hero", "重庆开埠遗址公园项目主图"),
-        asset("case-kaibu-scene-01", "重庆开埠遗址公园场景图一"),
-        asset("case-kaibu-scene-02", "重庆开埠遗址公园场景图二")
+        asset("case-kaibu-hero", "Kaibu Heritage Park hero image"),
+        asset("case-kaibu-scene-01", "Kaibu Heritage Park scene image 01"),
+        asset("case-kaibu-scene-02", "Kaibu Heritage Park scene image 02")
       ]
     },
     "shancheng-baba": {
-      cover: asset("case.shancheng-baba.cover", "山城巷山城坝坝案例封面"),
+      cover: asset("case.shancheng-baba.cover", "Shancheng Baba case cover"),
       details: [
-        asset("case.shancheng-baba.detail.0", "山城巷山城坝坝项目主图"),
-        asset("case.shancheng-baba.detail.1", "山城巷山城坝坝场景图一"),
-        asset("case.shancheng-baba.detail.2", "山城巷山城坝坝场景图二")
+        asset("case.shancheng-baba.detail.0", "Shancheng Baba detail image 01"),
+        asset("case.shancheng-baba.detail.1", "Shancheng Baba detail image 02"),
+        asset("case.shancheng-baba.detail.2", "Shancheng Baba detail image 03")
       ]
     },
     "ufx-yaan": {
-      cover: asset("case.ufx-yaan.cover", "四川雅安 UFX 飞翔星球大本营案例封面"),
+      cover: asset("case.ufx-yaan.cover", "UFX Yaan case cover"),
       details: [
-        asset("case.ufx-yaan.detail.0", "四川雅安 UFX 飞翔星球大本营项目主图"),
-        asset("case.ufx-yaan.detail.1", "四川雅安 UFX 飞翔星球大本营场景图一"),
-        asset("case.ufx-yaan.detail.2", "四川雅安 UFX 飞翔星球大本营场景图二")
+        asset("case.ufx-yaan.detail.0", "UFX Yaan detail image 01"),
+        asset("case.ufx-yaan.detail.1", "UFX Yaan detail image 02"),
+        asset("case.ufx-yaan.detail.2", "UFX Yaan detail image 03")
       ]
     },
     baicaohuxiang: {
-      cover: asset("case.baicaohuxiang.cover", "璧山百草湖乡案例封面"),
+      cover: asset("case.baicaohuxiang.cover", "Baicaohuxiang case cover"),
       details: [
-        asset("case.baicaohuxiang.detail.0", "璧山百草湖乡项目主图"),
-        asset("case.baicaohuxiang.detail.1", "璧山百草湖乡场景图一"),
-        asset("case.baicaohuxiang.detail.2", "璧山百草湖乡场景图二")
+        asset("case.baicaohuxiang.detail.0", "Baicaohuxiang detail image 01"),
+        asset("case.baicaohuxiang.detail.1", "Baicaohuxiang detail image 02"),
+        asset("case.baicaohuxiang.detail.2", "Baicaohuxiang detail image 03")
       ]
     },
     xiaosangtian: {
-      cover: asset("case.xiaosangtian.cover", "西永小桑田亲子农场案例封面"),
+      cover: asset("case.xiaosangtian.cover", "Xiaosangtian case cover"),
       details: [
-        asset("case.xiaosangtian.detail.0", "西永小桑田亲子农场项目主图"),
-        asset("case.xiaosangtian.detail.1", "西永小桑田亲子农场场景图一"),
-        asset("case.xiaosangtian.detail.2", "西永小桑田亲子农场场景图二")
+        asset("case.xiaosangtian.detail.0", "Xiaosangtian detail image 01"),
+        asset("case.xiaosangtian.detail.1", "Xiaosangtian detail image 02"),
+        asset("case.xiaosangtian.detail.2", "Xiaosangtian detail image 03")
       ]
     }
   }
@@ -93,5 +97,5 @@ export const siteAssets: SiteAssets = {
 export const fallbackAsset: SiteAsset = {
   key: "fallback",
   src: "",
-  alt: "图片占位图"
+  alt: "Image placeholder"
 };

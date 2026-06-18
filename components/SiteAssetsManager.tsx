@@ -165,6 +165,26 @@ const assetRows: AssetRow[] = [
   },
   ...caseDetailRows,
   {
+    name: "公众号二维码 / 品牌二维码",
+    usage: "首页首屏联系区 / 二维码 1",
+    asset: siteAssets.contactQrCode01,
+    size: "800 x 800px，正方形；前台显示约 120px",
+    note: "用于首页首屏按钮下方联系区。未配置时前台显示“二维码待上传”占位，不出现破图。",
+    fallbackLabel: "二维码待上传",
+    recommendedPath: "/uploads/contact-qrcode-01.png",
+    variant: "qr"
+  },
+  {
+    name: "项目咨询二维码 / 客服二维码",
+    usage: "首页首屏联系区 / 二维码 2",
+    asset: siteAssets.contactQrCode02,
+    size: "800 x 800px，正方形；前台显示约 120px",
+    note: "用于首页首屏项目咨询入口，可放企业微信、客服或项目咨询二维码。",
+    fallbackLabel: "二维码待上传",
+    recommendedPath: "/uploads/contact-qrcode-02.png",
+    variant: "qr"
+  },
+  {
     name: "公众号二维码",
     usage: "联系我们页面 / 扫码联系区",
     asset: siteAssets.qrcodes.wechatOfficial,
