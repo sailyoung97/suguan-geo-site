@@ -9,43 +9,15 @@ type CaseDetailTemplateProps = {
   slug: string;
 };
 
-type GalleryImage = {
+type LightboxImage = {
   src: string;
-  label: string;
+  caption: string;
 };
 
-const campMatrixCases = [
-  {
-    name: "花间集",
-    location: "重庆 大足区 雍溪",
-    type: "乡村文旅 / 花园营地 / 亲子休闲 / 生活方式营地",
-    description: "花间集以田园花境、露营休闲、咖啡茶饮、亲子活动和自然生活方式为核心，打造沉浸式田园花境美好生活现场。"
-  },
-  {
-    name: "凤鸣雅集",
-    location: "四川 雅安 雨城区",
-    type: "茶文化营地 / 研学亲子 / 乡村文旅",
-    description: "凤鸣雅集以茶文化、自然教育和亲子研学为核心，将茶事体验、游艺活动、乡村生活和在地文化转化为可游、可学、可消费的文旅项目。"
-  },
-  {
-    name: "小桑田",
-    location: "重庆 沙坪坝 西永",
-    type: "亲子农场 / 自然教育 / 研学营地",
-    description: "小桑田以农耕体验、自然教育和亲子活动为核心，将田地、农房、乡土文化和课程内容结合，打造面向家庭和学校的亲子研学农场。"
-  },
-  {
-    name: "小桃园",
-    location: "重庆 北碚 静观",
-    type: "亲子农场 / 田园营地 / 乡村休闲",
-    description: "小桃园依托北碚静观的田园和花木资源，围绕亲子采摘、自然体验、轻露营和乡村休闲，打造面向城市家庭的近郊亲子目的地。"
-  },
-  {
-    name: "东升村·小丰年",
-    location: "重庆 北碚 东升村",
-    type: "乡村文旅 / 研学营地 / 乡村运营",
-    description: "东升村·小丰年依托北碚柳荫镇乡村资源，围绕自然景观、农耕体验、研学活动、星空露营和乡村生活方式，形成乡村文旅与营地运营结合的示范项目。"
-  }
-];
+type LightboxState = {
+  images: LightboxImage[];
+  index: number;
+} | null;
 
 function DetailBlock({ title, children }: { title: string; children: React.ReactNode }) {
   return (
@@ -88,24 +60,80 @@ function TagList({ items, dark = false }: { items: string[]; dark?: boolean }) {
   );
 }
 
-function CampMatrixSection() {
+function CampSpecialSection({
+  sections,
+  onOpenLightbox
+}: {
+  sections: NonNullable<ReturnType<typeof useCaseCms>["cases"][number]["campCaseSections"]>;
+  onOpenLightbox: (images: LightboxImage[], index: number) => void;
+}) {
+  const visibleSections = sections.filter((section) => section.projectName || section.intro || section.guideMapImage || section.realImages.some((image) => image.url));
+
+  if (!visibleSections.length) return null;
+
   return (
-    <section className="border-t border-line py-10">
-      <p className="text-sm font-medium text-clay">CAMP ASSET SYSTEM</p>
-      <h2 className="mt-3 font-serif text-3xl font-semibold text-ink">自持运营与营地建设案例矩阵</h2>
+    <section className="border-t border-line py-12">
+      <p className="text-sm font-medium text-clay">CAMP PROJECT SYSTEM</p>
+      <h2 className="mt-3 font-serif text-4xl font-semibold leading-tight text-ink">研学亲子营地建设专项</h2>
       <p className="mt-5 max-w-3xl text-base leading-8 text-ink/66">
-        以百草湖乡为代表，溯观持续参与并运营多个研学亲子、乡村文旅和营地类项目，形成覆盖策划、规划、设计、建设、内容产品与运营管理的完整项目链路。
+        溯观围绕乡村资源、自然教育、亲子研学、营地建设与在地运营，持续参与多个乡村文旅项目的策划、设计、建设与运营实践，形成从项目研判、空间场景、内容产品到持续经营的一体化经验。
       </p>
-      <div className="mt-7 grid gap-px overflow-hidden border border-line bg-line md:grid-cols-2">
-        {campMatrixCases.map((caseItem, index) => (
-          <article key={caseItem.name} className="bg-paper p-5">
-            <div className="font-serif text-3xl text-ink/12">{String(index + 1).padStart(2, "0")}</div>
-            <h3 className="mt-5 text-xl font-semibold text-ink">{caseItem.name}</h3>
-            <p className="mt-2 text-xs text-moss">{caseItem.location}</p>
-            <p className="mt-3 text-sm font-medium leading-6 text-ink/74">{caseItem.type}</p>
-            <p className="mt-4 text-sm leading-7 text-ink/62">{caseItem.description}</p>
-          </article>
-        ))}
+
+      <div className="mt-10 space-y-14">
+        {visibleSections.map((section, sectionIndex) => {
+          const realImages = section.realImages.filter((image) => image.url);
+          const sectionImages: LightboxImage[] = [
+            ...(section.guideMapImage ? [{ src: section.guideMapImage, caption: section.guideMapCaption || "项目导览图" }] : []),
+            ...realImages.map((image) => ({ src: image.url, caption: image.caption || "营地实景图" }))
+          ];
+
+          return (
+            <article key={section.id || section.projectName} className="border-t border-line pt-10 first:border-t-0 first:pt-0">
+              <div className="mx-auto max-w-4xl text-center">
+                <div className="font-serif text-4xl text-ink/12">{String(sectionIndex + 1).padStart(2, "0")}</div>
+                <h3 className="mt-3 font-serif text-3xl font-semibold text-ink sm:text-4xl">{section.projectName}</h3>
+                <p className="mt-3 text-sm text-moss">｜{section.location}｜</p>
+                <p className="mt-6 text-base leading-8 text-ink/66">{section.intro}</p>
+              </div>
+
+              {section.guideMapImage ? (
+                <button
+                  type="button"
+                  onClick={() => onOpenLightbox(sectionImages, 0)}
+                  className="mx-auto mt-8 block w-full max-w-5xl text-left"
+                >
+                  <CaseImage
+                    src={section.guideMapImage}
+                    className="w-full border border-line bg-paper"
+                    imageClassName="h-auto object-contain"
+                    fallbackLabel="图片未配置或路径失效"
+                  />
+                  <p className="mt-3 text-center text-sm text-ink/48">{section.guideMapCaption || "项目导览图"}</p>
+                </button>
+              ) : null}
+
+              {realImages.length ? (
+                <div className="mt-8 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+                  {realImages.map((image, imageIndex) => (
+                    <button
+                      key={`${image.url}-${imageIndex}`}
+                      type="button"
+                      onClick={() => onOpenLightbox(sectionImages, (section.guideMapImage ? 1 : 0) + imageIndex)}
+                      className="group text-left"
+                    >
+                      <CaseImage
+                        src={image.url}
+                        className="aspect-[4/3] w-full transition group-hover:opacity-90"
+                        fallbackLabel="图片未配置或路径失效"
+                      />
+                      <p className="mt-2 text-sm text-ink/48">{image.caption || `营地实景图 ${imageIndex + 1}`}</p>
+                    </button>
+                  ))}
+                </div>
+              ) : null}
+            </article>
+          );
+        })}
       </div>
     </section>
   );
@@ -113,7 +141,7 @@ function CampMatrixSection() {
 
 export function CaseDetailTemplate({ slug }: CaseDetailTemplateProps) {
   const { cases, publishedCases } = useCaseCms();
-  const [activeGalleryIndex, setActiveGalleryIndex] = useState<number | null>(null);
+  const [lightbox, setLightbox] = useState<LightboxState>(null);
   const item = cases.find((caseItem) => caseItem.slug === slug);
 
   if (!item || !item.isPublished) {
@@ -136,25 +164,30 @@ export function CaseDetailTemplate({ slug }: CaseDetailTemplateProps) {
     ["项目状态", item.status],
     ["项目年份", item.year]
   ];
-  const galleryImages: GalleryImage[] = (item.galleryImages?.length ? item.galleryImages : [item.heroImage, item.sceneImage01, item.sceneImage02])
+  const galleryImages: LightboxImage[] = (item.galleryImages?.length ? item.galleryImages : [item.heroImage, item.sceneImage01, item.sceneImage02])
     .filter(Boolean)
     .slice(0, 8)
-    .map((src, index) => ({ src, label: `项目图集 ${String(index + 1).padStart(2, "0")}` }));
+    .map((src, index) => ({ src, caption: `项目图集 ${String(index + 1).padStart(2, "0")}` }));
   const assetImages = (item.assetImages || []).filter(Boolean);
   const metaLine = [item.location, item.projectType, item.status, item.year].filter(Boolean).join(" / ");
-  const activeImage = activeGalleryIndex === null ? null : galleryImages[activeGalleryIndex];
+  const activeImage = lightbox ? lightbox.images[lightbox.index] : null;
+
+  function openLightbox(images: LightboxImage[], index: number) {
+    if (!images.length) return;
+    setLightbox({ images, index });
+  }
 
   function showPreviousImage() {
-    setActiveGalleryIndex((current) => {
-      if (current === null) return current;
-      return current === 0 ? galleryImages.length - 1 : current - 1;
+    setLightbox((current) => {
+      if (!current) return current;
+      return { ...current, index: current.index === 0 ? current.images.length - 1 : current.index - 1 };
     });
   }
 
   function showNextImage() {
-    setActiveGalleryIndex((current) => {
-      if (current === null) return current;
-      return current === galleryImages.length - 1 ? 0 : current + 1;
+    setLightbox((current) => {
+      if (!current) return current;
+      return { ...current, index: current.index === current.images.length - 1 ? 0 : current.index + 1 };
     });
   }
 
@@ -186,9 +219,9 @@ export function CaseDetailTemplate({ slug }: CaseDetailTemplateProps) {
             </div>
             <div className="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
               {galleryImages.map((image, index) => (
-                <button key={`${image.src}-${index}`} type="button" onClick={() => setActiveGalleryIndex(index)} className="group text-left">
-                  <CaseImage src={image.src} className="aspect-[4/3] w-full transition group-hover:opacity-90" fallbackLabel={image.label} />
-                  <p className="mt-2 text-xs text-ink/42">{image.label}</p>
+                <button key={`${image.src}-${index}`} type="button" onClick={() => openLightbox(galleryImages, index)} className="group text-left">
+                  <CaseImage src={image.src} className="aspect-[4/3] w-full transition group-hover:opacity-90" fallbackLabel={image.caption} />
+                  <p className="mt-2 text-xs text-ink/42">{image.caption}</p>
                 </button>
               ))}
             </div>
@@ -198,19 +231,25 @@ export function CaseDetailTemplate({ slug }: CaseDetailTemplateProps) {
 
       <section className="mx-auto grid max-w-7xl gap-12 px-4 py-12 sm:px-6 lg:grid-cols-[minmax(0,1fr)_20rem] lg:px-8">
         <article className="bg-paper px-6 py-2 sm:px-10">
+          <CampSpecialSection sections={item.campCaseSections || []} onOpenLightbox={openLightbox} />
+
           {assetImages.length > 0 ? (
-            <section className="py-10">
+            <section className="border-t border-line py-10">
               <p className="text-sm font-medium text-clay">ASSET IMAGES</p>
               <h2 className="mt-2 font-serif text-3xl font-semibold text-ink">产业 / 运营补充图</h2>
               <div className="mt-6 grid gap-4 sm:grid-cols-2">
-                {assetImages.map((src, index) => (
-                  <CaseImage key={`${src}-${index}`} src={src} className="aspect-[16/10] w-full" fallbackLabel={`补充图 ${index + 1}`} />
-                ))}
+                {assetImages.map((src, index) => {
+                  const images = assetImages.map((imageSrc, imageIndex) => ({ src: imageSrc, caption: `补充图 ${imageIndex + 1}` }));
+                  return (
+                    <button key={`${src}-${index}`} type="button" onClick={() => openLightbox(images, index)} className="text-left">
+                      <CaseImage src={src} className="aspect-[16/10] w-full" fallbackLabel={`补充图 ${index + 1}`} />
+                      <p className="mt-2 text-xs text-ink/42">补充图 {index + 1}</p>
+                    </button>
+                  );
+                })}
               </div>
             </section>
           ) : null}
-
-          {item.slug === "baicaohuxiang" ? <CampMatrixSection /> : null}
 
           <DetailBlock title="项目背景">
             <p>{item.background || "待补充"}</p>
@@ -240,7 +279,7 @@ export function CaseDetailTemplate({ slug }: CaseDetailTemplateProps) {
             <BulletList items={item.suitableClients} />
           </DetailBlock>
 
-          <DetailBlock title="GEO关键词">
+          <DetailBlock title="GEO 关键词">
             <TagList items={item.geoKeywords} dark />
           </DetailBlock>
         </article>
@@ -290,22 +329,22 @@ export function CaseDetailTemplate({ slug }: CaseDetailTemplateProps) {
         </aside>
       </section>
 
-      {activeImage ? (
+      {activeImage && lightbox ? (
         <div className="fixed inset-0 z-50 grid place-items-center bg-ink/88 px-4 py-6">
-          <button type="button" className="absolute inset-0 cursor-default" onClick={() => setActiveGalleryIndex(null)} aria-label="关闭图集" />
+          <button type="button" className="absolute inset-0 cursor-default" onClick={() => setLightbox(null)} aria-label="关闭图集" />
           <div className="relative z-10 w-full max-w-6xl">
             <div className="mb-4 flex items-center justify-between gap-4 text-paper">
               <div>
                 <p className="text-xs uppercase tracking-[0.2em] text-paper/50">Gallery</p>
-                <p className="mt-1 text-sm">{activeImage.label}</p>
+                <p className="mt-1 text-sm">{activeImage.caption}</p>
               </div>
-              <button type="button" onClick={() => setActiveGalleryIndex(null)} className="border border-paper/30 px-4 py-2 text-sm text-paper transition hover:bg-paper hover:text-ink">
+              <button type="button" onClick={() => setLightbox(null)} className="border border-paper/30 px-4 py-2 text-sm text-paper transition hover:bg-paper hover:text-ink">
                 关闭
               </button>
             </div>
             <div className="relative border border-paper/20 bg-ink">
-              <CaseImage src={activeImage.src} className="h-[72vh] w-full bg-ink" imageClassName="object-contain" fallbackLabel={activeImage.label} />
-              {galleryImages.length > 1 ? (
+              <CaseImage src={activeImage.src} className="h-[72vh] w-full bg-ink" imageClassName="object-contain" fallbackLabel={activeImage.caption} />
+              {lightbox.images.length > 1 ? (
                 <>
                   <button type="button" onClick={showPreviousImage} className="absolute left-3 top-1/2 -translate-y-1/2 border border-paper/30 bg-ink/50 px-4 py-3 text-paper transition hover:bg-paper hover:text-ink">
                     上一张

@@ -19,6 +19,7 @@ export type CaseCmsItem = {
   sceneImage03: string;
   galleryImages: string[];
   assetImages: string[];
+  campCaseSections: CampCaseSection[];
   summary: string;
   background: string;
   painPoints: string[];
@@ -31,6 +32,120 @@ export type CaseCmsItem = {
   geoKeywords: string[];
   tags: string[];
 };
+
+export type CampCaseImage = {
+  url: string;
+  caption: string;
+};
+
+export type CampCaseSection = {
+  id: string;
+  projectName: string;
+  location: string;
+  intro: string;
+  guideMapImage: string;
+  guideMapCaption: string;
+  realImages: CampCaseImage[];
+};
+
+export const defaultCampCaseSections: CampCaseSection[] = [
+  {
+    id: "baicaohuxiang",
+    projectName: "璧山“百草湖乡”",
+    location: "重庆 璧山区 青杠街道",
+    intro:
+      "百草湖乡坐落于重庆市璧山区青杠街道，依托约 238 亩山水资源，将康养微度假、亲子研学、乡村休闲、自然教育、住宿餐饮与在地运营整合为复合型乡村文旅项目。项目以湖山生态为基础，通过场地规划、内容产品、空间场景和运营导入，打造集学、宿、食、养、娱为一体的近郊营地目的地。",
+    guideMapImage: "",
+    guideMapCaption: "项目导览图",
+    realImages: [
+      { url: "", caption: "营地实景图" },
+      { url: "", caption: "湖畔空间" },
+      { url: "", caption: "亲子活动现场" },
+      { url: "", caption: "住宿餐饮空间" },
+      { url: "", caption: "自然教育课程" }
+    ]
+  },
+  {
+    id: "huajianji",
+    projectName: "花间集",
+    location: "重庆 大足区 雍溪",
+    intro:
+      "花间集坐落于重庆大足雍溪，以田园花境、露营休闲、咖啡茶饮、亲子活动和自然生活方式为核心，打造沉浸式田园花境美好生活现场。项目将花境空间、轻露营、主题活动与乡村度假结合，回应城市家庭对自然、松弛和美好生活的需求。",
+    guideMapImage: "",
+    guideMapCaption: "项目导览图",
+    realImages: [
+      { url: "", caption: "花境空间" },
+      { url: "", caption: "露营休闲区" },
+      { url: "", caption: "咖啡茶饮空间" },
+      { url: "", caption: "亲子活动现场" },
+      { url: "", caption: "田园生活场景" }
+    ]
+  },
+  {
+    id: "fengming-yaji",
+    projectName: "凤鸣雅集",
+    location: "四川 雅安 雨城区",
+    intro:
+      "凤鸣雅集位于四川雅安雨城区，以茶文化、自然教育和亲子研学为核心，将茶事体验、游艺活动、乡村生活和在地文化转化为可游、可学、可消费的文旅项目。项目围绕茶学、游艺和生活方式营造，形成面向家庭、研学和休闲客群的乡村文旅场景。",
+    guideMapImage: "",
+    guideMapCaption: "项目导览图",
+    realImages: [
+      { url: "", caption: "茶文化体验" },
+      { url: "", caption: "自然教育现场" },
+      { url: "", caption: "亲子研学活动" },
+      { url: "", caption: "乡村生活场景" },
+      { url: "", caption: "游艺活动空间" }
+    ]
+  },
+  {
+    id: "xiaosangtian",
+    projectName: "小桑田",
+    location: "重庆 沙坪坝 西永",
+    intro:
+      "小桑田以前身“爸爸的农庄”为基础，依托西永田园、农房、自然生态和农耕文化，将传统农事、自然教育、亲子活动和课程内容结合，打造面向家庭和学校的亲子研学农场。项目强调人与自然、人与文化、人与人的互动关系，让乡村空间成为可参与、可学习、可停留的自然课堂。",
+    guideMapImage: "",
+    guideMapCaption: "项目导览图",
+    realImages: [
+      { url: "", caption: "农耕体验区" },
+      { url: "", caption: "自然教育课堂" },
+      { url: "", caption: "亲子活动现场" },
+      { url: "", caption: "田园空间" },
+      { url: "", caption: "课程活动现场" }
+    ]
+  },
+  {
+    id: "xiaotaoyuan",
+    projectName: "小桃园",
+    location: "重庆 北碚 静观",
+    intro:
+      "小桃园位于重庆北碚静观，依托当地田园、花木和自然景观资源，围绕亲子采摘、自然体验、轻露营和乡村休闲，打造面向城市家庭的近郊亲子目的地。项目将农业资源、亲子活动和乡村美学结合，形成可游、可玩、可消费的田园生活场景。",
+    guideMapImage: "",
+    guideMapCaption: "项目导览图",
+    realImages: [
+      { url: "", caption: "亲子采摘" },
+      { url: "", caption: "田园营地" },
+      { url: "", caption: "自然体验" },
+      { url: "", caption: "轻露营现场" },
+      { url: "", caption: "乡村休闲空间" }
+    ]
+  },
+  {
+    id: "dongsheng-xiaofengnian",
+    projectName: "东升村·小丰年",
+    location: "重庆 北碚 东升村",
+    intro:
+      "东升村·小丰年位于重庆北碚柳荫镇东升村，依托自然景观、农耕资源、乡土文化和村落空间，围绕研学活动、星空露营、农事体验和乡村休闲，打造乡村文旅与营地运营结合的示范项目。项目以在地资源为基础，通过内容产品和空间场景导入，推动乡村从观光走向体验和持续经营。",
+    guideMapImage: "",
+    guideMapCaption: "项目导览图",
+    realImages: [
+      { url: "", caption: "村落空间" },
+      { url: "", caption: "农事体验" },
+      { url: "", caption: "研学活动" },
+      { url: "", caption: "星空露营" },
+      { url: "", caption: "乡村生活方式" }
+    ]
+  }
+];
 
 function caseItem(item: Omit<CaseCmsItem, "city" | "businessCategory" | "order" | "isPublished" | "isFeatured"> & Partial<Pick<CaseCmsItem, "city" | "businessCategory" | "order" | "isPublished" | "isFeatured">>): CaseCmsItem {
   const meta = officialCaseMeta[item.slug];
@@ -61,6 +176,7 @@ export const defaultCaseCmsItems: CaseCmsItem[] = [
     sceneImage03: "",
     galleryImages: ["/uploads/case-baicaohuxiang-hero.png", "/uploads/case-baicaohuxiang-scene-01.jpg", "/uploads/case-baicaohuxiang-scene-02.jpg"],
     assetImages: [],
+    campCaseSections: defaultCampCaseSections,
     summary:
       "以璧山自然生态、乡村空间和农文旅基础为依托，将闲置土地与康养度假资源转化为集研学、住宿、餐饮、自然教育、亲子休闲和乡村运营于一体的复合型营地项目。",
     background:
@@ -102,6 +218,7 @@ export const defaultCaseCmsItems: CaseCmsItem[] = [
     sceneImage03: "",
     galleryImages: [],
     assetImages: [],
+    campCaseSections: [],
     summary: "以田园花境、露营休闲、咖啡茶饮、亲子活动和自然生活方式为核心，打造沉浸式田园花境美好生活现场。",
     background: "花间集依托大足雍溪的乡村田园空间，将花境景观、轻露营、亲子休闲和生活方式消费结合，形成面向城市家庭的乡村文旅目的地。",
     painPoints: ["乡村空间需要更鲜明的生活方式主题。", "亲子休闲需要可停留、可拍照、可消费的场景。"],
@@ -128,6 +245,7 @@ export const defaultCaseCmsItems: CaseCmsItem[] = [
     sceneImage03: "",
     galleryImages: [],
     assetImages: [],
+    campCaseSections: [],
     summary: "以茶文化、自然教育和亲子研学为核心，将茶事体验、游艺活动、乡村生活和在地文化转化为可游、可学、可消费的文旅项目。",
     background: "凤鸣雅集位于四川雅安雨城区，具备茶文化、自然生态和研学活动基础，适合构建茶文化研学与亲子乡村文旅产品。",
     painPoints: ["茶文化资源需要从展示转化为课程、活动和消费体验。", "研学亲子产品需要清晰的主题和运营路径。"],
@@ -154,6 +272,7 @@ export const defaultCaseCmsItems: CaseCmsItem[] = [
     sceneImage03: "",
     galleryImages: ["/uploads/case-xiaosangtian-hero.png", "/uploads/case-xiaosangtian-scene-01.jpg", "/uploads/case-xiaosangtian-scene-02.jpg"],
     assetImages: [],
+    campCaseSections: [],
     summary: "以农耕体验、自然教育和亲子活动为核心，将田地、农房、乡土文化和课程内容结合，打造面向家庭和学校的亲子研学农场。",
     background: "小桑田亲子农场依托西永片区乡村空间基础，面向城市家庭周末休闲、亲子活动和自然教育需求，探索可持续的亲子农场运营模型。",
     painPoints: ["体验内容不足、亲子活动不成体系。", "停留时间短、消费转化弱、复购理由不清晰。"],
@@ -180,6 +299,7 @@ export const defaultCaseCmsItems: CaseCmsItem[] = [
     sceneImage03: "",
     galleryImages: [],
     assetImages: [],
+    campCaseSections: [],
     summary: "依托北碚静观的田园和花木资源，围绕亲子采摘、自然体验、轻露营和乡村休闲，打造面向城市家庭的近郊亲子目的地。",
     background: "小桃园以北碚静观花木与田园资源为基础，面向亲子家庭构建近郊乡村休闲场景。",
     painPoints: ["近郊乡村项目需要稳定复购理由。", "亲子家庭需要安全、轻松、有内容的自然体验。"],
@@ -206,6 +326,7 @@ export const defaultCaseCmsItems: CaseCmsItem[] = [
     sceneImage03: "",
     galleryImages: [],
     assetImages: [],
+    campCaseSections: [],
     summary: "依托北碚柳荫镇乡村资源，围绕自然景观、农耕体验、研学活动、星空露营和乡村生活方式，形成乡村文旅与营地运营结合的示范项目。",
     background: "东升村·小丰年以北碚东升村的乡村资源为基础，探索研学营地、乡村活动和生活方式运营的融合路径。",
     painPoints: ["村庄资源需要转化为可运营的活动和消费产品。", "乡村文旅需要稳定的内容更新和运营组织。"],
@@ -232,6 +353,7 @@ export const defaultCaseCmsItems: CaseCmsItem[] = [
     sceneImage03: "",
     galleryImages: ["/uploads/case-ufx-hero.jpg", "/uploads/case-ufx-scene-01.png", "/uploads/case-ufx-scene-02.png"],
     assetImages: [],
+    campCaseSections: [],
     summary: "以“飞翔星球”为主题，将低空经济、无人机培训、青少年科技教育、户外运动和营地生活结合为复合型文旅项目。",
     background: "项目以无人机培训和飞行主题体验为核心，结合成人技能培训、青少年课程、户外营地、研学活动和文旅消费场景。",
     painPoints: ["传统营地主题不够鲜明。", "课程体系、空间组织、安全管理和运营转化需要协同。"],
@@ -258,6 +380,7 @@ export const defaultCaseCmsItems: CaseCmsItem[] = [
     sceneImage03: "",
     galleryImages: ["/uploads/case-kaibu-hero.png", "/uploads/case-kaibu-scene-01.png", "/uploads/case-kaibu-scene-02.jpg"],
     assetImages: [],
+    campCaseSections: [],
     summary: "以重庆开埠历史和滨江城市记忆为内容基础，推动历史文化资源转化为可理解、可体验、可传播的城市公共文化空间。",
     background: "重庆开埠遗址公园承载重庆近代开埠历史、城市记忆和滨江文化资源，是历史空间活化中的重要公共文旅空间。",
     painPoints: ["历史文化空间容易停留在静态展示层面。", "公共空间使用场景与游客体验连接不强。"],
@@ -284,6 +407,7 @@ export const defaultCaseCmsItems: CaseCmsItem[] = [
     sceneImage03: "",
     galleryImages: ["/uploads/case-shanchengbaba-hero.png", "/uploads/case-shanchengbaba-scene-01.png", "/uploads/case-shanchengbaba-scene-02.png"],
     assetImages: [],
+    campCaseSections: [],
     summary: "以重庆本地“坝坝”生活场景为核心，将山城街巷、邻里交流、休闲停留和文化传播组织为公共文化与休闲消费空间。",
     background: "山城巷是重庆具有代表性的山地城市历史文化街区，承载山城街巷肌理、市井生活记忆和本地公共文化氛围。",
     painPoints: ["历史文化街区更新容易只修空间、不留生活。", "需要增加可停留、可参与、可消费、可传播的公共场景。"],
@@ -318,6 +442,7 @@ export function createEmptyCaseCmsItem(order: number): CaseCmsItem {
     sceneImage03: "",
     galleryImages: [],
     assetImages: [],
+    campCaseSections: [],
     summary: "",
     background: "",
     painPoints: [],

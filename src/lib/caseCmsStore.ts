@@ -1,4 +1,9 @@
-﻿import { defaultCaseCmsItems, type CaseCmsItem } from "@/src/config/caseCms";
+import {
+  defaultCampCaseSections,
+  defaultCaseCmsItems,
+  type CampCaseSection,
+  type CaseCmsItem
+} from "@/src/config/caseCms";
 import { businessCategories, caseDisplayPriority, officialCaseMeta, type BusinessCategory } from "@/src/data/cases";
 
 export const caseCmsStorageKey = "suguan.cases.v1";
@@ -8,9 +13,41 @@ function isBrowser() {
   return typeof window !== "undefined";
 }
 
+function normalizeCampCaseSections(value: unknown, slug: string, defaultSections: CampCaseSection[] = []) {
+  if (!Array.isArray(value)) {
+    return slug === "baicaohuxiang" ? defaultCampCaseSections : defaultSections;
+  }
+
+  const normalizedSections = value.map((section, index) => {
+    const record = section && typeof section === "object" ? section as Partial<CampCaseSection> : {};
+    return {
+      id: record.id || `camp-section-${index + 1}`,
+      projectName: record.projectName || "",
+      location: record.location || "",
+      intro: record.intro || "",
+      guideMapImage: record.guideMapImage || "",
+      guideMapCaption: record.guideMapCaption || "项目导览图",
+      realImages: Array.isArray(record.realImages)
+        ? record.realImages.slice(0, 5).map((image, imageIndex) => ({
+            url: image?.url || "",
+            caption: image?.caption || `营地实景图 ${imageIndex + 1}`
+          }))
+        : []
+    };
+  });
+
+  if (slug !== "baicaohuxiang") {
+    return normalizedSections;
+  }
+
+  const existingIds = new Set(normalizedSections.map((section) => section.id));
+  return [...normalizedSections, ...defaultCampCaseSections.filter((section) => !existingIds.has(section.id))];
+}
+
 function normalizeCase(item: Partial<CaseCmsItem>, index: number): CaseCmsItem {
   const slug = item.slug || `case-${index + 1}`;
   const officialMeta = officialCaseMeta[slug];
+  const defaultCase = defaultCaseCmsItems.find((caseItem) => caseItem.slug === slug);
   const candidateCategory = item.businessCategory as BusinessCategory | undefined;
   const legacyGalleryImages = [item.heroImage, item.sceneImage01, item.sceneImage02].filter(
     (image): image is string => typeof image === "string" && Boolean(image)
@@ -37,6 +74,7 @@ function normalizeCase(item: Partial<CaseCmsItem>, index: number): CaseCmsItem {
     sceneImage03: item.sceneImage03 || "",
     galleryImages: Array.isArray(item.galleryImages) ? item.galleryImages.filter(Boolean) : legacyGalleryImages,
     assetImages: Array.isArray(item.assetImages) ? item.assetImages.filter(Boolean) : [],
+    campCaseSections: normalizeCampCaseSections(item.campCaseSections, slug, defaultCase?.campCaseSections),
     summary: item.summary || "",
     background: item.background || "",
     painPoints: Array.isArray(item.painPoints) ? item.painPoints : [],
@@ -135,4 +173,3 @@ export async function writeRemoteCases(items: CaseCmsItem[]) {
     // Remote sync is best-effort; local state still updates immediately.
   }
 }
-

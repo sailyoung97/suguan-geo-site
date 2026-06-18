@@ -3,16 +3,22 @@
 import Link from "next/link";
 import { ChangeEvent, useMemo, useRef, useState } from "react";
 import { CaseImage } from "@/components/CaseImage";
-import { createEmptyCaseCmsItem, type CaseCmsItem } from "@/src/config/caseCms";
+import {
+  createEmptyCaseCmsItem,
+  defaultCampCaseSections,
+  type CampCaseImage,
+  type CampCaseSection,
+  type CaseCmsItem
+} from "@/src/config/caseCms";
 import { businessCategories } from "@/src/data/cases";
 import { useCaseCms } from "@/src/hooks/useCaseCms";
 import { uploadImage } from "@/src/lib/uploadImage";
 
 type TextArrayField = "painPoints" | "services" | "strategy" | "results" | "capabilities" | "suitableClients" | "geoKeywords" | "tags";
 type MultiImageField = "galleryImages" | "assetImages";
-type TextField = keyof Omit<CaseCmsItem, TextArrayField | MultiImageField | "order" | "isPublished" | "isFeatured" | "businessCategory">;
+type SingleImageField = "coverImage" | "heroImage" | "sceneImage01" | "sceneImage02" | "sceneImage03";
 
-const imageFields: Array<{ key: "coverImage" | "heroImage" | "sceneImage01" | "sceneImage02" | "sceneImage03"; label: string; size: string }> = [
+const imageFields: Array<{ key: SingleImageField; label: string; size: string }> = [
   { key: "coverImage", label: "案例封面图 / 详情页主视觉大图", size: "1920 x 1200px，列表封面与详情页主视觉" },
   { key: "heroImage", label: "详情页图集 01", size: "1600 x 1200px，4:3 或 16:10" },
   { key: "sceneImage01", label: "详情页图集 02", size: "1600 x 1200px，4:3 或 16:10" },
@@ -28,7 +34,7 @@ const arrayFields: Array<{ key: TextArrayField; label: string; hint: string }> =
   { key: "capabilities", label: "可证明的公司能力", hint: "每行一条" },
   { key: "suitableClients", label: "适合客户参考", hint: "每行一条" },
   { key: "geoKeywords", label: "GEO 关键词", hint: "每行一条或逗号分隔" },
-  { key: "tags", label: "案例标签", hint: "逗号分隔，例如 城市更新, 历史文化空间" }
+  { key: "tags", label: "案例标签", hint: "逗号分隔，例如 研学亲子营地, 乡村文旅" }
 ];
 
 function splitText(value: string) {
@@ -50,6 +56,30 @@ function slugify(value: string) {
     .replace(/^-+|-+$/g, "");
 }
 
+function createBlankCampSection(): CampCaseSection {
+  return {
+    id: `camp-${Date.now()}`,
+    projectName: "",
+    location: "",
+    intro: "",
+    guideMapImage: "",
+    guideMapCaption: "项目导览图",
+    realImages: Array.from({ length: 5 }, (_, index) => ({ url: "", caption: `营地实景图 ${index + 1}` }))
+  };
+}
+
+function normalizeCampSectionForEdit(section: CampCaseSection): CampCaseSection {
+  const realImages = [...section.realImages.slice(0, 5)];
+  while (realImages.length < 5) {
+    realImages.push({ url: "", caption: `营地实景图 ${realImages.length + 1}` });
+  }
+  return {
+    ...section,
+    guideMapCaption: section.guideMapCaption || "项目导览图",
+    realImages
+  };
+}
+
 function validateImagePath(path: string) {
   return new Promise<boolean>((resolve) => {
     const image = new Image();
@@ -59,45 +89,105 @@ function validateImagePath(path: string) {
   });
 }
 
+function ImageUploadControl({
+  label,
+  value,
+  size,
+  fallbackLabel,
+  isUploading,
+  onChange,
+  onUpload,
+  onClear,
+  onCheck
+}: {
+  label: string;
+  value: string;
+  size?: string;
+  fallbackLabel: string;
+  isUploading: boolean;
+  onChange: (value: string) => void;
+  onUpload: (file?: File) => void;
+  onClear: () => void;
+  onCheck: () => void;
+}) {
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  return (
+    <div className="border border-line bg-rice p-4">
+      <label className="block">
+        <span className="text-xs text-ink/44">{label}</span>
+        <input
+          value={value}
+          onChange={(event) => onChange(event.target.value)}
+          placeholder="上传后自动写入 URL，也可手动填写"
+          className="mt-2 w-full border border-line bg-paper px-4 py-3 text-sm text-ink outline-none transition focus:border-ink"
+        />
+      </label>
+      <input
+        ref={inputRef}
+        type="file"
+        accept="image/jpeg,image/png,image/webp"
+        className="hidden"
+        onChange={(event) => {
+          onUpload(event.target.files?.[0]);
+          event.target.value = "";
+        }}
+      />
+      <div className="mt-3 grid gap-2 sm:grid-cols-3">
+        <button
+          type="button"
+          disabled={isUploading}
+          onClick={() => inputRef.current?.click()}
+          className="border border-ink bg-ink px-4 py-3 text-sm font-medium text-paper transition hover:bg-moss disabled:cursor-not-allowed disabled:opacity-60"
+        >
+          {isUploading ? "上传中..." : "上传图片"}
+        </button>
+        <button type="button" onClick={onClear} className="border border-line px-4 py-3 text-sm font-medium text-ink/64 transition hover:border-ink hover:text-ink">
+          清空图片
+        </button>
+        <button type="button" onClick={onCheck} className="border border-line px-4 py-3 text-sm font-medium text-ink/64 transition hover:border-ink hover:text-ink">
+          检查可访问
+        </button>
+      </div>
+      {size ? <div className="mt-2 text-xs text-ink/46">建议尺寸：{size}</div> : null}
+      <CaseImage src={value} className="mt-4 aspect-[16/10]" fallbackLabel={fallbackLabel} />
+    </div>
+  );
+}
+
 function MultiImageSection({
   title,
   description,
-  fieldKey,
   images,
-  inputRef,
   isUploading,
   onUpload,
-  onRemove,
-  onPick
+  onRemove
 }: {
   title: string;
   description: string;
-  fieldKey: MultiImageField;
   images: string[];
-  inputRef: (node: HTMLInputElement | null) => void;
   isUploading: boolean;
   onUpload: (files?: FileList | null) => void;
   onRemove: (index: number) => void;
-  onPick: () => void;
 }) {
+  const inputRef = useRef<HTMLInputElement>(null);
+
   return (
     <section className="border border-line bg-rice p-4">
       <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-start">
         <div>
           <p className="text-sm font-semibold text-ink">{title}</p>
           <p className="mt-2 text-xs leading-5 text-ink/50">{description}</p>
-          <p className="mt-2 font-mono text-xs text-ink/40">{fieldKey}: string[]</p>
         </div>
         <button
           type="button"
           disabled={isUploading}
-          onClick={onPick}
+          onClick={() => inputRef.current?.click()}
           className="shrink-0 border border-ink bg-ink px-4 py-3 text-sm font-medium text-paper transition hover:bg-moss disabled:cursor-not-allowed disabled:opacity-60"
         >
           {isUploading ? "上传中..." : "上传多图"}
         </button>
       </div>
-
       <input
         ref={inputRef}
         type="file"
@@ -109,8 +199,7 @@ function MultiImageSection({
           event.target.value = "";
         }}
       />
-
-      {images.length > 0 ? (
+      {images.length ? (
         <div className="mt-4 grid gap-3 sm:grid-cols-2">
           {images.map((src, index) => (
             <div key={`${src}-${index}`} className="border border-line bg-paper p-3">
@@ -126,11 +215,117 @@ function MultiImageSection({
           ))}
         </div>
       ) : (
-        <div className="mt-4 border border-dashed border-line bg-paper px-4 py-8 text-center text-sm text-ink/42">
-          暂未上传图片
-        </div>
+        <div className="mt-4 border border-dashed border-line bg-paper px-4 py-8 text-center text-sm text-ink/42">暂未上传图片</div>
       )}
     </section>
+  );
+}
+
+function CampSectionEditor({
+  section,
+  index,
+  isOpen,
+  uploadingKey,
+  onToggle,
+  onRemove,
+  onChange,
+  onGuideUpload,
+  onRealImageUpload,
+  onCheckImage
+}: {
+  section: CampCaseSection;
+  index: number;
+  isOpen: boolean;
+  uploadingKey: string;
+  onToggle: () => void;
+  onRemove: () => void;
+  onChange: (nextSection: CampCaseSection) => void;
+  onGuideUpload: (file?: File) => void;
+  onRealImageUpload: (imageIndex: number, file?: File) => void;
+  onCheckImage: (url: string) => void;
+}) {
+  const configuredImageCount = (section.guideMapImage ? 1 : 0) + section.realImages.filter((image) => image.url).length;
+
+  function updateRealImage(imageIndex: number, nextImage: CampCaseImage) {
+    const nextImages = [...section.realImages];
+    nextImages[imageIndex] = nextImage;
+    onChange({ ...section, realImages: nextImages });
+  }
+
+  return (
+    <article className="border border-line bg-paper">
+      <button type="button" onClick={onToggle} className="flex w-full flex-col gap-2 p-4 text-left sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <h4 className="text-base font-semibold text-ink">{section.projectName || `专项项目 ${index + 1}`}</h4>
+          <p className="mt-1 text-xs text-ink/50">
+            {section.location || "地点待补充"} ｜已配置图片 {configuredImageCount} 张
+          </p>
+        </div>
+        <span className="text-sm text-clay">{isOpen ? "收起" : "展开"}</span>
+      </button>
+
+      {isOpen ? (
+        <div className="border-t border-line p-4">
+          <div className="grid gap-4 lg:grid-cols-2">
+            <label className="block">
+              <span className="text-xs text-ink/44">项目名称</span>
+              <input value={section.projectName} onChange={(event) => onChange({ ...section, projectName: event.target.value })} className="mt-2 w-full border border-line bg-rice px-4 py-3 text-sm outline-none focus:border-ink" />
+            </label>
+            <label className="block">
+              <span className="text-xs text-ink/44">项目地点</span>
+              <input value={section.location} onChange={(event) => onChange({ ...section, location: event.target.value })} className="mt-2 w-full border border-line bg-rice px-4 py-3 text-sm outline-none focus:border-ink" />
+            </label>
+          </div>
+          <label className="mt-4 block">
+            <span className="text-xs text-ink/44">项目介绍段落</span>
+            <textarea value={section.intro} rows={4} onChange={(event) => onChange({ ...section, intro: event.target.value })} className="mt-2 w-full border border-line bg-rice px-4 py-3 text-sm leading-7 outline-none focus:border-ink" />
+          </label>
+
+          <div className="mt-5">
+            <ImageUploadControl
+              label="项目导览图"
+              value={section.guideMapImage}
+              size="宽 1200px - 1600px，偏竖版或接近海报比例"
+              fallbackLabel="项目导览图"
+              isUploading={uploadingKey === `${section.id}.guideMapImage`}
+              onChange={(value) => onChange({ ...section, guideMapImage: value })}
+              onUpload={onGuideUpload}
+              onClear={() => onChange({ ...section, guideMapImage: "" })}
+              onCheck={() => onCheckImage(section.guideMapImage)}
+            />
+            <label className="mt-3 block">
+              <span className="text-xs text-ink/44">导览图名称</span>
+              <input value={section.guideMapCaption} onChange={(event) => onChange({ ...section, guideMapCaption: event.target.value })} className="mt-2 w-full border border-line bg-rice px-4 py-3 text-sm outline-none focus:border-ink" />
+            </label>
+          </div>
+
+          <div className="mt-6 grid gap-4 lg:grid-cols-2">
+            {section.realImages.slice(0, 5).map((image, imageIndex) => (
+              <div key={`${section.id}-real-${imageIndex}`} className="border border-line bg-rice p-4">
+                <ImageUploadControl
+                  label={`项目实景图 ${imageIndex + 1}`}
+                  value={image.url}
+                  fallbackLabel={`项目实景图 ${imageIndex + 1}`}
+                  isUploading={uploadingKey === `${section.id}.realImages.${imageIndex}`}
+                  onChange={(value) => updateRealImage(imageIndex, { ...image, url: value })}
+                  onUpload={(file) => onRealImageUpload(imageIndex, file)}
+                  onClear={() => updateRealImage(imageIndex, { ...image, url: "" })}
+                  onCheck={() => onCheckImage(image.url)}
+                />
+                <label className="mt-3 block">
+                  <span className="text-xs text-ink/44">图片名称</span>
+                  <input value={image.caption} onChange={(event) => updateRealImage(imageIndex, { ...image, caption: event.target.value })} className="mt-2 w-full border border-line bg-paper px-4 py-3 text-sm outline-none focus:border-ink" />
+                </label>
+              </div>
+            ))}
+          </div>
+
+          <button type="button" onClick={onRemove} className="mt-5 border border-line px-4 py-3 text-sm text-ink/64 transition hover:border-clay hover:text-clay">
+            删除这个专项项目
+          </button>
+        </div>
+      ) : null}
+    </article>
   );
 }
 
@@ -138,14 +333,10 @@ export function CaseCmsManager() {
   const { cases, upsertCase, deleteCase, saveCases, restoreDefaults, storageKey } = useCaseCms();
   const [editingCase, setEditingCase] = useState<CaseCmsItem | null>(null);
   const [originalSlug, setOriginalSlug] = useState("");
-  const [message, setMessage] = useState("当前为本地案例 CMS，数据保存到浏览器 localStorage。");
+  const [message, setMessage] = useState("当前为案例 CMS，数据保存到浏览器 localStorage，并尝试同步到 Netlify Functions。");
+  const [uploadingKey, setUploadingKey] = useState("");
+  const [openCampSectionIds, setOpenCampSectionIds] = useState<Set<string>>(new Set());
   const importInputRef = useRef<HTMLInputElement>(null);
-  const imageUploadInputRefs = useRef<Record<string, HTMLInputElement | null>>({});
-  const multiImageUploadInputRefs = useRef<Record<MultiImageField, HTMLInputElement | null>>({
-    galleryImages: null,
-    assetImages: null
-  });
-  const [uploadingImageField, setUploadingImageField] = useState<string>("");
 
   const sortedCases = useMemo(() => [...cases].sort((a, b) => a.order - b.order), [cases]);
 
@@ -153,12 +344,17 @@ export function CaseCmsManager() {
     const nextOrder = sortedCases.length ? Math.max(...sortedCases.map((item) => item.order)) + 1 : 1;
     setEditingCase(createEmptyCaseCmsItem(nextOrder));
     setOriginalSlug("");
+    setOpenCampSectionIds(new Set());
     setMessage("正在新增案例，请填写内容后保存。");
   }
 
   function startEdit(item: CaseCmsItem) {
-    setEditingCase({ ...item });
+    setEditingCase({
+      ...item,
+      campCaseSections: (item.campCaseSections || []).map(normalizeCampSectionForEdit)
+    });
     setOriginalSlug(item.slug);
+    setOpenCampSectionIds(new Set());
     setMessage(`正在编辑：${item.projectName}`);
   }
 
@@ -166,76 +362,111 @@ export function CaseCmsManager() {
     setEditingCase((current) => (current ? { ...current, [key]: value } : current));
   }
 
-  function updateTextField(key: TextField, value: string) {
-    updateField(key, value as CaseCmsItem[TextField]);
+  function updateTextField(key: keyof CaseCmsItem, value: string) {
+    updateField(key, value as never);
     if (key === "projectName" && editingCase && !editingCase.slug) {
       updateField("slug", slugify(value));
     }
   }
 
-  async function handleImageUpload(fieldKey: (typeof imageFields)[number]["key"], file?: File) {
-    if (!file) {
-      return;
-    }
-
-    setUploadingImageField(fieldKey);
-    setMessage("图片正在通过 Netlify Functions 上传...");
-
+  async function uploadCaseImage(file: File | undefined, fieldKey: string) {
+    if (!file) return "";
+    setUploadingKey(fieldKey);
+    setMessage("图片正在上传...");
     try {
       const url = await uploadImage(file, {
         scope: "cases",
         caseSlug: editingCase?.slug || editingCase?.projectName || "case",
         fieldKey
       });
-      updateField(fieldKey, url);
-      setMessage("图片上传成功，已自动写入公网 URL。");
+      setMessage("图片上传成功，已自动写入 URL。");
+      return url;
     } catch (error) {
       setMessage(error instanceof Error ? error.message : "图片上传失败，请稍后重试。");
+      return "";
     } finally {
-      setUploadingImageField("");
+      setUploadingKey("");
     }
+  }
+
+  async function handleSingleImageUpload(fieldKey: SingleImageField, file?: File) {
+    const url = await uploadCaseImage(file, fieldKey);
+    if (url) updateField(fieldKey, url);
   }
 
   async function handleMultiImageUpload(fieldKey: MultiImageField, files?: FileList | null) {
-    if (!files?.length) {
-      return;
+    if (!files?.length) return;
+    setUploadingKey(fieldKey);
+    const uploadedUrls: string[] = [];
+    for (const [index, file] of Array.from(files).entries()) {
+      const url = await uploadCaseImage(file, `${fieldKey}-${Date.now()}-${index}`);
+      if (url) uploadedUrls.push(url);
     }
+    setEditingCase((current) => current ? { ...current, [fieldKey]: [...current[fieldKey], ...uploadedUrls] } : current);
+    setUploadingKey("");
+  }
 
-    const selectedFiles = Array.from(files);
-    setUploadingImageField(fieldKey);
-    setMessage(`${fieldKey === "galleryImages" ? "案例图集" : "产业 / 运营补充图"}正在上传...`);
+  async function handleCampGuideUpload(sectionIndex: number, file?: File) {
+    const section = editingCase?.campCaseSections[sectionIndex];
+    if (!section) return;
+    const key = `${section.id}.guideMapImage`;
+    const url = await uploadCaseImage(file, key);
+    if (!url) return;
+    updateCampSection(sectionIndex, { ...section, guideMapImage: url });
+  }
 
-    try {
-      const uploadedUrls: string[] = [];
-      for (const [index, file] of selectedFiles.entries()) {
-        const url = await uploadImage(file, {
-          scope: "cases",
-          caseSlug: editingCase?.slug || editingCase?.projectName || "case",
-          fieldKey: `${fieldKey}-${Date.now()}-${index}`
-        });
-        uploadedUrls.push(url);
-      }
-
-      setEditingCase((current) => {
-        if (!current) return current;
-        const nextImages = [...(current[fieldKey] || []), ...uploadedUrls];
-        return { ...current, [fieldKey]: nextImages };
-      });
-      setMessage(`已上传 ${uploadedUrls.length} 张图片，并写入 ${fieldKey}。`);
-    } catch (error) {
-      setMessage(error instanceof Error ? error.message : "多图上传失败，请稍后重试。");
-    } finally {
-      setUploadingImageField("");
-    }
+  async function handleCampRealImageUpload(sectionIndex: number, imageIndex: number, file?: File) {
+    const section = editingCase?.campCaseSections[sectionIndex];
+    if (!section) return;
+    const key = `${section.id}.realImages.${imageIndex}`;
+    const url = await uploadCaseImage(file, key);
+    if (!url) return;
+    const realImages = [...section.realImages];
+    realImages[imageIndex] = { ...realImages[imageIndex], url };
+    updateCampSection(sectionIndex, { ...section, realImages });
   }
 
   function removeMultiImage(fieldKey: MultiImageField, index: number) {
+    setEditingCase((current) => current ? { ...current, [fieldKey]: current[fieldKey].filter((_, imageIndex) => imageIndex !== index) } : current);
+  }
+
+  function updateCampSection(index: number, nextSection: CampCaseSection) {
     setEditingCase((current) => {
       if (!current) return current;
-      return {
-        ...current,
-        [fieldKey]: current[fieldKey].filter((_, imageIndex) => imageIndex !== index)
-      };
+      const nextSections = [...current.campCaseSections];
+      nextSections[index] = normalizeCampSectionForEdit(nextSection);
+      return { ...current, campCaseSections: nextSections };
+    });
+  }
+
+  function addCampSection(section: CampCaseSection = createBlankCampSection()) {
+    const normalizedSection = normalizeCampSectionForEdit(section);
+    setEditingCase((current) => current ? { ...current, campCaseSections: [...current.campCaseSections, normalizedSection] } : current);
+    setOpenCampSectionIds((current) => new Set([...current, normalizedSection.id]));
+  }
+
+  function addDefaultCampSections() {
+    setEditingCase((current) => {
+      if (!current) return current;
+      const existingIds = new Set(current.campCaseSections.map((section) => section.id));
+      const nextSections = [
+        ...current.campCaseSections,
+        ...defaultCampCaseSections.filter((section) => !existingIds.has(section.id)).map(normalizeCampSectionForEdit)
+      ];
+      return { ...current, campCaseSections: nextSections };
+    });
+  }
+
+  function removeCampSection(index: number) {
+    setEditingCase((current) => current ? { ...current, campCaseSections: current.campCaseSections.filter((_, sectionIndex) => sectionIndex !== index) } : current);
+  }
+
+  function toggleCampSection(id: string) {
+    setOpenCampSectionIds((current) => {
+      const next = new Set(current);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
     });
   }
 
@@ -251,13 +482,12 @@ export function CaseCmsManager() {
 
   function handleSave() {
     if (!editingCase) return;
-
     if (!editingCase.projectName.trim() || !editingCase.slug.trim()) {
       setMessage("项目名称和案例 slug 必填。");
       return;
     }
-
-    const duplicate = cases.some((item) => item.slug === editingCase.slug && item.slug !== originalSlug);
+    const normalizedSlug = slugify(editingCase.slug);
+    const duplicate = cases.some((item) => item.slug === normalizedSlug && item.slug !== originalSlug);
     if (duplicate) {
       setMessage("案例 slug 已存在，请换一个唯一 slug。");
       return;
@@ -266,8 +496,12 @@ export function CaseCmsManager() {
     upsertCase(
       {
         ...editingCase,
-        slug: slugify(editingCase.slug),
-        order: Number(editingCase.order) || sortedCases.length + 1
+        slug: normalizedSlug,
+        order: Number(editingCase.order) || sortedCases.length + 1,
+        campCaseSections: editingCase.campCaseSections.map((section) => ({
+          ...section,
+          realImages: section.realImages.filter((image) => image.url || image.caption).slice(0, 5)
+        }))
       },
       originalSlug
     );
@@ -280,11 +514,8 @@ export function CaseCmsManager() {
     const target = cases.find((item) => item.slug === slug);
     const confirmed = window.confirm(`确认删除案例「${target?.projectName || slug}」吗？删除后前台不再显示。`);
     if (!confirmed) return;
-
     deleteCase(slug);
-    if (editingCase?.slug === slug) {
-      setEditingCase(null);
-    }
+    if (editingCase?.slug === slug) setEditingCase(null);
     setMessage("案例已删除。");
   }
 
@@ -302,13 +533,12 @@ export function CaseCmsManager() {
   function handleImport(event: ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0];
     if (!file) return;
-
     const reader = new FileReader();
     reader.onload = () => {
       try {
         const parsed = JSON.parse(String(reader.result || "[]"));
         if (!Array.isArray(parsed)) {
-          setMessage("导入失败：JSON 须为案例数组。");
+          setMessage("导入失败：JSON 必须为案例数组。");
           return;
         }
         saveCases(parsed as CaseCmsItem[]);
@@ -338,7 +568,7 @@ export function CaseCmsManager() {
             <p className="text-sm font-medium tracking-[0.24em] text-clay">CASE CMS</p>
             <h1 className="mt-3 font-serif text-4xl font-semibold text-ink">案例管理</h1>
             <p className="mt-4 max-w-3xl text-sm leading-6 text-ink/62">
-              后台新增、编辑或删除案例后，前台项目案例列表、详情页和首页代表案例区会读取同一份本地案例数据。
+              后台新增、编辑或删除案例后，前台项目案例列表、详情页和首页代表案例区会读取同一份案例数据。营地专项模块可用于百草湖乡等案例详情页的多项目展示。
             </p>
           </div>
           <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap">
@@ -409,8 +639,8 @@ export function CaseCmsManager() {
               <label key={key} className="block">
                 <span className="text-xs text-ink/44">{label}</span>
                 <input
-                  value={String(editingCase[key as TextField] || "")}
-                  onChange={(event) => updateTextField(key as TextField, event.target.value)}
+                  value={String(editingCase[key as keyof CaseCmsItem] || "")}
+                  onChange={(event) => updateTextField(key as keyof CaseCmsItem, event.target.value)}
                   className="mt-2 w-full border border-line bg-rice px-4 py-3 text-sm text-ink outline-none transition focus:border-ink"
                 />
               </label>
@@ -452,89 +682,81 @@ export function CaseCmsManager() {
 
           <div className="mt-8 grid gap-5 lg:grid-cols-2">
             {imageFields.map((field) => (
-              <div key={field.key} className="border border-line bg-rice p-4">
-                <label className="block">
-                  <span className="text-xs text-ink/44">{field.label}</span>
-                  <input
-                    value={editingCase[field.key]}
-                    onChange={(event) => updateField(field.key, event.target.value)}
-                    placeholder="/uploads/case-example-cover.jpg"
-                    className="mt-2 w-full border border-line bg-paper px-4 py-3 text-sm text-ink outline-none transition focus:border-ink"
-                  />
-                </label>
-                <div className="mt-3 grid gap-2 sm:grid-cols-2">
-                  <input
-                    ref={(node) => {
-                      imageUploadInputRefs.current[field.key] = node;
-                    }}
-                    type="file"
-                    accept="image/jpeg,image/png,image/webp"
-                    className="hidden"
-                    onChange={(event) => {
-                      handleImageUpload(field.key, event.target.files?.[0]);
-                      event.target.value = "";
-                    }}
-                  />
-                  <button
-                    type="button"
-                    disabled={uploadingImageField === field.key}
-                    onClick={() => imageUploadInputRefs.current[field.key]?.click()}
-                    className="border border-ink bg-ink px-4 py-3 text-sm font-medium text-paper transition hover:bg-moss disabled:cursor-not-allowed disabled:opacity-60"
-                  >
-                    {uploadingImageField === field.key ? "上传中..." : "上传图片"}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => updateField(field.key, "")}
-                    className="border border-line px-4 py-3 text-sm font-medium text-ink/64 transition hover:border-ink hover:text-ink"
-                  >
-                    清空图片
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => checkImageUrl(editingCase[field.key])}
-                    className="border border-line px-4 py-3 text-sm font-medium text-ink/64 transition hover:border-ink hover:text-ink sm:col-span-2"
-                  >
-                    检查是否可访问
-                  </button>
-                </div>
-                <p className="mt-2 text-xs leading-5 text-ink/46">
-                  支持手动填写 URL，也可通过 Netlify Functions 上传图片。保存案例后前台会读取该图片地址。
-                </p>
-                <div className="mt-3 text-xs text-ink/46">建议尺寸：{field.size}</div>
-                <CaseImage src={editingCase[field.key]} className="mt-4 aspect-[16/9]" fallbackLabel={field.label} />
-              </div>
+              <ImageUploadControl
+                key={field.key}
+                label={field.label}
+                value={editingCase[field.key]}
+                size={field.size}
+                fallbackLabel={field.label}
+                isUploading={uploadingKey === field.key}
+                onChange={(value) => updateField(field.key, value)}
+                onUpload={(file) => handleSingleImageUpload(field.key, file)}
+                onClear={() => updateField(field.key, "")}
+                onCheck={() => checkImageUrl(editingCase[field.key])}
+              />
             ))}
           </div>
 
           <div className="mt-8 grid gap-5 lg:grid-cols-2">
             <MultiImageSection
               title="案例图集 Gallery Images（核心展示）"
-              description="用于前台案例详情页主图集展示，建议 3-8 张。支持一次选择多张，上传后可点击单张删除。"
-              fieldKey="galleryImages"
+              description="用于前台案例详情页主图集展示，建议 3-8 张。支持一次选择多张，上传后可删除单张。"
               images={editingCase.galleryImages}
-              inputRef={(node) => {
-                multiImageUploadInputRefs.current.galleryImages = node;
-              }}
-              isUploading={uploadingImageField === "galleryImages"}
+              isUploading={uploadingKey === "galleryImages"}
               onUpload={(files) => handleMultiImageUpload("galleryImages", files)}
               onRemove={(index) => removeMultiImage("galleryImages", index)}
-              onPick={() => multiImageUploadInputRefs.current.galleryImages?.click()}
             />
             <MultiImageSection
               title="产业 / 运营补充图 Asset Images"
-              description="用于商业业态、产品细节、运营现场、人流活动、商铺展示等补充素材，建议不超过 20 张。"
-              fieldKey="assetImages"
+              description="用于商业业态、产品细节、运营现场、人流活动、商铺展示等补充素材。"
               images={editingCase.assetImages}
-              inputRef={(node) => {
-                multiImageUploadInputRefs.current.assetImages = node;
-              }}
-              isUploading={uploadingImageField === "assetImages"}
+              isUploading={uploadingKey === "assetImages"}
               onUpload={(files) => handleMultiImageUpload("assetImages", files)}
               onRemove={(index) => removeMultiImage("assetImages", index)}
-              onPick={() => multiImageUploadInputRefs.current.assetImages?.click()}
             />
           </div>
+
+          <section className="mt-8 border border-line bg-rice p-5">
+            <div className="flex flex-col justify-between gap-4 md:flex-row md:items-end">
+              <div>
+                <p className="text-sm font-semibold text-ink">研学亲子营地建设专项</p>
+                <p className="mt-2 max-w-3xl text-xs leading-5 text-ink/52">
+                  用于在案例详情页中展示多个营地/乡村文旅项目的专项介绍，每个项目可上传导览图和实景图。
+                </p>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                <button type="button" onClick={addDefaultCampSections} className="border border-line bg-paper px-4 py-3 text-sm text-ink transition hover:border-ink">
+                  补齐默认 6 个项目
+                </button>
+                <button type="button" onClick={() => addCampSection()} className="border border-ink bg-ink px-4 py-3 text-sm text-paper transition hover:bg-moss">
+                  添加项目板块
+                </button>
+              </div>
+            </div>
+            <div className="mt-5 space-y-3">
+              {editingCase.campCaseSections.length ? (
+                editingCase.campCaseSections.map((section, index) => (
+                  <CampSectionEditor
+                    key={section.id}
+                    section={section}
+                    index={index}
+                    isOpen={openCampSectionIds.has(section.id)}
+                    uploadingKey={uploadingKey}
+                    onToggle={() => toggleCampSection(section.id)}
+                    onRemove={() => removeCampSection(index)}
+                    onChange={(nextSection) => updateCampSection(index, nextSection)}
+                    onGuideUpload={(file) => handleCampGuideUpload(index, file)}
+                    onRealImageUpload={(imageIndex, file) => handleCampRealImageUpload(index, imageIndex, file)}
+                    onCheckImage={checkImageUrl}
+                  />
+                ))
+              ) : (
+                <div className="border border-dashed border-line bg-paper px-4 py-8 text-center text-sm text-ink/42">
+                  暂未配置专项项目，可点击“补齐默认 6 个项目”。
+                </div>
+              )}
+            </div>
+          </section>
 
           <div className="mt-8 grid gap-5">
             <label className="block">
@@ -554,8 +776,8 @@ export function CaseCmsManager() {
                 <span className="text-xs text-ink/44">{label}</span>
                 <textarea
                   rows={4}
-                  value={String(editingCase[key as TextField] || "")}
-                  onChange={(event) => updateTextField(key as TextField, event.target.value)}
+                  value={String(editingCase[key as keyof CaseCmsItem] || "")}
+                  onChange={(event) => updateTextField(key as keyof CaseCmsItem, event.target.value)}
                   className="mt-2 w-full border border-line bg-rice px-4 py-3 text-sm leading-7 text-ink outline-none transition focus:border-ink"
                 />
               </label>
