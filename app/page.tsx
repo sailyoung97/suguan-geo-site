@@ -9,16 +9,24 @@ import { siteContentDefaults } from "@/src/config/siteContent";
 
 const serviceHighlights = [
   {
-    title: "项目研判与定位策划",
-    text: "从资源、客群、业态和运营路径判断项目方向。"
+    title: "研学亲子营地",
+    text: "围绕亲子家庭、研学机构、学校团体与周末近郊客群，提供营地定位、课程产品、空间场景、动线组织、品牌内容与运营体系设计。"
   },
   {
-    title: "空间场景与品牌文创",
-    text: "把地方文化转化为空间场景、品牌表达和传播内容。"
+    title: "乡村文旅 / 农文旅融合",
+    text: "将乡村自然资源、闲置空间、农产品、地方文化和生活方式转化为可体验、可消费、可运营的文旅项目。"
   },
   {
-    title: "招商运营与自持孵化",
-    text: "围绕业态组合、活动运营和自持经验，帮助项目持续生长。"
+    title: "营地建设与运营导入",
+    text: "从场地规划、功能分区、业态组合、活动内容、商业模型到运营管理，帮助项目从建成走向持续经营。"
+  },
+  {
+    title: "品牌文创与内容资产",
+    text: "为营地、乡村项目和文旅空间构建品牌识别、导览系统、传播内容、活动主题和长期内容资产。"
+  },
+  {
+    title: "城市更新 / 非标商业",
+    text: "保留城市更新和非标商业能力，将历史空间、存量资产和消费场景转化为更具运营价值的公共文旅空间。"
   }
 ];
 
@@ -95,10 +103,10 @@ export default function HomePage() {
           <div className="max-w-[760px] pt-[132px] sm:pt-[20vh] lg:pt-[22vh]">
             <p className="text-sm font-medium uppercase tracking-[0.32em] text-clay">SUGUAN DESIGN</p>
             <h1 className="mt-6 font-serif text-[40px] font-semibold leading-[1.12] text-paper sm:text-5xl lg:text-6xl">
-              致力于打造具有持续生命力与社会价值的文化项目
+              <SiteContentText fieldKey="home.title" defaultText={siteContentDefaults["home.title"]} />
             </h1>
             <p className="mt-7 text-base leading-8 text-paper/70 sm:text-lg">
-              溯观深耕西南地区城市更新、乡村振兴、农文旅融合与品牌文创领域，提供项目研判、定位策划、空间场景、品牌内容、招商运营与持续孵化服务。
+              <SiteContentText fieldKey="home.subtitle" defaultText={siteContentDefaults["home.subtitle"]} />
             </p>
             <div className="mt-9 flex flex-col gap-3 sm:flex-row">
               <Link
@@ -146,13 +154,13 @@ export default function HomePage() {
         <div className="mb-9 flex flex-col justify-between gap-4 md:flex-row md:items-end">
           <div>
             <p className="text-sm font-medium tracking-[0.22em] text-clay">SERVICE SYSTEM</p>
-            <h2 className="mt-3 font-serif text-4xl font-semibold text-ink sm:text-5xl">溯观服务内容</h2>
+          <h2 className="mt-3 font-serif text-4xl font-semibold text-ink sm:text-5xl">溯观服务内容</h2>
           </div>
           <p className="max-w-2xl text-sm leading-7 text-ink/62">
-            从项目判断到空间落地，再到品牌表达、招商运营和持续孵化，溯观提供贯穿项目前期、中期和后期的综合服务。
+            围绕研学亲子营地、乡村文旅与农文旅融合项目，溯观提供从资源判断、产品策划、空间场景到建设落地、运营导入的全链路服务。
           </p>
         </div>
-        <div className="grid gap-px overflow-hidden border border-line bg-line md:grid-cols-3">
+        <div className="grid gap-px overflow-hidden border border-line bg-line md:grid-cols-2 lg:grid-cols-5">
           {serviceHighlights.map((service, index) => (
             <article key={service.title} className="bg-paper p-6 sm:p-7">
               <div className="font-serif text-5xl text-ink/12">0{index + 1}</div>

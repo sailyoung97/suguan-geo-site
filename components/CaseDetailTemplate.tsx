@@ -14,6 +14,39 @@ type GalleryImage = {
   label: string;
 };
 
+const campMatrixCases = [
+  {
+    name: "花间集",
+    location: "重庆 大足区 雍溪",
+    type: "乡村文旅 / 花园营地 / 亲子休闲 / 生活方式营地",
+    description: "花间集以田园花境、露营休闲、咖啡茶饮、亲子活动和自然生活方式为核心，打造沉浸式田园花境美好生活现场。"
+  },
+  {
+    name: "凤鸣雅集",
+    location: "四川 雅安 雨城区",
+    type: "茶文化营地 / 研学亲子 / 乡村文旅",
+    description: "凤鸣雅集以茶文化、自然教育和亲子研学为核心，将茶事体验、游艺活动、乡村生活和在地文化转化为可游、可学、可消费的文旅项目。"
+  },
+  {
+    name: "小桑田",
+    location: "重庆 沙坪坝 西永",
+    type: "亲子农场 / 自然教育 / 研学营地",
+    description: "小桑田以农耕体验、自然教育和亲子活动为核心，将田地、农房、乡土文化和课程内容结合，打造面向家庭和学校的亲子研学农场。"
+  },
+  {
+    name: "小桃园",
+    location: "重庆 北碚 静观",
+    type: "亲子农场 / 田园营地 / 乡村休闲",
+    description: "小桃园依托北碚静观的田园和花木资源，围绕亲子采摘、自然体验、轻露营和乡村休闲，打造面向城市家庭的近郊亲子目的地。"
+  },
+  {
+    name: "东升村·小丰年",
+    location: "重庆 北碚 东升村",
+    type: "乡村文旅 / 研学营地 / 乡村运营",
+    description: "东升村·小丰年依托北碚柳荫镇乡村资源，围绕自然景观、农耕体验、研学活动、星空露营和乡村生活方式，形成乡村文旅与营地运营结合的示范项目。"
+  }
+];
+
 function DetailBlock({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <section className="border-t border-line py-10">
@@ -52,6 +85,29 @@ function TagList({ items, dark = false }: { items: string[]; dark?: boolean }) {
         </span>
       ))}
     </div>
+  );
+}
+
+function CampMatrixSection() {
+  return (
+    <section className="border-t border-line py-10">
+      <p className="text-sm font-medium text-clay">CAMP ASSET SYSTEM</p>
+      <h2 className="mt-3 font-serif text-3xl font-semibold text-ink">自持运营与营地建设案例矩阵</h2>
+      <p className="mt-5 max-w-3xl text-base leading-8 text-ink/66">
+        以百草湖乡为代表，溯观持续参与并运营多个研学亲子、乡村文旅和营地类项目，形成覆盖策划、规划、设计、建设、内容产品与运营管理的完整项目链路。
+      </p>
+      <div className="mt-7 grid gap-px overflow-hidden border border-line bg-line md:grid-cols-2">
+        {campMatrixCases.map((caseItem, index) => (
+          <article key={caseItem.name} className="bg-paper p-5">
+            <div className="font-serif text-3xl text-ink/12">{String(index + 1).padStart(2, "0")}</div>
+            <h3 className="mt-5 text-xl font-semibold text-ink">{caseItem.name}</h3>
+            <p className="mt-2 text-xs text-moss">{caseItem.location}</p>
+            <p className="mt-3 text-sm font-medium leading-6 text-ink/74">{caseItem.type}</p>
+            <p className="mt-4 text-sm leading-7 text-ink/62">{caseItem.description}</p>
+          </article>
+        ))}
+      </div>
+    </section>
   );
 }
 
@@ -153,6 +209,8 @@ export function CaseDetailTemplate({ slug }: CaseDetailTemplateProps) {
               </div>
             </section>
           ) : null}
+
+          {item.slug === "baicaohuxiang" ? <CampMatrixSection /> : null}
 
           <DetailBlock title="项目背景">
             <p>{item.background || "待补充"}</p>

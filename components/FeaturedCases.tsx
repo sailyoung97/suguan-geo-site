@@ -6,10 +6,10 @@ import { useCaseCms } from "@/src/hooks/useCaseCms";
 
 export function FeaturedCases() {
   const { featuredCases } = useCaseCms();
-  const visibleCases = featuredCases.length ? featuredCases : [];
+  const visibleCases = featuredCases.length ? featuredCases.slice(0, 4) : [];
 
   return (
-    <div className="grid gap-px overflow-hidden border border-paper/14 bg-paper/14 lg:grid-cols-5">
+    <div className="grid gap-px overflow-hidden border border-paper/14 bg-paper/14 md:grid-cols-2 xl:grid-cols-4">
       {visibleCases.map((item) => (
         <Link key={item.slug} href={`/cases/${item.slug}`} className="group bg-ink transition hover:bg-paper/8">
           <CaseImage

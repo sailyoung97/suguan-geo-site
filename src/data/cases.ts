@@ -1,59 +1,67 @@
 export const businessCategories = [
-  "文化产业",
-  "都市文旅",
-  "乡村农文旅",
-  "非标商业",
-  "高校文创",
-  "品牌成长历程"
+  "研学亲子营地",
+  "乡村文旅",
+  "农文旅融合",
+  "自持运营",
+  "品牌文创",
+  "城市更新",
+  "非标商业"
 ] as const;
 
 export type BusinessCategory = (typeof businessCategories)[number];
 
-export const officialCaseMeta: Record<string, { year: string; businessCategory: BusinessCategory }> = {
-  "kaibu-heritage-park": { year: "2023", businessCategory: "都市文旅" },
-  "shancheng-baba": { year: "2022", businessCategory: "都市文旅" },
-  baicaohuxiang: { year: "2024", businessCategory: "乡村农文旅" },
-  "ufx-yaan": { year: "2025", businessCategory: "乡村农文旅" },
-  xiaosangtian: { year: "2019", businessCategory: "乡村农文旅" }
+export const caseDisplayPriority = [
+  "baicaohuxiang",
+  "huajianji",
+  "fengming-yaji",
+  "xiaosangtian",
+  "xiaotaoyuan",
+  "dongsheng-xiaofengnian",
+  "ufx-yaan",
+  "kaibu-heritage-park",
+  "shancheng-baba"
+];
+
+export const officialCaseMeta: Record<string, { year: string; businessCategory: BusinessCategory; order: number }> = {
+  baicaohuxiang: { year: "2024", businessCategory: "研学亲子营地", order: 1 },
+  huajianji: { year: "2024", businessCategory: "研学亲子营地", order: 2 },
+  "fengming-yaji": { year: "2025", businessCategory: "研学亲子营地", order: 3 },
+  xiaosangtian: { year: "2019", businessCategory: "研学亲子营地", order: 4 },
+  xiaotaoyuan: { year: "2019", businessCategory: "乡村文旅", order: 5 },
+  "dongsheng-xiaofengnian": { year: "2021", businessCategory: "乡村文旅", order: 6 },
+  "ufx-yaan": { year: "2025", businessCategory: "研学亲子营地", order: 7 },
+  "kaibu-heritage-park": { year: "2023", businessCategory: "城市更新", order: 8 },
+  "shancheng-baba": { year: "2022", businessCategory: "城市更新", order: 9 }
 };
 
 export const businessCaseSections = [
   {
-    category: "文化产业",
-    items: ["《撷域》杂志刊物", "《中华手工》杂志刊物", "大雅造物", "铜拾社", "非也造物", "中华手工平台"]
+    category: "研学亲子营地",
+    items: ["璧山百草湖乡", "花间集", "凤鸣雅集", "小桑田", "小桃园", "东升村·小丰年", "UFX 飞翔星球大本营"]
   },
   {
-    category: "都市文旅",
-    items: ["重庆开埠遗址公园", "重庆工业文化博览园", "山城坝坝", "北仓", "金山意库", "九龙意库", "东西市集", "山城巷", "重逢1980街区"]
+    category: "乡村文旅",
+    items: ["百草湖乡", "小桑田", "小桃园", "小丰年", "花间集", "凤鸣雅集", "东升村"]
   },
   {
-    category: "乡村农文旅",
-    items: ["小桑田", "小桃园", "小丰年", "花间集", "大雅造物", "百草湖乡", "UFX 飞翔星球大本营", "东升村"]
+    category: "农文旅融合",
+    items: ["璧山百草湖乡", "西永小桑田亲子农场", "北碚小桃园", "东升村·小丰年", "四川雅安 UFX 飞翔星球大本营"]
+  },
+  {
+    category: "自持运营",
+    items: ["百草湖乡", "小桑田", "小桃园", "花间集", "山城坝坝", "东西坝坝"]
+  },
+  {
+    category: "品牌文创",
+    items: ["大雅造物", "铜拾社", "非也造物", "中华手工平台", "高校文创合作项目"]
+  },
+  {
+    category: "城市更新",
+    items: ["重庆开埠遗址公园", "山城坝坝", "重庆工业文化博览园", "北仓", "金山意库", "九龙意库"]
   },
   {
     category: "非标商业",
-    items: ["饭江湖", "湖广会馆 / 八省会", "山城坝坝", "东西坝坝", "书曰·明清客栈", "星临书局", "爱情足浴马莎鸡", "Banana草木咖啡"]
-  },
-  {
-    category: "高校文创",
-    items: [
-      "重庆大学",
-      "重庆理工大学",
-      "四川外国语大学",
-      "重庆医科大学",
-      "重庆交通大学",
-      "贵州医科大学",
-      "山西医科大学",
-      "贵州师范大学",
-      "重庆工商大学",
-      "重庆师范大学",
-      "重庆第二师范学院",
-      "重庆南开中学",
-      "重庆广益中学",
-      "重庆十一中",
-      "重庆璧山中学",
-      "瑞思国际英语连锁机构"
-    ]
+    items: ["饭江湖", "湖广会馆 / 八省会", "书曰·明清客栈", "星临书局", "Banana 草木咖啡"]
   }
 ] as const;
 

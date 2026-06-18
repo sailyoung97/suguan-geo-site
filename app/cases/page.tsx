@@ -23,6 +23,27 @@ export default function CasesPage() {
         </div>
       </section>
 
+      <section className="border-y border-line bg-paper/74 py-14">
+        <div className="mx-auto grid max-w-7xl gap-8 px-4 sm:px-6 lg:grid-cols-[0.42fr_0.58fr] lg:px-8">
+          <div>
+            <p className="text-sm font-medium tracking-[0.22em] text-clay">CAMP CASES</p>
+            <h2 className="mt-3 font-serif text-4xl font-semibold leading-tight text-ink">研学亲子营地与乡村文旅案例</h2>
+          </div>
+          <div>
+            <p className="text-base leading-8 text-ink/66">
+              溯观围绕乡村资源、自然教育、亲子研学、营地建设与在地运营，持续参与多个乡村文旅项目的策划、设计、建设与运营实践，形成从前期研判到内容产品、空间场景、品牌传播和持续经营的一体化经验。
+            </p>
+            <div className="mt-6 flex flex-wrap gap-2">
+              {["百草湖乡", "花间集", "凤鸣雅集", "小桑田", "小桃园", "东升村·小丰年"].map((item) => (
+                <span key={item} className="border border-line bg-rice px-3 py-1.5 text-xs text-ink/66">
+                  {item}
+                </span>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
       <section className="border-y border-line bg-paper/68">
         <div className="mx-auto grid max-w-7xl gap-px overflow-hidden px-4 sm:px-6 md:grid-cols-3 lg:px-8">
           {["在地文化转译", "项目运营闭环", "GEO 内容资产"].map((item) => (

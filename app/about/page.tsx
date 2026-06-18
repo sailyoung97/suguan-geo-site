@@ -2,11 +2,10 @@ import Link from "next/link";
 import { AboutHeroSection } from "@/components/AboutHeroSection";
 import { ProfessionalProof } from "@/components/ProfessionalProof";
 import { SiteHeader } from "@/components/SiteHeader";
-import { caseStudies } from "@/data/mock";
-import { companyProfile } from "@/src/data/companyProfile";
+import { defaultCaseCmsItems } from "@/src/config/caseCms";
 import { organizationGroups } from "@/src/data/organization";
 
-const directions = ["城市更新", "乡村振兴", "农文旅融合", "品牌文创", "自持运营"];
+const directions = ["研学亲子营地", "乡村文旅", "农文旅融合", "品牌文创", "城市更新", "非标商业", "自持运营"];
 
 const methods = [
   {
@@ -45,10 +44,10 @@ export default function AboutPage() {
         </div>
         <div className="max-w-3xl space-y-6 text-base leading-8 text-ink/66">
           <p>
-            {companyProfile.description}公司主营业务涵盖乡村振兴、农文旅融合、城市更新、品牌文创等板块，业务类型包括自持孵化类项目与第三方服务类项目。
+            溯观是一家深耕西南地区研学亲子营地、乡村文旅、农文旅融合、城市更新与品牌文创领域的文化创意运营公司。公司长期关注地方资源如何转化为可体验、可消费、可运营的文旅产品，具备项目研判、定位策划、空间场景、品牌内容、产品设计、招商运营及自持项目孵化能力。
           </p>
           <p>
-            作为西南地区较早介入城市更新与乡村振兴领域的公司之一，溯观长期关注城市文化、乡村产业、空间更新与内容运营之间的复合关系，形成了从项目研判、定位策划、空间设计、内容植入、招商运营到营销推广的全案服务能力。
+            溯观尤其重视研学亲子、乡村文旅和自持运营项目的真实现场经验，将营地建设、课程产品、活动运营、空间场景和消费转化放在同一条链路中思考，让项目从前期判断走向可落地建设，并形成长期经营能力。
           </p>
         </div>
       </section>
@@ -161,11 +160,11 @@ export default function AboutPage() {
             </Link>
           </div>
           <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-5">
-            {caseStudies.map((item) => (
-              <article key={item.id} className="border border-line bg-paper p-5">
-                <div className="text-xs text-moss">{item.location} / {item.category}</div>
-                <h3 className="mt-4 min-h-16 text-lg font-semibold leading-7 text-ink">{item.title}</h3>
-                <p className="mt-4 text-sm leading-6 text-ink/62">{item.brief}</p>
+            {defaultCaseCmsItems.slice(0, 5).map((item) => (
+              <article key={item.slug} className="border border-line bg-paper p-5">
+                <div className="text-xs text-moss">{item.location} / {item.projectType}</div>
+                <h3 className="mt-4 min-h-16 text-lg font-semibold leading-7 text-ink">{item.projectName}</h3>
+                <p className="mt-4 text-sm leading-6 text-ink/62">{item.summary}</p>
               </article>
             ))}
           </div>

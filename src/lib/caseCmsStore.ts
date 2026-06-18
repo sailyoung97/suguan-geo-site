@@ -1,5 +1,5 @@
-import { defaultCaseCmsItems, type CaseCmsItem } from "@/src/config/caseCms";
-import { businessCategories, officialCaseMeta, type BusinessCategory } from "@/src/data/cases";
+﻿import { defaultCaseCmsItems, type CaseCmsItem } from "@/src/config/caseCms";
+import { businessCategories, caseDisplayPriority, officialCaseMeta, type BusinessCategory } from "@/src/data/cases";
 
 export const caseCmsStorageKey = "suguan.cases.v1";
 export const caseCmsChangedEvent = "suguan-cases-changed";
@@ -26,8 +26,8 @@ function normalizeCase(item: Partial<CaseCmsItem>, index: number): CaseCmsItem {
     city: item.city || "",
     businessCategory:
       officialMeta?.businessCategory ||
-      (candidateCategory && businessCategories.includes(candidateCategory) ? candidateCategory : "都市文旅"),
-    order: Number.isFinite(Number(item.order)) ? Number(item.order) : index + 1,
+      (candidateCategory && businessCategories.includes(candidateCategory) ? candidateCategory : "研学亲子营地"),
+    order: officialMeta?.order || (Number.isFinite(Number(item.order)) ? Number(item.order) : index + 1),
     isPublished: item.isPublished ?? true,
     isFeatured: item.isFeatured ?? false,
     coverImage: item.coverImage || "",
@@ -51,8 +51,20 @@ function normalizeCase(item: Partial<CaseCmsItem>, index: number): CaseCmsItem {
   };
 }
 
+function mergeWithDefaultCases(items: CaseCmsItem[]) {
+  const existingSlugs = new Set(items.map((item) => item.slug));
+  return sortCaseCmsItems([...items, ...defaultCaseCmsItems.filter((item) => !existingSlugs.has(item.slug))]);
+}
+
 export function sortCaseCmsItems(items: CaseCmsItem[]) {
-  return [...items].sort((a, b) => a.order - b.order || a.projectName.localeCompare(b.projectName, "zh-CN"));
+  return [...items].sort((a, b) => {
+    const priorityA = caseDisplayPriority.indexOf(a.slug);
+    const priorityB = caseDisplayPriority.indexOf(b.slug);
+    const normalizedPriorityA = priorityA === -1 ? Number.POSITIVE_INFINITY : priorityA;
+    const normalizedPriorityB = priorityB === -1 ? Number.POSITIVE_INFINITY : priorityB;
+
+    return normalizedPriorityA - normalizedPriorityB || a.order - b.order || a.projectName.localeCompare(b.projectName, "zh-CN");
+  });
 }
 
 export function readStoredCases(): CaseCmsItem[] {
@@ -71,7 +83,7 @@ export function readStoredCases(): CaseCmsItem[] {
       return defaultCaseCmsItems;
     }
 
-    return sortCaseCmsItems(parsed.map(normalizeCase));
+    return mergeWithDefaultCases(parsed.map(normalizeCase));
   } catch {
     return defaultCaseCmsItems;
   }
@@ -104,7 +116,7 @@ export async function readRemoteCases(): Promise<CaseCmsItem[]> {
     if (!response.ok) return [];
     const parsed = await response.json();
     if (!Array.isArray(parsed)) return [];
-    return sortCaseCmsItems(parsed.map(normalizeCase));
+    return mergeWithDefaultCases(parsed.map(normalizeCase));
   } catch {
     return [];
   }
@@ -123,3 +135,4 @@ export async function writeRemoteCases(items: CaseCmsItem[]) {
     // Remote sync is best-effort; local state still updates immediately.
   }
 }
+
