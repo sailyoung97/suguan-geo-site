@@ -23,6 +23,8 @@ function ProjectTagGrid({ items }: { items: readonly string[] }) {
   );
 }
 
+const visibleBusinessCaseSections = businessCaseSections.filter((section) => section.category !== "乡村文旅");
+
 export function ProfessionalProof({ compact = false }: ProfessionalProofProps) {
   return (
     <section className={compact ? "border-y border-line bg-paper/74 py-14" : "border-y border-line bg-paper/74 py-16"}>
@@ -100,7 +102,7 @@ export function ProfessionalProof({ compact = false }: ProfessionalProofProps) {
                     </p>
                   </div>
                   <div className="grid gap-5">
-                    {businessCaseSections.map((section) => (
+                    {visibleBusinessCaseSections.map((section) => (
                       <section key={section.category} className="border border-line bg-rice p-4">
                         <h4 className="text-sm font-semibold text-ink">{section.category}</h4>
                         <ProjectTagGrid items={section.items} />

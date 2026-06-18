@@ -6,6 +6,7 @@ import { defaultCaseCmsItems } from "@/src/config/caseCms";
 import { organizationGroups } from "@/src/data/organization";
 
 const directions = ["研学亲子营地", "乡村文旅", "农文旅融合", "品牌文创", "城市更新", "非标商业", "自持运营"];
+const campProjectSlugs = ["baicaohuxiang", "huajianji", "fengmingyaji", "xiaosangtian", "xiaotaoyuan", "dongshengcun-xiaofengnian"];
 
 const methods = [
   {
@@ -53,14 +54,11 @@ export default function AboutPage() {
       </section>
 
       <section className="mx-auto max-w-7xl px-4 pb-16 sm:px-6 lg:px-8">
-        <div className="mb-9 flex flex-col justify-between gap-4 md:flex-row md:items-end">
+        <div className="mb-8">
           <div>
             <p className="text-sm font-medium text-clay">ORGANIZATION</p>
             <h2 className="mt-3 font-serif text-4xl font-semibold text-ink">溯观文化产业机构</h2>
           </div>
-          <p className="max-w-xl text-sm leading-6 text-ink/62">
-            以文商文旅、文创与文教三条业务线协同，覆盖文化产业、都市文旅、乡村农文旅、非标商业、高校文创、研学与亲子场景。
-          </p>
         </div>
         <div className="grid gap-px overflow-hidden border border-line bg-line lg:grid-cols-3">
           {organizationGroups.map((item, index) => (
@@ -152,20 +150,24 @@ export default function AboutPage() {
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="mb-9 flex flex-col justify-between gap-4 md:flex-row md:items-end">
             <div>
-              <p className="text-sm font-medium text-clay">SELECTED WORKS</p>
-              <h2 className="mt-3 font-serif text-4xl font-semibold text-ink">代表项目简述</h2>
+              <p className="text-sm font-medium text-clay">CAMP PROJECTS</p>
+              <h2 className="mt-3 font-serif text-4xl font-semibold text-ink">六大营地项目简述</h2>
             </div>
             <Link href="/cases" className="text-sm text-ink/56 transition hover:text-ink">
               查看全部案例
             </Link>
           </div>
-          <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-5">
-            {defaultCaseCmsItems.slice(0, 5).map((item) => (
-              <article key={item.slug} className="border border-line bg-paper p-5">
+          <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
+            {campProjectSlugs.flatMap((slug) => {
+              const item = defaultCaseCmsItems.find((caseItem) => caseItem.slug === slug);
+              return item ? [item] : [];
+            }).map((item) => (
+              <Link key={item.slug} href={`/cases/${item.slug}`} className="group border border-line bg-paper p-5 transition hover:-translate-y-1 hover:shadow-soft">
                 <div className="text-xs text-moss">{item.location} / {item.projectType}</div>
                 <h3 className="mt-4 min-h-16 text-lg font-semibold leading-7 text-ink">{item.projectName}</h3>
                 <p className="mt-4 text-sm leading-6 text-ink/62">{item.summary}</p>
-              </article>
+                <span className="mt-5 inline-block text-sm text-ink/42 transition group-hover:text-clay">查看案例</span>
+              </Link>
             ))}
           </div>
         </div>
