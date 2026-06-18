@@ -38,24 +38,6 @@ export default function AboutPage() {
 
       <AboutHeroSection />
 
-      <section className="border-y border-line bg-paper/70 py-10">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="grid overflow-hidden border border-line bg-line sm:grid-cols-2 lg:grid-cols-4">
-            {[
-              ["创立时间", "2016年"],
-              ["行业身份", "5 项行业与产业组织身份背书"],
-              ["主营业务", "乡村振兴、农文旅融合、城市更新、品牌文创"],
-              ["服务对象", "政府平台、文旅投资方、乡村运营主体、商业空间业主"]
-            ].map(([label, value]) => (
-              <div key={label} className="flex min-h-36 flex-col justify-between bg-paper p-6">
-                <div className="text-xs text-ink/44">{label}</div>
-                <div className="mt-5 text-base font-semibold leading-7 text-ink">{value}</div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
       <section className="mx-auto grid max-w-7xl gap-8 px-4 py-16 sm:px-6 lg:grid-cols-[0.4fr_0.6fr] lg:gap-12 lg:px-8">
         <div className="pt-1">
           <p className="text-sm font-medium text-clay">COMPANY</p>

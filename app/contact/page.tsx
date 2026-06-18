@@ -9,18 +9,20 @@ import { siteContentDefaults } from "@/src/config/siteContent";
 const contactCards = [
   {
     label: "商务电话",
-    value: "023-0000-1980",
-    hint: "工作日 10:00-18:00"
+    value: "15823051516",
+    hint: "工作日 10:00-18:00",
+    href: "tel:15823051516"
   },
   {
-    label: "邮箱",
-    value: "hello@suguan-geo.com",
-    hint: "用于原型展示的占位邮箱"
+    label: "项目咨询",
+    value: "18996507779",
+    hint: "项目沟通 / 资料领取",
+    href: "tel:18996507779"
   },
   {
     label: "公司地址",
-    value: "重庆市渝中区",
-    hint: "具体地址先以占位信息展示"
+    value: "重庆市两江新区北滨二路保利中心B5栋1-2",
+    hint: ""
   }
 ];
 
@@ -92,8 +94,16 @@ export default function ContactPage() {
               {contactCards.map((item) => (
                 <div key={item.label} className="bg-paper p-5">
                   <div className="text-xs text-ink/46">{item.label}</div>
-                  <div className="mt-2 break-words text-xl font-semibold text-ink">{item.value}</div>
-                  <div className="mt-2 text-xs text-moss">{item.hint}</div>
+                  <div className="mt-2 break-words text-xl font-semibold text-ink">
+                    {"href" in item && item.href ? (
+                      <a className="transition hover:text-clay" href={item.href}>
+                        {item.value}
+                      </a>
+                    ) : (
+                      item.value
+                    )}
+                  </div>
+                  {item.hint ? <div className="mt-2 text-xs text-moss">{item.hint}</div> : null}
                 </div>
               ))}
             </div>

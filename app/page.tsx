@@ -25,7 +25,7 @@ const serviceHighlights = [
 const heroContactInfo = {
   phone01: "15823051516",
   phone02: "18996507779",
-  companyAddress: "重庆市渝中区 / 公司实际地址待补充",
+  companyAddress: "重庆市两江新区北滨二路保利中心B5栋1-2",
 };
 
 function HeroQrCard({ label, asset }: { label: string; asset: typeof siteAssets.contactQrCode01 }) {
@@ -191,9 +191,19 @@ export default function HomePage() {
               有项目正在推进，可以先从一次项目咨询开始。
             </h2>
             <div className="mt-6 grid gap-3 text-sm leading-6 text-ink/64 sm:grid-cols-3">
-              <p>商务电话：023-0000-1980</p>
-              <p>邮箱：hello@suguan-geo.com</p>
-              <p>地址：重庆市渝中区</p>
+              <p>
+                商务电话：
+                <a className="transition hover:text-ink" href="tel:15823051516">
+                  15823051516
+                </a>
+              </p>
+              <p>
+                项目咨询：
+                <a className="transition hover:text-ink" href="tel:18996507779">
+                  18996507779
+                </a>
+              </p>
+              <p>地址：重庆市两江新区北滨二路保利中心B5栋1-2</p>
             </div>
           </div>
           <div className="flex flex-col gap-3 sm:flex-row lg:flex-col">

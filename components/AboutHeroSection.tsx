@@ -9,11 +9,16 @@ export function AboutHeroSection() {
   const backgroundSrc = uploadedSrc || siteAssets.aboutHeroImage.src;
 
   return (
-    <section
-      className="relative min-h-[680px] overflow-hidden bg-ink bg-cover bg-center bg-no-repeat sm:min-h-[720px]"
-      style={backgroundSrc ? { backgroundImage: `url("${backgroundSrc}")` } : undefined}
-    >
-      {!backgroundSrc ? <div className="absolute inset-0 bg-[linear-gradient(135deg,#1f2421,#111310)]" /> : null}
+    <section className="relative overflow-hidden bg-ink sm:min-h-[720px]">
+      {backgroundSrc ? (
+        <img
+          src={backgroundSrc}
+          alt={siteAssets.aboutHeroImage.alt}
+          className="block h-auto w-full object-contain sm:absolute sm:inset-0 sm:h-full sm:w-full sm:object-cover"
+        />
+      ) : (
+        <div className="h-[320px] bg-[linear-gradient(135deg,#1f2421,#111310)] sm:absolute sm:inset-0 sm:h-auto" />
+      )}
     </section>
   );
 }
