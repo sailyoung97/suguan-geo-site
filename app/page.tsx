@@ -23,10 +23,9 @@ const serviceHighlights = [
 ];
 
 const heroContactInfo = {
-  phone01: "023-xxxxxxx",
-  phone02: "138xxxxxxxx",
+  phone01: "15823051516",
+  phone02: "18996507779",
   companyAddress: "重庆市渝中区 / 公司实际地址待补充",
-  companyEmail: "contact@suguan.com"
 };
 
 function HeroQrCard({ label, asset }: { label: string; asset: typeof siteAssets.contactQrCode01 }) {
@@ -57,11 +56,15 @@ function HeroContactPanel() {
         <div className="mt-4 space-y-3 text-sm leading-6 text-paper/78">
           <p>
             <span className="block text-paper/42">商务电话</span>
-            <span className="font-medium text-paper">{heroContactInfo.phone01}</span>
+            <a className="font-medium text-paper transition hover:text-clay" href={`tel:${heroContactInfo.phone01}`}>
+              {heroContactInfo.phone01}
+            </a>
           </p>
           <p>
             <span className="block text-paper/42">项目咨询</span>
-            <span className="font-medium text-paper">{heroContactInfo.phone02}</span>
+            <a className="font-medium text-paper transition hover:text-clay" href={`tel:${heroContactInfo.phone02}`}>
+              {heroContactInfo.phone02}
+            </a>
           </p>
         </div>
       </div>
@@ -71,10 +74,6 @@ function HeroContactPanel() {
           <p>
             <span className="block text-paper/42">公司地址</span>
             <span>{heroContactInfo.companyAddress}</span>
-          </p>
-          <p>
-            <span className="block text-paper/42">公司邮箱</span>
-            <span>{heroContactInfo.companyEmail}</span>
           </p>
         </div>
       </div>
@@ -87,15 +86,15 @@ export default function HomePage() {
     <main>
       <section className="relative min-h-screen overflow-hidden border-b border-paper/10 bg-ink text-paper">
         <SiteHeader variant="dark" />
-        <div className="pointer-events-none absolute inset-x-0 top-[12vh] select-none overflow-hidden text-center font-sans text-[24vw] font-semibold uppercase leading-none tracking-[-0.055em] text-paper/[0.1] sm:top-[10vh] sm:text-[22vw] lg:text-[16vw] xl:text-[15vw]">
+        <div className="pointer-events-none absolute inset-x-0 top-[104px] select-none overflow-hidden whitespace-nowrap text-center font-sans text-[clamp(72px,21vw,112px)] font-semibold uppercase leading-none tracking-[-0.04em] text-paper/[0.08] sm:top-[10vh] sm:text-[22vw] sm:text-paper/[0.1] lg:text-[16vw] xl:text-[15vw]">
           SUGUAN
         </div>
         <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_72%_18%,rgba(154,94,55,0.18),transparent_32%),linear-gradient(180deg,rgba(31,36,33,0)_0%,rgba(31,36,33,0.46)_100%)]" />
 
-        <div className="relative mx-auto grid min-h-[calc(100vh-74px)] max-w-7xl content-center px-4 pb-14 pt-28 sm:px-6 sm:pb-16 sm:pt-32 lg:px-8">
-          <div className="max-w-[760px] pt-[16vh] sm:pt-[20vh] lg:pt-[22vh]">
+        <div className="relative mx-auto grid min-h-[calc(100svh-68px)] max-w-7xl content-center px-6 pb-12 pt-8 sm:min-h-[calc(100vh-74px)] sm:px-6 sm:pb-16 sm:pt-32 lg:px-8">
+          <div className="max-w-[760px] pt-[132px] sm:pt-[20vh] lg:pt-[22vh]">
             <p className="text-sm font-medium uppercase tracking-[0.32em] text-clay">SUGUAN DESIGN</p>
-            <h1 className="mt-6 font-serif text-4xl font-semibold leading-[1.12] text-paper sm:text-5xl lg:text-6xl">
+            <h1 className="mt-6 font-serif text-[40px] font-semibold leading-[1.12] text-paper sm:text-5xl lg:text-6xl">
               致力于打造具有持续生命力与社会价值的文化项目
             </h1>
             <p className="mt-7 text-base leading-8 text-paper/70 sm:text-lg">
