@@ -20,6 +20,30 @@ type LightboxState = {
   index: number;
 } | null;
 
+function TextWithLineBreaks({ text }: { text: string }) {
+  if (!text) return <p>待补充</p>;
+
+  const paragraphs = text
+    .split(/\n\s*\n/)
+    .map((paragraph) => paragraph.trim())
+    .filter(Boolean);
+
+  return (
+    <div className="space-y-5">
+      {paragraphs.map((paragraph, paragraphIndex) => (
+        <p key={`${paragraph}-${paragraphIndex}`} className="leading-[2]">
+          {paragraph.split(/\n/).map((line, lineIndex) => (
+            <span key={`${line}-${lineIndex}`}>
+              {line}
+              {lineIndex < paragraph.split(/\n/).length - 1 ? <br /> : null}
+            </span>
+          ))}
+        </p>
+      ))}
+    </div>
+  );
+}
+
 function DetailBlock({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <section className="border-t border-line py-10">
@@ -37,7 +61,9 @@ function BulletList({ items }: { items: string[] }) {
       {items.map((item) => (
         <li key={item} className="flex gap-3">
           <span className="mt-3 h-px w-6 shrink-0 bg-clay" />
-          <span>{item}</span>
+          <div className="min-w-0">
+            <TextWithLineBreaks text={item} />
+          </div>
         </li>
       ))}
     </ul>
@@ -64,7 +90,6 @@ function TagList({ items, dark = false }: { items: string[]; dark?: boolean }) {
 function normalizeGalleryImages(images: CaseGalleryImage[]) {
   return images
     .filter((image) => image.url)
-    .slice(0, 8)
     .map((image, index) => ({
       src: image.url,
       caption: image.caption || `项目实景图 ${index + 1}`
@@ -97,7 +122,10 @@ export function CaseDetailTemplate({ slug }: CaseDetailTemplateProps) {
     ["项目年份", item.year]
   ];
   const metaLine = [item.location, item.projectType, item.status, item.year].filter(Boolean).join(" / ");
-  const galleryImages = normalizeGalleryImages(item.galleryImages);
+  const galleryImages = [
+    ...normalizeGalleryImages(item.galleryImages),
+    ...(item.assetImages || []).filter(Boolean).map((src, index) => ({ src, caption: `项目实景图 ${item.galleryImages.length + index + 1}` }))
+  ];
   const guideMapImages: LightboxImage[] = item.guideMapImage ? [{ src: item.guideMapImage, caption: item.guideMapCaption || "项目导览图" }] : [];
   const activeImage = lightbox ? lightbox.images[lightbox.index] : null;
   const relatedCases = publishedCases.filter((caseItem) => caseItem.slug !== item.slug).slice(0, 5);
@@ -131,7 +159,9 @@ export function CaseDetailTemplate({ slug }: CaseDetailTemplateProps) {
         <div className="mx-auto mt-10 max-w-5xl text-center">
           <div className="text-sm leading-6 text-moss">{metaLine}</div>
           <h1 className="mx-auto mt-6 max-w-5xl font-serif text-5xl font-semibold leading-tight text-ink sm:text-6xl">{item.projectName}</h1>
-          <p className="mx-auto mt-7 max-w-4xl text-lg leading-8 text-ink/66">{item.summary}</p>
+          <div className="mx-auto mt-7 max-w-4xl text-lg leading-8 text-ink/66">
+            <TextWithLineBreaks text={item.summary} />
+          </div>
         </div>
 
         {item.guideMapImage ? (
@@ -172,7 +202,7 @@ export function CaseDetailTemplate({ slug }: CaseDetailTemplateProps) {
       <section className="mx-auto grid max-w-7xl gap-12 px-4 py-12 sm:px-6 lg:grid-cols-[minmax(0,1fr)_20rem] lg:px-8">
         <article className="bg-paper px-6 py-2 sm:px-10">
           <DetailBlock title="项目内容构成">
-            <p>{item.background || "待补充"}</p>
+            <TextWithLineBreaks text={item.background} />
           </DetailBlock>
 
           <DetailBlock title="问题定义">
@@ -192,7 +222,7 @@ export function CaseDetailTemplate({ slug }: CaseDetailTemplateProps) {
           </DetailBlock>
 
           <DetailBlock title="项目价值">
-            <p>{item.value || "待补充"}</p>
+            <TextWithLineBreaks text={item.value} />
           </DetailBlock>
 
           <DetailBlock title="适合客户参考">

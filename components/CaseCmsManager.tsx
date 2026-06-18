@@ -10,6 +10,7 @@ import { uploadImage } from "@/src/lib/uploadImage";
 
 type TextArrayField = "painPoints" | "services" | "strategy" | "results" | "capabilities" | "suitableClients" | "geoKeywords" | "tags";
 type SingleImageField = "coverImage" | "guideMapImage" | "heroImage" | "sceneImage01" | "sceneImage02" | "sceneImage03";
+const maxGalleryImages = 12;
 
 const imageFields: Array<{ key: SingleImageField; label: string; size: string }> = [
   { key: "coverImage", label: "案例封面图 / 详情页主视觉大图", size: "1920 x 1200px，列表封面与详情页主视觉" },
@@ -51,8 +52,8 @@ function slugify(value: string) {
 }
 
 function normalizeGalleryForEdit(images: CaseGalleryImage[]) {
-  const nextImages = [...images.slice(0, 5)];
-  while (nextImages.length < 5) {
+  const nextImages = [...images.slice(0, maxGalleryImages)];
+  while (nextImages.length < maxGalleryImages) {
     nextImages.push({ url: "", caption: `项目实景图 ${nextImages.length + 1}` });
   }
   return nextImages;
@@ -239,7 +240,7 @@ export function CaseCmsManager() {
         ...editingCase,
         slug: normalizedSlug,
         order: Number(editingCase.order) || sortedCases.length + 1,
-        galleryImages: editingCase.galleryImages.filter((image) => image.url).slice(0, 5),
+        galleryImages: editingCase.galleryImages.filter((image) => image.url),
         campCaseSections: []
       },
       originalSlug

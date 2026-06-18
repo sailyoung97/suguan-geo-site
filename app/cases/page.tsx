@@ -4,6 +4,9 @@ import { SiteHeader } from "@/components/SiteHeader";
 import { siteContentDefaults } from "@/src/config/siteContent";
 import { brandTimeline, businessCaseSections } from "@/src/data/cases";
 
+const casesDescription =
+  "从研学亲子营地、乡村文旅、农文旅融合到城市更新与非标商业，溯观以项目研判、定位策划、空间场景、品牌内容和运营导入为核心，把地方资源转化为可体验、可消费、可持续经营的项目资产。重点案例涵盖百草湖乡、小桑田、重庆开埠遗址公园、山城坝坝等不同类型的在地项目实践。";
+
 export default function CasesPage() {
   return (
     <main>
@@ -18,35 +21,14 @@ export default function CasesPage() {
             </h1>
           </div>
           <p className="max-w-2xl text-base leading-8 text-ink/64 lg:justify-self-end">
-            <SiteContentText fieldKey="cases.description" defaultText={siteContentDefaults["cases.description"]} />
+            <SiteContentText fieldKey="cases.description" defaultText={casesDescription} />
           </p>
-        </div>
-      </section>
-
-      <section className="border-y border-line bg-paper/74 py-14">
-        <div className="mx-auto grid max-w-7xl gap-8 px-4 sm:px-6 lg:grid-cols-[0.42fr_0.58fr] lg:px-8">
-          <div>
-            <p className="text-sm font-medium tracking-[0.22em] text-clay">CAMP CASES</p>
-            <h2 className="mt-3 font-serif text-4xl font-semibold leading-tight text-ink">研学亲子营地与乡村文旅案例</h2>
-          </div>
-          <div>
-            <p className="text-base leading-8 text-ink/66">
-              溯观围绕乡村资源、自然教育、亲子研学、营地建设与在地运营，持续参与多个乡村文旅项目的策划、设计、建设与运营实践，形成从前期研判到内容产品、空间场景、品牌传播和持续经营的一体化经验。
-            </p>
-            <div className="mt-6 flex flex-wrap gap-2">
-              {["百草湖乡", "花间集", "凤鸣雅集", "小桑田", "小桃园", "东升村·小丰年"].map((item) => (
-                <span key={item} className="border border-line bg-rice px-3 py-1.5 text-xs text-ink/66">
-                  {item}
-                </span>
-              ))}
-            </div>
-          </div>
         </div>
       </section>
 
       <section className="border-y border-line bg-paper/68">
         <div className="mx-auto grid max-w-7xl gap-px overflow-hidden px-4 sm:px-6 md:grid-cols-3 lg:px-8">
-          {["在地文化转译", "项目运营闭环", "GEO 内容资产"].map((item) => (
+          {["在地资源转译", "项目运营闭环", "GEO 内容资产"].map((item) => (
             <div key={item} className="py-6 md:border-r md:border-line md:last:border-r-0">
               <span className="text-sm font-medium text-ink/72">{item}</span>
             </div>
@@ -66,7 +48,7 @@ export default function CasesPage() {
               <h2 className="mt-3 font-serif text-4xl font-semibold text-ink">业务板块案例</h2>
             </div>
             <p className="max-w-xl text-sm leading-6 text-ink/62">
-              从文化产业、都市文旅、乡村农文旅、非标商业到高校文创，展示溯观不同业务线的项目经验和合作场景。
+              从研学亲子营地、乡村文旅、农文旅融合、自持运营到品牌文创、城市更新与非标商业，展示溯观不同业务线的项目经验和合作场景。
             </p>
           </div>
           <div className="grid gap-5 lg:grid-cols-2">

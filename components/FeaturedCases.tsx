@@ -4,9 +4,14 @@ import Link from "next/link";
 import { CaseImage } from "@/components/CaseImage";
 import { useCaseCms } from "@/src/hooks/useCaseCms";
 
+const homeFeaturedSlugs = ["baicaohuxiang", "xiaosangtian", "kaibu-heritage-park", "shancheng-baba"];
+
 export function FeaturedCases() {
-  const { featuredCases } = useCaseCms();
-  const visibleCases = featuredCases.length ? featuredCases.slice(0, 4) : [];
+  const { publishedCases } = useCaseCms();
+  const visibleCases = homeFeaturedSlugs.flatMap((slug) => {
+    const item = publishedCases.find((caseItem) => caseItem.slug === slug);
+    return item ? [item] : [];
+  });
 
   return (
     <div className="grid gap-px overflow-hidden border border-paper/14 bg-paper/14 md:grid-cols-2 xl:grid-cols-4">
