@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { CaseImage } from "@/components/CaseImage";
 import { useCaseCms } from "@/src/hooks/useCaseCms";
+import type { CaseGalleryImage } from "@/src/config/caseCms";
 
 type CaseDetailTemplateProps = {
   slug: string;
@@ -60,83 +61,14 @@ function TagList({ items, dark = false }: { items: string[]; dark?: boolean }) {
   );
 }
 
-function CampSpecialSection({
-  sections,
-  onOpenLightbox
-}: {
-  sections: NonNullable<ReturnType<typeof useCaseCms>["cases"][number]["campCaseSections"]>;
-  onOpenLightbox: (images: LightboxImage[], index: number) => void;
-}) {
-  const visibleSections = sections.filter((section) => section.projectName || section.intro || section.guideMapImage || section.realImages.some((image) => image.url));
-
-  if (!visibleSections.length) return null;
-
-  return (
-    <section className="border-t border-line py-12">
-      <p className="text-sm font-medium text-clay">CAMP PROJECT SYSTEM</p>
-      <h2 className="mt-3 font-serif text-4xl font-semibold leading-tight text-ink">研学亲子营地建设专项</h2>
-      <p className="mt-5 max-w-3xl text-base leading-8 text-ink/66">
-        溯观围绕乡村资源、自然教育、亲子研学、营地建设与在地运营，持续参与多个乡村文旅项目的策划、设计、建设与运营实践，形成从项目研判、空间场景、内容产品到持续经营的一体化经验。
-      </p>
-
-      <div className="mt-10 space-y-14">
-        {visibleSections.map((section, sectionIndex) => {
-          const realImages = section.realImages.filter((image) => image.url);
-          const sectionImages: LightboxImage[] = [
-            ...(section.guideMapImage ? [{ src: section.guideMapImage, caption: section.guideMapCaption || "项目导览图" }] : []),
-            ...realImages.map((image) => ({ src: image.url, caption: image.caption || "营地实景图" }))
-          ];
-
-          return (
-            <article key={section.id || section.projectName} className="border-t border-line pt-10 first:border-t-0 first:pt-0">
-              <div className="mx-auto max-w-4xl text-center">
-                <div className="font-serif text-4xl text-ink/12">{String(sectionIndex + 1).padStart(2, "0")}</div>
-                <h3 className="mt-3 font-serif text-3xl font-semibold text-ink sm:text-4xl">{section.projectName}</h3>
-                <p className="mt-3 text-sm text-moss">｜{section.location}｜</p>
-                <p className="mt-6 text-base leading-8 text-ink/66">{section.intro}</p>
-              </div>
-
-              {section.guideMapImage ? (
-                <button
-                  type="button"
-                  onClick={() => onOpenLightbox(sectionImages, 0)}
-                  className="mx-auto mt-8 block w-full max-w-5xl text-left"
-                >
-                  <CaseImage
-                    src={section.guideMapImage}
-                    className="w-full border border-line bg-paper"
-                    imageClassName="h-auto object-contain"
-                    fallbackLabel="图片未配置或路径失效"
-                  />
-                  <p className="mt-3 text-center text-sm text-ink/48">{section.guideMapCaption || "项目导览图"}</p>
-                </button>
-              ) : null}
-
-              {realImages.length ? (
-                <div className="mt-8 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-                  {realImages.map((image, imageIndex) => (
-                    <button
-                      key={`${image.url}-${imageIndex}`}
-                      type="button"
-                      onClick={() => onOpenLightbox(sectionImages, (section.guideMapImage ? 1 : 0) + imageIndex)}
-                      className="group text-left"
-                    >
-                      <CaseImage
-                        src={image.url}
-                        className="aspect-[4/3] w-full transition group-hover:opacity-90"
-                        fallbackLabel="图片未配置或路径失效"
-                      />
-                      <p className="mt-2 text-sm text-ink/48">{image.caption || `营地实景图 ${imageIndex + 1}`}</p>
-                    </button>
-                  ))}
-                </div>
-              ) : null}
-            </article>
-          );
-        })}
-      </div>
-    </section>
-  );
+function normalizeGalleryImages(images: CaseGalleryImage[]) {
+  return images
+    .filter((image) => image.url)
+    .slice(0, 8)
+    .map((image, index) => ({
+      src: image.url,
+      caption: image.caption || `项目实景图 ${index + 1}`
+    }));
 }
 
 export function CaseDetailTemplate({ slug }: CaseDetailTemplateProps) {
@@ -164,13 +96,11 @@ export function CaseDetailTemplate({ slug }: CaseDetailTemplateProps) {
     ["项目状态", item.status],
     ["项目年份", item.year]
   ];
-  const galleryImages: LightboxImage[] = (item.galleryImages?.length ? item.galleryImages : [item.heroImage, item.sceneImage01, item.sceneImage02])
-    .filter(Boolean)
-    .slice(0, 8)
-    .map((src, index) => ({ src, caption: `项目图集 ${String(index + 1).padStart(2, "0")}` }));
-  const assetImages = (item.assetImages || []).filter(Boolean);
   const metaLine = [item.location, item.projectType, item.status, item.year].filter(Boolean).join(" / ");
+  const galleryImages = normalizeGalleryImages(item.galleryImages);
+  const guideMapImages: LightboxImage[] = item.guideMapImage ? [{ src: item.guideMapImage, caption: item.guideMapCaption || "项目导览图" }] : [];
   const activeImage = lightbox ? lightbox.images[lightbox.index] : null;
+  const relatedCases = publishedCases.filter((caseItem) => caseItem.slug !== item.slug).slice(0, 5);
 
   function openLightbox(images: LightboxImage[], index: number) {
     if (!images.length) return;
@@ -201,15 +131,33 @@ export function CaseDetailTemplate({ slug }: CaseDetailTemplateProps) {
         <div className="mt-10">
           <div className="max-w-5xl text-sm leading-6 text-moss">{metaLine}</div>
           <h1 className="mt-6 max-w-5xl font-serif text-5xl font-semibold leading-tight text-ink sm:text-6xl">{item.projectName}</h1>
-          <p className="mt-7 max-w-3xl text-lg leading-8 text-ink/66">{item.summary}</p>
+          <p className="mt-7 max-w-4xl text-lg leading-8 text-ink/66">{item.summary}</p>
         </div>
 
         <div className="mt-14">
           <CaseImage src={item.coverImage} className="h-[360px] w-full sm:h-[520px] lg:h-[640px]" fallbackLabel="项目封面图未配置" />
         </div>
 
+        {item.guideMapImage ? (
+          <section className="mt-14">
+            <div className="mx-auto max-w-5xl text-center">
+              <p className="text-sm font-medium text-clay">PROJECT MAP</p>
+              <h2 className="mt-2 font-serif text-3xl font-semibold text-ink">项目导览图 / 总览图</h2>
+            </div>
+            <button type="button" onClick={() => openLightbox(guideMapImages, 0)} className="mx-auto mt-6 block w-full max-w-5xl text-left">
+              <CaseImage
+                src={item.guideMapImage}
+                className="w-full border border-line bg-paper"
+                imageClassName="h-auto object-contain"
+                fallbackLabel="图片未配置或路径失效"
+              />
+              <p className="mt-3 text-center text-sm text-ink/48">{item.guideMapCaption || "项目导览图"}</p>
+            </button>
+          </section>
+        ) : null}
+
         {galleryImages.length > 0 ? (
-          <section className="mt-10">
+          <section className="mt-14">
             <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-end">
               <div>
                 <p className="text-sm font-medium text-clay">PROJECT GALLERY</p>
@@ -220,8 +168,8 @@ export function CaseDetailTemplate({ slug }: CaseDetailTemplateProps) {
             <div className="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
               {galleryImages.map((image, index) => (
                 <button key={`${image.src}-${index}`} type="button" onClick={() => openLightbox(galleryImages, index)} className="group text-left">
-                  <CaseImage src={image.src} className="aspect-[4/3] w-full transition group-hover:opacity-90" fallbackLabel={image.caption} />
-                  <p className="mt-2 text-xs text-ink/42">{image.caption}</p>
+                  <CaseImage src={image.src} className="aspect-[4/3] w-full transition group-hover:opacity-90" fallbackLabel="图片未配置或路径失效" />
+                  <p className="mt-2 text-sm text-ink/48">{image.caption}</p>
                 </button>
               ))}
             </div>
@@ -231,26 +179,6 @@ export function CaseDetailTemplate({ slug }: CaseDetailTemplateProps) {
 
       <section className="mx-auto grid max-w-7xl gap-12 px-4 py-12 sm:px-6 lg:grid-cols-[minmax(0,1fr)_20rem] lg:px-8">
         <article className="bg-paper px-6 py-2 sm:px-10">
-          <CampSpecialSection sections={item.campCaseSections || []} onOpenLightbox={openLightbox} />
-
-          {assetImages.length > 0 ? (
-            <section className="border-t border-line py-10">
-              <p className="text-sm font-medium text-clay">ASSET IMAGES</p>
-              <h2 className="mt-2 font-serif text-3xl font-semibold text-ink">产业 / 运营补充图</h2>
-              <div className="mt-6 grid gap-4 sm:grid-cols-2">
-                {assetImages.map((src, index) => {
-                  const images = assetImages.map((imageSrc, imageIndex) => ({ src: imageSrc, caption: `补充图 ${imageIndex + 1}` }));
-                  return (
-                    <button key={`${src}-${index}`} type="button" onClick={() => openLightbox(images, index)} className="text-left">
-                      <CaseImage src={src} className="aspect-[16/10] w-full" fallbackLabel={`补充图 ${index + 1}`} />
-                      <p className="mt-2 text-xs text-ink/42">补充图 {index + 1}</p>
-                    </button>
-                  );
-                })}
-              </div>
-            </section>
-          ) : null}
-
           <DetailBlock title="项目背景">
             <p>{item.background || "待补充"}</p>
           </DetailBlock>
@@ -279,7 +207,7 @@ export function CaseDetailTemplate({ slug }: CaseDetailTemplateProps) {
             <BulletList items={item.suitableClients} />
           </DetailBlock>
 
-          <DetailBlock title="GEO 关键词">
+          <DetailBlock title="关键词">
             <TagList items={item.geoKeywords} dark />
           </DetailBlock>
         </article>
@@ -298,24 +226,27 @@ export function CaseDetailTemplate({ slug }: CaseDetailTemplateProps) {
           </div>
 
           <div className="border border-line bg-paper p-5">
-            <div className="text-xs uppercase tracking-[0.2em] text-clay">Case Index</div>
-            <div className="mt-5 space-y-4">
-              {publishedCases.map((caseItem) => (
-                <Link
-                  key={caseItem.slug}
-                  href={`/cases/${caseItem.slug}`}
-                  className={`block text-sm leading-6 transition ${caseItem.slug === item.slug ? "font-semibold text-ink" : "text-ink/56 hover:text-ink"}`}
-                >
-                  {caseItem.projectName}
-                </Link>
-              ))}
+            <div className="text-xs uppercase tracking-[0.2em] text-clay">核心关键词</div>
+            <div className="mt-4">
+              <TagList items={item.geoKeywords.slice(0, 8)} />
             </div>
           </div>
 
           <div className="border border-line bg-paper p-5">
-            <h3 className="text-lg font-semibold text-ink">可证明的公司能力</h3>
+            <div className="text-xs uppercase tracking-[0.2em] text-clay">关联服务</div>
             <div className="mt-4">
-              <BulletList items={item.capabilities} />
+              <TagList items={item.services.slice(0, 8)} />
+            </div>
+          </div>
+
+          <div className="border border-line bg-paper p-5">
+            <div className="text-xs uppercase tracking-[0.2em] text-clay">相关案例</div>
+            <div className="mt-5 space-y-4">
+              {relatedCases.map((caseItem) => (
+                <Link key={caseItem.slug} href={`/cases/${caseItem.slug}`} className="block text-sm leading-6 text-ink/56 transition hover:text-ink">
+                  {caseItem.projectName}
+                </Link>
+              ))}
             </div>
           </div>
 

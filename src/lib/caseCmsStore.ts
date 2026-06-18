@@ -1,10 +1,12 @@
+import { defaultCaseCmsItems, type CampCaseSection, type CaseCmsItem, type CaseGalleryImage } from "@/src/config/caseCms";
 import {
-  defaultCampCaseSections,
-  defaultCaseCmsItems,
-  type CampCaseSection,
-  type CaseCmsItem
-} from "@/src/config/caseCms";
-import { businessCategories, caseDisplayPriority, officialCaseMeta, type BusinessCategory } from "@/src/data/cases";
+  businessCategories,
+  caseDisplayPriority,
+  hiddenCaseNames,
+  legacyCaseSlugMap,
+  officialCaseMeta,
+  type BusinessCategory
+} from "@/src/data/cases";
 
 export const caseCmsStorageKey = "suguan.cases.v1";
 export const caseCmsChangedEvent = "suguan-cases-changed";
@@ -13,13 +15,41 @@ function isBrowser() {
   return typeof window !== "undefined";
 }
 
-function normalizeCampCaseSections(value: unknown, slug: string, defaultSections: CampCaseSection[] = []) {
+function normalizeSlug(slug: string) {
+  return legacyCaseSlugMap[slug] || slug;
+}
+
+function normalizeStringArray(value: unknown) {
+  return Array.isArray(value) ? value.filter((item): item is string => typeof item === "string" && Boolean(item.trim())) : [];
+}
+
+function normalizeGalleryImages(value: unknown, legacyImages: string[]): CaseGalleryImage[] {
   if (!Array.isArray(value)) {
-    return slug === "baicaohuxiang" ? defaultCampCaseSections : defaultSections;
+    return legacyImages.map((url, index) => ({ url, caption: `项目实景图 ${index + 1}` }));
   }
 
-  const normalizedSections = value.map((section, index) => {
-    const record = section && typeof section === "object" ? section as Partial<CampCaseSection> : {};
+  return value
+    .map((image, index) => {
+      if (typeof image === "string") {
+        return { url: image, caption: `项目实景图 ${index + 1}` };
+      }
+      if (image && typeof image === "object") {
+        const record = image as Partial<CaseGalleryImage>;
+        return {
+          url: record.url || "",
+          caption: record.caption || `项目实景图 ${index + 1}`
+        };
+      }
+      return { url: "", caption: `项目实景图 ${index + 1}` };
+    })
+    .filter((image) => image.url);
+}
+
+function normalizeCampCaseSections(value: unknown): CampCaseSection[] {
+  if (!Array.isArray(value)) return [];
+
+  return value.map((section, index) => {
+    const record = section && typeof section === "object" ? (section as Partial<CampCaseSection>) : {};
     return {
       id: record.id || `camp-section-${index + 1}`,
       projectName: record.projectName || "",
@@ -35,17 +65,10 @@ function normalizeCampCaseSections(value: unknown, slug: string, defaultSections
         : []
     };
   });
-
-  if (slug !== "baicaohuxiang") {
-    return normalizedSections;
-  }
-
-  const existingIds = new Set(normalizedSections.map((section) => section.id));
-  return [...normalizedSections, ...defaultCampCaseSections.filter((section) => !existingIds.has(section.id))];
 }
 
 function normalizeCase(item: Partial<CaseCmsItem>, index: number): CaseCmsItem {
-  const slug = item.slug || `case-${index + 1}`;
+  const slug = normalizeSlug(item.slug || `case-${index + 1}`);
   const officialMeta = officialCaseMeta[slug];
   const defaultCase = defaultCaseCmsItems.find((caseItem) => caseItem.slug === slug);
   const candidateCategory = item.businessCategory as BusinessCategory | undefined;
@@ -54,48 +77,70 @@ function normalizeCase(item: Partial<CaseCmsItem>, index: number): CaseCmsItem {
   );
 
   return {
-    projectName: item.projectName || "",
+    projectName: item.projectName || defaultCase?.projectName || "",
     slug,
-    location: item.location || "",
-    projectType: item.projectType || "",
-    status: item.status || "",
-    year: officialMeta?.year || item.year || "",
-    city: item.city || "",
+    location: item.location || defaultCase?.location || "",
+    projectType: item.projectType || defaultCase?.projectType || "",
+    status: item.status || defaultCase?.status || "",
+    year: officialMeta?.year || item.year || defaultCase?.year || "",
+    city: item.city || defaultCase?.city || "",
     businessCategory:
       officialMeta?.businessCategory ||
-      (candidateCategory && businessCategories.includes(candidateCategory) ? candidateCategory : "研学亲子营地"),
-    order: officialMeta?.order || (Number.isFinite(Number(item.order)) ? Number(item.order) : index + 1),
-    isPublished: item.isPublished ?? true,
-    isFeatured: item.isFeatured ?? false,
-    coverImage: item.coverImage || "",
-    heroImage: item.heroImage || "",
-    sceneImage01: item.sceneImage01 || "",
-    sceneImage02: item.sceneImage02 || "",
-    sceneImage03: item.sceneImage03 || "",
-    galleryImages: Array.isArray(item.galleryImages) ? item.galleryImages.filter(Boolean) : legacyGalleryImages,
-    assetImages: Array.isArray(item.assetImages) ? item.assetImages.filter(Boolean) : [],
-    campCaseSections: normalizeCampCaseSections(item.campCaseSections, slug, defaultCase?.campCaseSections),
-    summary: item.summary || "",
-    background: item.background || "",
-    painPoints: Array.isArray(item.painPoints) ? item.painPoints : [],
-    services: Array.isArray(item.services) ? item.services : [],
-    strategy: Array.isArray(item.strategy) ? item.strategy : [],
-    results: Array.isArray(item.results) ? item.results : [],
-    value: item.value || "",
-    capabilities: Array.isArray(item.capabilities) ? item.capabilities : [],
-    suitableClients: Array.isArray(item.suitableClients) ? item.suitableClients : [],
-    geoKeywords: Array.isArray(item.geoKeywords) ? item.geoKeywords : [],
-    tags: Array.isArray(item.tags) ? item.tags : []
+      (candidateCategory && businessCategories.includes(candidateCategory) ? candidateCategory : defaultCase?.businessCategory || "研学亲子营地"),
+    order: officialMeta?.order || (Number.isFinite(Number(item.order)) ? Number(item.order) : defaultCase?.order || index + 1),
+    isPublished: item.isPublished ?? defaultCase?.isPublished ?? true,
+    isFeatured: item.isFeatured ?? defaultCase?.isFeatured ?? false,
+    coverImage: item.coverImage || defaultCase?.coverImage || "",
+    heroImage: item.heroImage || defaultCase?.heroImage || "",
+    sceneImage01: item.sceneImage01 || defaultCase?.sceneImage01 || "",
+    sceneImage02: item.sceneImage02 || defaultCase?.sceneImage02 || "",
+    sceneImage03: item.sceneImage03 || defaultCase?.sceneImage03 || "",
+    guideMapImage: item.guideMapImage || defaultCase?.guideMapImage || "",
+    guideMapCaption: item.guideMapCaption || defaultCase?.guideMapCaption || "项目导览图",
+    galleryImages: normalizeGalleryImages(item.galleryImages, defaultCase?.galleryImages?.length ? [] : legacyGalleryImages).length
+      ? normalizeGalleryImages(item.galleryImages, defaultCase?.galleryImages?.length ? [] : legacyGalleryImages)
+      : defaultCase?.galleryImages || [],
+    assetImages: normalizeStringArray(item.assetImages),
+    campCaseSections: normalizeCampCaseSections(item.campCaseSections),
+    summary: item.summary || defaultCase?.summary || "",
+    background: item.background || defaultCase?.background || "",
+    painPoints: Array.isArray(item.painPoints) ? item.painPoints : defaultCase?.painPoints || [],
+    services: Array.isArray(item.services) ? item.services : defaultCase?.services || [],
+    strategy: Array.isArray(item.strategy) ? item.strategy : defaultCase?.strategy || [],
+    results: Array.isArray(item.results) ? item.results : defaultCase?.results || [],
+    value: item.value || defaultCase?.value || "",
+    capabilities: Array.isArray(item.capabilities) ? item.capabilities : defaultCase?.capabilities || [],
+    suitableClients: Array.isArray(item.suitableClients) ? item.suitableClients : defaultCase?.suitableClients || [],
+    geoKeywords: Array.isArray(item.geoKeywords) ? item.geoKeywords : defaultCase?.geoKeywords || [],
+    tags: Array.isArray(item.tags) ? item.tags : defaultCase?.tags || []
   };
 }
 
+function shouldHideCase(item: CaseCmsItem) {
+  return hiddenCaseNames.includes(item.projectName) || item.slug === "camp-case-system" || item.slug === "camp-case-sections";
+}
+
+function dedupeCases(items: CaseCmsItem[]) {
+  const seen = new Set<string>();
+  const result: CaseCmsItem[] = [];
+
+  for (const item of items) {
+    if (shouldHideCase(item) || seen.has(item.slug)) continue;
+    seen.add(item.slug);
+    result.push(item);
+  }
+
+  return result;
+}
+
 function mergeWithDefaultCases(items: CaseCmsItem[]) {
-  const existingSlugs = new Set(items.map((item) => item.slug));
-  return sortCaseCmsItems([...items, ...defaultCaseCmsItems.filter((item) => !existingSlugs.has(item.slug))]);
+  const cleanedItems = dedupeCases(items);
+  const existingSlugs = new Set(cleanedItems.map((item) => item.slug));
+  return sortCaseCmsItems([...cleanedItems, ...defaultCaseCmsItems.filter((item) => !existingSlugs.has(item.slug))]);
 }
 
 export function sortCaseCmsItems(items: CaseCmsItem[]) {
-  return [...items].sort((a, b) => {
+  return dedupeCases(items).sort((a, b) => {
     const priorityA = caseDisplayPriority.indexOf(a.slug);
     const priorityB = caseDisplayPriority.indexOf(b.slug);
     const normalizedPriorityA = priorityA === -1 ? Number.POSITIVE_INFINITY : priorityA;
