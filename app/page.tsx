@@ -32,7 +32,7 @@ const serviceHighlights = [
 
 const heroContactInfo = {
   phone01: "15823051516",
-  phone02: "18996507779",
+  phone02: "18996527779",
   companyAddress: "重庆市两江新区北滨二路保利中心B5栋1-2",
 };
 
@@ -207,8 +207,8 @@ export default function HomePage() {
               </p>
               <p>
                 项目咨询：
-                <a className="transition hover:text-ink" href="tel:18996507779">
-                  18996507779
+                <a className="transition hover:text-ink" href="tel:18996527779">
+                  18996527779
                 </a>
               </p>
               <p>地址：重庆市两江新区北滨二路保利中心B5栋1-2</p>

@@ -15,9 +15,9 @@ const contactCards = [
   },
   {
     label: "项目咨询",
-    value: "18996507779",
+    value: "18996527779",
     hint: "项目沟通 / 资料领取",
-    href: "tel:18996507779"
+    href: "tel:18996527779"
   },
   {
     label: "公司地址",
