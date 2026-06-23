@@ -1,5 +1,4 @@
 import Link from "next/link";
-import { Fragment } from "react";
 import { SiteContentText } from "@/components/SiteContentText";
 import { SiteHeader } from "@/components/SiteHeader";
 import { siteContentDefaults } from "@/src/config/siteContent";
@@ -100,52 +99,87 @@ function TextList({ items }: { items: string[] }) {
 const lifecycleGroups = [
   {
     title: "产品投资",
-    items: ["定位策划", "规划设计", "落地建设", "品牌包装", "体验设计"]
+    items: [
+      ["定位", "策划"],
+      ["规划", "设计"],
+      ["落地", "建设"],
+      ["品牌", "包装"],
+      ["体验", "设计"]
+    ]
   },
   {
     title: "项目投资",
-    items: ["团队建设", "项目运营", "渠道导入", "宣传推广", "产品更新"]
+    items: [
+      ["团队", "建设"],
+      ["项目", "运营"],
+      ["渠道", "导入"],
+      ["宣传", "推广"],
+      ["产品", "更新"]
+    ]
   }
 ];
+
+function LifecycleGroup({ group }: { group: (typeof lifecycleGroups)[number] }) {
+  return (
+    <div className="min-w-0">
+      <div className="text-center">
+        <span className="inline-flex border border-ink bg-paper px-5 py-2 text-sm font-semibold tracking-[0.16em] text-ink">
+          {group.title}
+        </span>
+        <div className="mx-auto mt-3 h-4 w-[88%] border-x border-t border-ink/70" />
+      </div>
+      <div className="mt-2 grid gap-3 sm:grid-cols-[1fr_auto_1fr_auto_1fr_auto_1fr_auto_1fr] sm:items-center">
+        {group.items.map((item, index) => (
+          <FragmentNode key={item.join("")} item={item} showArrow={index < group.items.length - 1} />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function FragmentNode({ item, showArrow }: { item: string[]; showArrow: boolean }) {
+  return (
+    <>
+      <div className="grid min-h-20 place-items-center bg-ink px-4 py-4 text-center text-base font-semibold leading-6 text-paper shadow-sm sm:min-h-24">
+        <span>
+          {item[0]}
+          <br />
+          {item[1]}
+        </span>
+      </div>
+      {showArrow ? (
+        <div className="grid place-items-center text-2xl font-semibold text-ink sm:text-3xl" aria-hidden="true">
+          <span className="sm:hidden">↓</span>
+          <span className="hidden sm:inline">→</span>
+        </div>
+      ) : null}
+    </>
+  );
+}
 
 function LifecycleFlow() {
   return (
     <section className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
-      <div className="border border-line bg-paper p-6 sm:p-8 lg:p-10">
-        <div className="grid gap-8 lg:grid-cols-[0.42fr_0.58fr] lg:items-end">
-          <div>
-            <p className="text-sm font-medium tracking-[0.22em] text-clay">FULL-LIFECYCLE SERVICE</p>
-            <h2 className="mt-3 font-serif text-4xl font-semibold text-ink">全生命周期服务链路</h2>
-            <p className="mt-5 text-2xl font-semibold leading-9 text-moss">从无到有，全程打造 + 运营</p>
-          </div>
-          <p className="text-base leading-8 text-ink/64">
-            溯观不只提供单一设计服务，而是围绕项目从前期定位、规划设计、落地建设、品牌包装、体验设计，到团队建设、项目运营、渠道导入、宣传推广与产品更新，形成贯穿建设与运营的全生命周期服务链路。
+      <div className="border border-line bg-paper px-5 py-12 sm:px-8 lg:px-10">
+        <div className="mx-auto max-w-3xl text-center">
+          <p className="text-sm font-medium tracking-[0.22em] text-clay">FULL-LIFECYCLE SERVICE</p>
+          <h2 className="mt-3 font-serif text-5xl font-semibold text-ink sm:text-6xl">全生命周期</h2>
+          <p className="mt-5 text-2xl font-semibold leading-9 text-moss">从无到有，全程打造 + 运营</p>
+          <p className="mt-5 text-base leading-8 text-ink/64">
+            溯观围绕项目从前期定位、规划设计、落地建设、品牌包装、体验设计，到团队建设、项目运营、渠道导入、宣传推广与产品更新，形成贯穿建设与运营的完整服务链路。
           </p>
         </div>
 
-        <div className="mt-10 grid gap-6 lg:grid-cols-[1fr_auto_1fr] lg:items-stretch">
+        <div className="mt-12 grid gap-8 xl:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] xl:items-start">
           {lifecycleGroups.map((group, groupIndex) => (
-            <Fragment key={group.title}>
-            {groupIndex === 1 ? <div className="grid place-items-center text-4xl font-light text-clay lg:px-2">+</div> : null}
-            <div className="border border-line bg-rice p-5 sm:p-6">
-              <div className="flex items-center justify-between gap-4">
-                <h3 className="text-xl font-semibold text-ink">{group.title}</h3>
-                <span className="font-serif text-3xl text-ink/12">0{groupIndex + 1}</span>
-              </div>
-              <div className="mt-6 grid gap-3 sm:grid-cols-5 lg:grid-cols-1 xl:grid-cols-5">
-                {group.items.map((item, index) => (
-                  <div key={item} className="flex items-center gap-3 sm:flex-col sm:items-stretch lg:flex-row xl:flex-col">
-                    <div className="min-w-0 flex-1 border border-line bg-paper px-4 py-3 text-center text-sm font-medium text-ink">
-                      {item}
-                    </div>
-                    {index < group.items.length - 1 ? (
-                      <span className="text-center text-sm text-clay sm:rotate-90 lg:rotate-0 xl:rotate-90">→</span>
-                    ) : null}
-                  </div>
-                ))}
-              </div>
+            <div key={group.title} className="contents">
+              {groupIndex === 1 ? (
+                <div className="grid place-items-center text-5xl font-light leading-none text-ink xl:min-h-32 xl:px-2 xl:pt-14">
+                  +
+                </div>
+              ) : null}
+              <LifecycleGroup group={group} />
             </div>
-            </Fragment>
           ))}
         </div>
       </div>
