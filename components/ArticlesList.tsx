@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { CaseImage } from "@/components/CaseImage";
 import { GeoContentTopic, getPublishedContentTopics, readStoredContentTopics } from "@/src/lib/contentTopics";
 
 export function ArticlesList() {
@@ -24,6 +25,17 @@ export function ArticlesList() {
             <Link href={`/articles/${article.slug}`} className="group mt-3 block">
               <h2 className="text-2xl font-semibold text-ink transition group-hover:text-clay">{article.title}</h2>
               <p className="mt-3 max-w-3xl text-sm leading-6 text-ink/60">{article.summary || "文章内容正在整理中。"}</p>
+              {article.coverImage ? (
+                <div className="mt-5">
+                  <CaseImage
+                    src={article.coverImage}
+                    className="aspect-[16/9] w-full max-w-3xl overflow-hidden border border-line bg-rice"
+                    fallbackLabel={article.coverImageCaption || "文章主图"}
+                    alt={article.coverImageAlt || article.coverImageCaption || article.title}
+                  />
+                  <p className="mt-2 text-xs text-ink/46">{article.coverImageCaption || "项目实景图"}</p>
+                </div>
+              ) : null}
             </Link>
             <div className="mt-4 flex flex-wrap gap-2 text-xs text-ink/48">
               <span>{article.publishChannel}</span>

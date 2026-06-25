@@ -15,9 +15,10 @@ type UploadPayload = {
   fileName?: string;
   mimeType?: string;
   base64?: string;
-  scope?: "site-assets" | "cases";
+  scope?: "site-assets" | "cases" | "articles";
   assetKey?: string;
   caseSlug?: string;
+  articleSlug?: string;
   fieldKey?: string;
 };
 
@@ -78,6 +79,12 @@ function buildStorageKey(payload: UploadPayload) {
     const caseSlug = toKebabCase(payload.caseSlug || "case") || "case";
     const fieldKey = normalizeFieldKey(payload.fieldKey);
     return `cases/${caseSlug}-${fieldKey}-${timestamp}.${extension}`;
+  }
+
+  if (payload.scope === "articles") {
+    const articleSlug = toKebabCase(payload.articleSlug || "article") || "article";
+    const fieldKey = normalizeFieldKey(payload.fieldKey);
+    return `articles/${articleSlug}-${fieldKey}-${timestamp}.${extension}`;
   }
 
   const assetKey = toKebabCase(payload.assetKey || fileName.replace(/\.[^.]+$/, "")) || "image";

@@ -14,6 +14,7 @@ type SiteAssetImageProps = {
   srcOverride?: string;
   fallbackAsset?: SiteAsset;
   hideFallback?: boolean;
+  alt?: string;
 };
 
 export function SiteAssetImage({
@@ -25,7 +26,8 @@ export function SiteAssetImage({
   fit,
   srcOverride,
   fallbackAsset,
-  hideFallback = false
+  hideFallback = false,
+  alt
 }: SiteAssetImageProps) {
   const [failed, setFailed] = useState(false);
   const { getAssetSrc } = useSiteAssets();
@@ -43,7 +45,7 @@ export function SiteAssetImage({
       <div className={`relative overflow-hidden bg-[#d9d7d1] ${className}`}>
         <img
           src={src}
-          alt={asset?.alt || fallbackLabel || "图片"}
+          alt={alt || asset?.alt || fallbackLabel || "图片"}
           className={`h-full w-full ${fitClassName} ${imageClassName}`}
           onError={() => setFailed(true)}
         />

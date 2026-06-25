@@ -1,10 +1,13 @@
 "use client";
 
 import { ChangeEvent, FormEvent, ReactNode, useEffect, useMemo, useRef, useState } from "react";
+import { CaseImage } from "@/components/CaseImage";
 import {
+  ArticleBlock,
   businessAreas,
   contentTopicsStorageKey,
   contentTypes,
+  createArticleBlock,
   geoIntents,
   GeoContentTopic,
   getDefaultContentTopics,
@@ -15,6 +18,7 @@ import {
   targetClients,
   topicStatuses
 } from "@/src/lib/contentTopics";
+import { uploadImage } from "@/src/lib/uploadImage";
 
 const allOption = "全部";
 
@@ -66,6 +70,9 @@ const defaultForm: TopicForm = {
   targetSearchQuestion: "",
   geoIntent: "AI搜索占位",
   coreKeywords: "",
+  coverImage: "",
+  coverImageCaption: "",
+  coverImageAlt: "",
   longTailKeywords: "",
   locationKeywords: "",
   businessKeywords: "",
@@ -74,6 +81,7 @@ const defaultForm: TopicForm = {
   targetClient: "文旅投资方",
   summary: "",
   content: "",
+  blocks: [createArticleBlock("paragraph", "")],
   outline: "",
   references: "",
   requiredAssets: "",
@@ -360,6 +368,53 @@ function TopicModal({
   onSubmit: (event: FormEvent<HTMLFormElement>) => void;
   onClose: () => void;
 }) {
+  const [uploadingKey, setUploadingKey] = useState("");
+  const [uploadMessage, setUploadMessage] = useState("");
+  const articleSlug = form.slug || slugify(form.title || "article");
+
+  async function handleArticleImageUpload(file: File | undefined, fieldKey: string, onUrl: (url: string) => void) {
+    if (!file) return;
+    setUploadingKey(fieldKey);
+    setUploadMessage("图片正在上传...");
+    try {
+      const url = await uploadImage(file, {
+        scope: "articles",
+        articleSlug,
+        fieldKey
+      });
+      onUrl(url);
+      setUploadMessage("图片上传成功，已自动写入 URL。");
+    } catch (error) {
+      setUploadMessage(error instanceof Error ? error.message : "图片上传失败，请稍后重试。");
+    } finally {
+      setUploadingKey("");
+    }
+  }
+
+  function updateBlock(index: number, patch: Partial<ArticleBlock>) {
+    const nextBlocks = [...form.blocks];
+    nextBlocks[index] = { ...nextBlocks[index], ...patch };
+    onChange("blocks", nextBlocks as TopicForm["blocks"]);
+  }
+
+  function addBlock(type: ArticleBlock["type"] = "paragraph") {
+    onChange("blocks", [...form.blocks, createArticleBlock(type)] as TopicForm["blocks"]);
+  }
+
+  function removeBlock(index: number) {
+    const nextBlocks = form.blocks.filter((_, blockIndex) => blockIndex !== index);
+    onChange("blocks", (nextBlocks.length ? nextBlocks : [createArticleBlock("paragraph")]) as TopicForm["blocks"]);
+  }
+
+  function moveBlock(index: number, direction: -1 | 1) {
+    const targetIndex = index + direction;
+    if (targetIndex < 0 || targetIndex >= form.blocks.length) return;
+    const nextBlocks = [...form.blocks];
+    const [block] = nextBlocks.splice(index, 1);
+    nextBlocks.splice(targetIndex, 0, block);
+    onChange("blocks", nextBlocks as TopicForm["blocks"]);
+  }
+
   return (
     <div className="fixed inset-0 z-50 grid place-items-center bg-ink/44 px-4 py-8 backdrop-blur-sm">
       <div className="max-h-[92vh] w-full max-w-6xl overflow-y-auto border border-line bg-paper shadow-soft">
@@ -461,12 +516,27 @@ function TopicModal({
             </Field>
           </FormSection>
 
+          <FormSection title="文章主图" columns="md:grid-cols-1">
+            <ArticleImageField
+              title="文章列表主图 / 详情页主图"
+              image={form.coverImage}
+              caption={form.coverImageCaption}
+              alt={form.coverImageAlt}
+              uploading={uploadingKey === "coverImage"}
+              onImageChange={(value) => onChange("coverImage", value)}
+              onCaptionChange={(value) => onChange("coverImageCaption", value)}
+              onAltChange={(value) => onChange("coverImageAlt", value)}
+              onUpload={(file) => handleArticleImageUpload(file, "coverImage", (url) => onChange("coverImage", url))}
+            />
+            {uploadMessage ? <p className="text-sm text-moss">{uploadMessage}</p> : null}
+          </FormSection>
+
           <FormSection title="内容生产" columns="md:grid-cols-2">
             <Field label="内容摘要">
               <textarea value={form.summary} onChange={(event) => onChange("summary", event.target.value)} className={textareaClassName} />
             </Field>
             <Field label="文章正文 content">
-              <textarea value={form.content} onChange={(event) => onChange("content", event.target.value)} className={textareaClassName} />
+              <textarea value={form.content} onChange={(event) => onChange("content", event.target.value)} className={`${textareaClassName} min-h-[600px]`} />
             </Field>
             <Field label="文章大纲">
               <textarea value={form.outline} onChange={(event) => onChange("outline", event.target.value)} className={textareaClassName} />
@@ -480,6 +550,49 @@ function TopicModal({
             <Field label="审核意见">
               <textarea value={form.reviewNotes} onChange={(event) => onChange("reviewNotes", event.target.value)} className={textareaClassName} />
             </Field>
+          </FormSection>
+
+          <FormSection title="正文图文编辑器" columns="md:grid-cols-1">
+            <div className="rounded-sm border border-line bg-rice p-4">
+              <p className="text-sm leading-6 text-ink/58">
+                使用结构化 blocks 编辑正文。图片块上传成功后只保存公网 URL，不保存 base64；旧文章仍可通过下方 content 字段兼容显示。
+              </p>
+              <div className="mt-4 flex flex-wrap gap-2">
+                {[
+                  ["heading2", "二级标题"],
+                  ["heading3", "三级标题"],
+                  ["paragraph", "普通段落"],
+                  ["emphasis", "重点段落"],
+                  ["quote", "引用段落"],
+                  ["image", "图片"],
+                  ["divider", "分隔线"]
+                ].map(([type, label]) => (
+                  <button
+                    key={type}
+                    type="button"
+                    onClick={() => addBlock(type as ArticleBlock["type"])}
+                    className="border border-line bg-paper px-3 py-2 text-xs text-ink/64 transition hover:border-ink hover:text-ink"
+                  >
+                    新增{label}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div className="grid gap-4">
+              {form.blocks.map((block, index) => (
+                <ArticleBlockEditor
+                  key={block.id}
+                  block={block}
+                  index={index}
+                  isUploading={uploadingKey === `block-${index}`}
+                  onChange={(patch) => updateBlock(index, patch)}
+                  onUpload={(file) => handleArticleImageUpload(file, `block-${index}`, (url) => updateBlock(index, { image: url }))}
+                  onMoveUp={() => moveBlock(index, -1)}
+                  onMoveDown={() => moveBlock(index, 1)}
+                  onRemove={() => removeBlock(index)}
+                />
+              ))}
+            </div>
           </FormSection>
 
           <FormSection title="发布复盘">
@@ -542,6 +655,149 @@ function GeoQuestionsModal({ questions, onClose }: { questions: string[]; onClos
           ))}
         </div>
       </div>
+    </div>
+  );
+}
+
+function ArticleImageField({
+  title,
+  image,
+  caption,
+  alt,
+  uploading,
+  onImageChange,
+  onCaptionChange,
+  onAltChange,
+  onUpload
+}: {
+  title: string;
+  image: string;
+  caption: string;
+  alt: string;
+  uploading: boolean;
+  onImageChange: (value: string) => void;
+  onCaptionChange: (value: string) => void;
+  onAltChange: (value: string) => void;
+  onUpload: (file?: File) => void;
+}) {
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  return (
+    <div className="grid gap-4 border border-line bg-rice p-4 lg:grid-cols-[18rem_1fr]">
+      <CaseImage src={image} className="aspect-[16/10] border border-line bg-paper" fallbackLabel="文章主图" />
+      <div className="grid content-start gap-3">
+        <div className="text-sm font-semibold text-ink">{title}</div>
+        <input value={image} onChange={(event) => onImageChange(event.target.value)} placeholder="/uploads/article-cover.jpg 或上传后自动写入 URL" className={inputClassName} />
+        <input value={caption} onChange={(event) => onCaptionChange(event.target.value)} placeholder="图片名称 / 图片说明" className={inputClassName} />
+        <input value={alt} onChange={(event) => onAltChange(event.target.value)} placeholder="图片 alt，留空时使用图片名称或文章标题" className={inputClassName} />
+        <div className="flex flex-wrap gap-2">
+          <input
+            ref={inputRef}
+            type="file"
+            accept="image/jpeg,image/png,image/webp"
+            className="hidden"
+            onChange={(event) => {
+              onUpload(event.target.files?.[0]);
+              event.target.value = "";
+            }}
+          />
+          <button type="button" disabled={uploading} onClick={() => inputRef.current?.click()} className="bg-ink px-4 py-3 text-sm font-medium text-paper transition hover:bg-moss disabled:opacity-60">
+            {uploading ? "上传中..." : "上传图片"}
+          </button>
+          <button type="button" onClick={() => onImageChange("")} className="border border-line px-4 py-3 text-sm text-ink/62 transition hover:border-ink hover:text-ink">
+            清空图片
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function ArticleBlockEditor({
+  block,
+  index,
+  isUploading,
+  onChange,
+  onUpload,
+  onMoveUp,
+  onMoveDown,
+  onRemove
+}: {
+  block: ArticleBlock;
+  index: number;
+  isUploading: boolean;
+  onChange: (patch: Partial<ArticleBlock>) => void;
+  onUpload: (file?: File) => void;
+  onMoveUp: () => void;
+  onMoveDown: () => void;
+  onRemove: () => void;
+}) {
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  return (
+    <div className="border border-line bg-paper p-4">
+      <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-center">
+        <div className="text-sm font-semibold text-ink">Block {index + 1}</div>
+        <div className="flex flex-wrap gap-2">
+          <select value={block.type} onChange={(event) => onChange({ type: event.target.value as ArticleBlock["type"] })} className="h-9 border border-line bg-rice px-2 text-xs text-ink">
+            <option value="heading2">二级标题</option>
+            <option value="heading3">三级标题</option>
+            <option value="paragraph">普通段落</option>
+            <option value="emphasis">重点段落</option>
+            <option value="quote">引用段落</option>
+            <option value="image">图片</option>
+            <option value="divider">分隔线</option>
+          </select>
+          <button type="button" onClick={onMoveUp} className="border border-line px-3 py-2 text-xs text-ink/62">上移</button>
+          <button type="button" onClick={onMoveDown} className="border border-line px-3 py-2 text-xs text-ink/62">下移</button>
+          <button type="button" onClick={onRemove} className="border border-clay/30 px-3 py-2 text-xs text-clay">删除</button>
+        </div>
+      </div>
+
+      {block.type === "divider" ? (
+        <div className="mt-4 border-t border-line pt-4 text-xs text-ink/42">前台将渲染为分隔线。</div>
+      ) : block.type === "image" ? (
+        <div className="mt-4 grid gap-4 lg:grid-cols-[18rem_1fr]">
+          <CaseImage src={block.image} className="aspect-[16/10] border border-line bg-rice" fallbackLabel={block.caption || "项目实景图"} />
+          <div className="grid gap-3">
+            <input value={block.image} onChange={(event) => onChange({ image: event.target.value })} placeholder="图片 URL" className={inputClassName} />
+            <input value={block.caption} onChange={(event) => onChange({ caption: event.target.value })} placeholder="图片名称 caption" className={inputClassName} />
+            <input value={block.alt} onChange={(event) => onChange({ alt: event.target.value })} placeholder="图片 alt" className={inputClassName} />
+            <div className="grid gap-3 sm:grid-cols-2">
+              <select value={block.width} onChange={(event) => onChange({ width: event.target.value as ArticleBlock["width"] })} className={inputClassName}>
+                <option value="normal">正常宽度</option>
+                <option value="wide">宽幅</option>
+                <option value="full">全宽</option>
+              </select>
+              <select value={block.align} onChange={(event) => onChange({ align: event.target.value as ArticleBlock["align"] })} className={inputClassName}>
+                <option value="center">居中</option>
+                <option value="left">左对齐</option>
+              </select>
+            </div>
+            <input
+              ref={inputRef}
+              type="file"
+              accept="image/jpeg,image/png,image/webp"
+              className="hidden"
+              onChange={(event) => {
+                onUpload(event.target.files?.[0]);
+                event.target.value = "";
+              }}
+            />
+            <button type="button" disabled={isUploading} onClick={() => inputRef.current?.click()} className="w-fit bg-ink px-4 py-3 text-sm font-medium text-paper transition hover:bg-moss disabled:opacity-60">
+              {isUploading ? "上传中..." : "上传正文图片"}
+            </button>
+          </div>
+        </div>
+      ) : (
+        <textarea
+          value={block.content}
+          onChange={(event) => onChange({ content: event.target.value })}
+          rows={block.type === "heading2" || block.type === "heading3" ? 2 : 6}
+          className="mt-4 min-h-24 w-full border border-line bg-rice px-3 py-3 text-sm leading-7 text-ink outline-none focus:border-ink"
+          placeholder="输入正文内容"
+        />
+      )}
     </div>
   );
 }

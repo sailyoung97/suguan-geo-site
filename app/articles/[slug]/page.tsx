@@ -17,9 +17,11 @@ export function generateMetadata({ params }: ArticleDetailPageProps): Metadata {
   return {
     title,
     description,
+    keywords: article?.coreKeywords || undefined,
     openGraph: {
       title,
       description,
+      images: article?.coverImage ? [article.coverImage] : undefined,
       type: "article"
     }
   };

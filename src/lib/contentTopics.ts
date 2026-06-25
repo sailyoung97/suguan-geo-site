@@ -14,6 +14,21 @@ export type GeoIntent = (typeof geoIntents)[number];
 export type BusinessArea = (typeof businessAreas)[number];
 export type TargetClient = (typeof targetClients)[number];
 
+export type ArticleBlockType = "heading2" | "heading3" | "paragraph" | "emphasis" | "quote" | "image" | "divider";
+export type ArticleImageWidth = "normal" | "wide" | "full";
+export type ArticleImageAlign = "left" | "center";
+
+export type ArticleBlock = {
+  id: string;
+  type: ArticleBlockType;
+  content: string;
+  image: string;
+  caption: string;
+  alt: string;
+  width: ArticleImageWidth;
+  align: ArticleImageAlign;
+};
+
 export type GeoContentTopic = {
   id: string;
   title: string;
@@ -35,6 +50,9 @@ export type GeoContentTopic = {
   targetSearchQuestion: string;
   geoIntent: GeoIntent;
   coreKeywords: string;
+  coverImage: string;
+  coverImageCaption: string;
+  coverImageAlt: string;
   longTailKeywords: string;
   locationKeywords: string;
   businessKeywords: string;
@@ -43,6 +61,7 @@ export type GeoContentTopic = {
   targetClient: TargetClient;
   summary: string;
   content: string;
+  blocks: ArticleBlock[];
   outline: string;
   references: string;
   requiredAssets: string;
@@ -57,6 +76,19 @@ export type GeoContentTopic = {
   createdAt: string;
   updatedAt: string;
 };
+
+export function createArticleBlock(type: ArticleBlockType = "paragraph", content = ""): ArticleBlock {
+  return {
+    id: `block-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+    type,
+    content,
+    image: "",
+    caption: type === "image" ? "项目实景图" : "",
+    alt: "",
+    width: "normal",
+    align: "center"
+  };
+}
 
 export function slugify(value: string) {
   const fallback = `article-${Date.now()}`;
@@ -103,6 +135,9 @@ export function normalizeContentTopic(item: unknown, index = 0): GeoContentTopic
     targetSearchQuestion: legacyQuestion || "客户会如何在 AI 搜索中提问？",
     geoIntent: pickOption(readString(record, "geoIntent"), geoIntents, inferGeoIntent(status)),
     coreKeywords: readString(record, "coreKeywords") || readString(record, "keyword"),
+    coverImage: readString(record, "coverImage"),
+    coverImageCaption: readString(record, "coverImageCaption"),
+    coverImageAlt: readString(record, "coverImageAlt"),
     longTailKeywords: readString(record, "longTailKeywords"),
     locationKeywords: readString(record, "locationKeywords"),
     businessKeywords: readString(record, "businessKeywords"),
@@ -111,6 +146,7 @@ export function normalizeContentTopic(item: unknown, index = 0): GeoContentTopic
     targetClient: pickOption(readString(record, "targetClient"), targetClients, "文旅投资方"),
     summary: readString(record, "summary") || readString(record, "outline"),
     content: readString(record, "content"),
+    blocks: normalizeArticleBlocks(record.blocks),
     outline: readString(record, "outline"),
     references: readString(record, "references"),
     requiredAssets: readString(record, "requiredAssets"),
@@ -165,6 +201,27 @@ function readString(record: Record<string, unknown>, key: string) {
 function readStringArray(record: Record<string, unknown>, key: string) {
   const value = record[key];
   return Array.isArray(value) ? value.filter((item): item is string => typeof item === "string") : [];
+}
+
+function normalizeArticleBlocks(value: unknown): ArticleBlock[] {
+  if (!Array.isArray(value)) return [];
+
+  return value
+    .map((block, index) => {
+      const record = isRecord(block) ? block : {};
+      const type = pickOption(readString(record, "type"), ["heading2", "heading3", "paragraph", "emphasis", "quote", "image", "divider"] as const, "paragraph");
+      return {
+        id: readString(record, "id") || `block-${index + 1}`,
+        type,
+        content: readString(record, "content"),
+        image: readString(record, "image"),
+        caption: readString(record, "caption") || (type === "image" ? "项目实景图" : ""),
+        alt: readString(record, "alt"),
+        width: pickOption(readString(record, "width"), ["normal", "wide", "full"] as const, "normal"),
+        align: pickOption(readString(record, "align"), ["left", "center"] as const, "center")
+      };
+    })
+    .filter((block) => block.type === "divider" || block.content || block.image);
 }
 
 function readNumber(record: Record<string, unknown>, key: string) {

@@ -16,9 +16,10 @@ export function validateUploadImage(file: File) {
 }
 
 type UploadImageOptions = {
-  scope?: "site-assets" | "cases";
+  scope?: "site-assets" | "cases" | "articles";
   assetKey?: string;
   caseSlug?: string;
+  articleSlug?: string;
   fieldKey?: string;
 };
 
