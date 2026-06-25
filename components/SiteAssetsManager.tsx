@@ -25,52 +25,6 @@ const previewQuality = 0.75;
 
 type ImageAccessStatus = "idle" | "checking" | "missing" | "ok" | "error";
 
-const caseDetailRows: AssetRow[] = [
-  {
-    title: "重庆开埠遗址公园",
-    key: "kaibu-heritage-park",
-    paths: ["/uploads/case-kaibu-hero.png", "/uploads/case-kaibu-scene-01.png", "/uploads/case-kaibu-scene-02.jpg"],
-    fallbackLabel: "Case Detail 01"
-  },
-  {
-    title: "山城坝坝",
-    key: "shancheng-baba",
-    paths: ["/uploads/case-shanchengbaba-hero.png", "/uploads/case-shanchengbaba-scene-01.png", "/uploads/case-shanchengbaba-scene-02.png"],
-    fallbackLabel: "Case Detail 02"
-  },
-  {
-    title: "UFX 飞翔星球大本营",
-    key: "ufx-yaan",
-    paths: ["/uploads/case-ufx-hero.jpg", "/uploads/case-ufx-scene-01.png", "/uploads/case-ufx-scene-02.png"],
-    fallbackLabel: "Case Detail 03"
-  },
-  {
-    title: "璧山百草湖乡",
-    key: "baicaohuxiang",
-    paths: ["/uploads/case-baicaohuxiang-hero.png", "/uploads/case-baicaohuxiang-scene-01.jpg", "/uploads/case-baicaohuxiang-scene-02.jpg"],
-    fallbackLabel: "Case Detail 04"
-  },
-  {
-    title: "小桑田亲子农场",
-    key: "xiaosangtian",
-    paths: ["/uploads/case-xiaosangtian-hero.png", "/uploads/case-xiaosangtian-scene-01.jpg", "/uploads/case-xiaosangtian-scene-02.jpg"],
-    fallbackLabel: "Case Detail 05"
-  }
-].flatMap((item) => {
-  const details = siteAssets.cases[item.key].details;
-  const labels = ["详情主图", "场景图 1", "场景图 2"];
-
-  return details.map((asset, index) => ({
-    name: `${item.title}${labels[index]}`,
-    usage: `项目案例详情页 / ${item.title} / ${labels[index]}`,
-    asset,
-    size: index === 0 ? "1920 x 960px，适配详情页顶部宽图" : "1600 x 900px，16:9",
-    note: index === 0 ? "详情页顶部大图；未配置时会自动使用该案例封面图。" : "详情页场景补充图；未配置时会自动使用该案例封面图。",
-    fallbackLabel: `${item.fallbackLabel}-${index + 1}`,
-    recommendedPath: item.paths[index]
-  }));
-});
-
 const assetRows: AssetRow[] = [
   {
     name: "Logo",
@@ -118,52 +72,6 @@ const assetRows: AssetRow[] = [
     fallbackLabel: "About Image",
     recommendedPath: "/uploads/about-hero.jpg"
   },
-  {
-    name: "重庆开埠遗址公园案例封面",
-    usage: "项目案例列表 / 开埠遗址公园详情入口",
-    asset: siteAssets.cases["kaibu-heritage-park"].cover,
-    size: "1600 x 1000px，16:10",
-    note: "建议使用开埠文化、历史遗址、滨江公共空间或城市文化场景。",
-    fallbackLabel: "Case Cover 01",
-    recommendedPath: "/uploads/case-kaibu-cover.png"
-  },
-  {
-    name: "山城坝坝案例封面",
-    usage: "项目案例列表 / 山城坝坝详情入口",
-    asset: siteAssets.cases["shancheng-baba"].cover,
-    size: "1600 x 1000px，16:10",
-    note: "建议使用山城巷街巷、坝坝生活或公共空间场景。",
-    fallbackLabel: "Case Cover 02",
-    recommendedPath: "/uploads/case-shanchengbaba-cover.png"
-  },
-  {
-    name: "UFX 飞翔星球大本营案例封面",
-    usage: "项目案例列表 / UFX 详情入口",
-    asset: siteAssets.cases["ufx-yaan"].cover,
-    size: "1600 x 1000px，16:10",
-    note: "建议使用无人机培训、研学营地或户外飞行主题画面。",
-    fallbackLabel: "Case Cover 03",
-    recommendedPath: "/uploads/case-ufx-cover.jpg"
-  },
-  {
-    name: "璧山百草湖乡案例封面",
-    usage: "项目案例列表 / 百草湖乡详情入口",
-    asset: siteAssets.cases.baicaohuxiang.cover,
-    size: "1600 x 1000px，16:10",
-    note: "建议使用乡村生态、农文旅体验或湖乡空间节点。",
-    fallbackLabel: "Case Cover 04",
-    recommendedPath: "/uploads/case-baicaohuxiang-cover.jpg"
-  },
-  {
-    name: "小桑田亲子农场案例封面",
-    usage: "项目案例列表 / 小桑田详情入口",
-    asset: siteAssets.cases.xiaosangtian.cover,
-    size: "1600 x 1000px，16:10",
-    note: "建议使用亲子活动、自然教育或农场运营场景。",
-    fallbackLabel: "Case Cover 05",
-    recommendedPath: "/uploads/case-xiaosangtian-cover.png"
-  },
-  ...caseDetailRows,
   {
     name: "公众号二维码 / 品牌二维码",
     usage: "首页首屏联系区 / 二维码 1",

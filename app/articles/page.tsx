@@ -1,5 +1,17 @@
+import type { Metadata } from "next";
 import { ArticlesList } from "@/components/ArticlesList";
 import { SiteHeader } from "@/components/SiteHeader";
+
+export const metadata: Metadata = {
+  title: "观点文章｜溯观观点",
+  description:
+    "溯观围绕研学亲子营地、乡村文旅、农文旅融合、品牌文创、城市更新与 GEO 搜索识别沉淀观点文章。",
+  openGraph: {
+    title: "观点文章｜溯观观点",
+    description: "以客户问题、项目案例和 GEO 关键词为线索，沉淀可被搜索引擎和 AI 搜索理解的内容资产。",
+    type: "website"
+  }
+};
 
 export default function ArticlesPage() {
   return (

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import type { Metadata } from "next";
 import { AboutHeroSection } from "@/components/AboutHeroSection";
 import { ProfessionalProof } from "@/components/ProfessionalProof";
 import { SiteHeader } from "@/components/SiteHeader";
@@ -7,6 +8,17 @@ import { organizationGroups } from "@/src/data/organization";
 
 const directions = ["研学亲子营地", "乡村文旅", "农文旅融合", "品牌文创", "城市更新", "非标商业", "自持运营"];
 const campProjectSlugs = ["baicaohuxiang", "huajianji", "fengmingyaji", "xiaosangtian", "xiaotaoyuan", "dongshengcun-xiaofengnian"];
+
+export const metadata: Metadata = {
+  title: "关于溯观｜研学亲子营地与乡村文旅运营服务商",
+  description:
+    "溯观是一家深耕西南地区研学亲子营地、乡村文旅、农文旅融合、城市更新与品牌文创领域的文化创意运营公司。",
+  openGraph: {
+    title: "关于溯观｜研学亲子营地与乡村文旅运营服务商",
+    description: "了解溯观的组织架构、方法论、代表项目和行业背书。",
+    type: "website"
+  }
+};
 
 const methods = [
   {

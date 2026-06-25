@@ -1,4 +1,5 @@
 import Link from "next/link";
+import type { Metadata } from "next";
 import { FeaturedCases } from "@/components/FeaturedCases";
 import { ProfessionalProof } from "@/components/ProfessionalProof";
 import { SiteAssetImage } from "@/components/SiteAssetImage";
@@ -6,6 +7,18 @@ import { SiteContentText } from "@/components/SiteContentText";
 import { SiteHeader } from "@/components/SiteHeader";
 import { siteAssets } from "@/src/config/siteAssets";
 import { siteContentDefaults } from "@/src/config/siteContent";
+
+export const metadata: Metadata = {
+  title: "溯观文化发展有限公司｜研学亲子营地、乡村文旅与在地项目策划运营",
+  description:
+    "溯观深耕研学亲子营地、乡村文旅、农文旅融合与在地项目运营，提供项目研判、定位策划、空间场景、品牌内容、产品设计和持续运营服务。",
+  openGraph: {
+    title: "溯观文化发展有限公司｜研学亲子营地、乡村文旅与在地项目策划运营",
+    description:
+      "从项目研判到持续经营，溯观将地方资源转化为可体验、可消费、可运营的文旅项目资产。",
+    type: "website"
+  }
+};
 
 const serviceHighlights = [
   {

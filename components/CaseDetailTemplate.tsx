@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { CaseImage } from "@/components/CaseImage";
 import { useCaseCms } from "@/src/hooks/useCaseCms";
@@ -96,6 +96,30 @@ function normalizeGalleryImages(images: CaseGalleryImage[]) {
     }));
 }
 
+function normalizeLegacyImages(item: {
+  heroImage?: string;
+  sceneImage01?: string;
+  sceneImage02?: string;
+  sceneImage03?: string;
+}) {
+  return [
+    { src: item.heroImage || "", caption: "项目主图" },
+    { src: item.sceneImage01 || "", caption: "项目图集 01" },
+    { src: item.sceneImage02 || "", caption: "项目图集 02" },
+    { src: item.sceneImage03 || "", caption: "项目补充图" }
+  ].filter((image) => image.src);
+}
+
+function dedupeImages(images: LightboxImage[]) {
+  const seen = new Set<string>();
+  return images.filter((image) => {
+    const key = image.src.trim();
+    if (!key || seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+}
+
 export function CaseDetailTemplate({ slug }: CaseDetailTemplateProps) {
   const { cases, publishedCases } = useCaseCms();
   const [lightbox, setLightbox] = useState<LightboxState>(null);
@@ -122,10 +146,13 @@ export function CaseDetailTemplate({ slug }: CaseDetailTemplateProps) {
     ["项目年份", item.year]
   ];
   const metaLine = [item.location, item.projectType, item.status, item.year].filter(Boolean).join(" / ");
-  const galleryImages = [
+  const legacyImages = normalizeLegacyImages(item);
+  const galleryImages = dedupeImages([
+    ...(item.heroImage ? [{ src: item.heroImage, caption: "项目主图" }] : []),
     ...normalizeGalleryImages(item.galleryImages),
-    ...(item.assetImages || []).filter(Boolean).map((src, index) => ({ src, caption: `项目实景图 ${item.galleryImages.length + index + 1}` }))
-  ];
+    ...legacyImages,
+    ...normalizeGalleryImages(item.assetImages || [])
+  ]);
   const guideMapImages: LightboxImage[] = item.guideMapImage ? [{ src: item.guideMapImage, caption: item.guideMapCaption || "项目导览图" }] : [];
   const activeImage = lightbox ? lightbox.images[lightbox.index] : null;
   const relatedCases = publishedCases.filter((caseItem) => caseItem.slug !== item.slug).slice(0, 5);
@@ -148,6 +175,25 @@ export function CaseDetailTemplate({ slug }: CaseDetailTemplateProps) {
       return { ...current, index: current.index === current.images.length - 1 ? 0 : current.index + 1 };
     });
   }
+
+  useEffect(() => {
+    if (!lightbox) return;
+
+    function handleKeyDown(event: KeyboardEvent) {
+      if (event.key === "Escape") {
+        setLightbox(null);
+      }
+      if (event.key === "ArrowLeft") {
+        showPreviousImage();
+      }
+      if (event.key === "ArrowRight") {
+        showNextImage();
+      }
+    }
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [lightbox]);
 
   return (
     <>
@@ -283,7 +329,7 @@ export function CaseDetailTemplate({ slug }: CaseDetailTemplateProps) {
       </section>
 
       {activeImage && lightbox ? (
-        <div className="fixed inset-0 z-50 grid place-items-center bg-ink/88 px-4 py-6">
+        <div className="fixed inset-0 z-50 grid place-items-center bg-black/75 px-4 py-6 backdrop-blur-md">
           <button type="button" className="absolute inset-0 cursor-default" onClick={() => setLightbox(null)} aria-label="关闭图集" />
           <div className="relative z-10 w-full max-w-6xl">
             <div className="mb-4 flex items-center justify-between gap-4 text-paper">
@@ -296,7 +342,7 @@ export function CaseDetailTemplate({ slug }: CaseDetailTemplateProps) {
               </button>
             </div>
             <div className="relative border border-paper/20 bg-ink">
-              <CaseImage src={activeImage.src} className="h-[72vh] w-full bg-ink" imageClassName="object-contain" fallbackLabel={activeImage.caption} />
+              <CaseImage src={activeImage.src} className="max-h-[85vh] w-full bg-ink" imageClassName="max-h-[85vh] object-contain" fallbackLabel={activeImage.caption || "项目图片"} />
               {lightbox.images.length > 1 ? (
                 <>
                   <button type="button" onClick={showPreviousImage} className="absolute left-3 top-1/2 -translate-y-1/2 border border-paper/30 bg-ink/50 px-4 py-3 text-paper transition hover:bg-paper hover:text-ink">

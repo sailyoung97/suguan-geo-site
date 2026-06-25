@@ -13,12 +13,8 @@ type SingleImageField = "coverImage" | "guideMapImage" | "heroImage" | "sceneIma
 const maxGalleryImages = 12;
 
 const imageFields: Array<{ key: SingleImageField; label: string; size: string }> = [
-  { key: "coverImage", label: "案例封面图 / 详情页主视觉大图", size: "1920 x 1200px，列表封面与详情页主视觉" },
-  { key: "guideMapImage", label: "项目导览图 / 总览图", size: "宽 1200px - 1600px，前台完整显示不裁切" },
-  { key: "heroImage", label: "旧字段：详情页图集 01", size: "兼容旧数据，可逐步改用下方项目图集" },
-  { key: "sceneImage01", label: "旧字段：详情页图集 02", size: "兼容旧数据，可逐步改用下方项目图集" },
-  { key: "sceneImage02", label: "旧字段：详情页图集 03", size: "兼容旧数据，可逐步改用下方项目图集" },
-  { key: "sceneImage03", label: "旧字段：详情页补充图", size: "兼容旧数据，可选" }
+  { key: "coverImage", label: "案例封面图", size: "1600 x 1000px，用于案例列表卡片和首页代表案例" },
+  { key: "guideMapImage", label: "案例详情主图 / 项目导览图", size: "宽 1200px - 1600px，详情页顶部完整显示不裁切" }
 ];
 
 const arrayFields: Array<{ key: TextArrayField; label: string; hint: string }> = [
@@ -51,10 +47,10 @@ function slugify(value: string) {
     .replace(/^-+|-+$/g, "");
 }
 
-function normalizeGalleryForEdit(images: CaseGalleryImage[]) {
+function normalizeGalleryForEdit(images: CaseGalleryImage[], prefix = "项目实景图") {
   const nextImages = [...images.slice(0, maxGalleryImages)];
   while (nextImages.length < maxGalleryImages) {
-    nextImages.push({ url: "", caption: `项目实景图 ${nextImages.length + 1}` });
+    nextImages.push({ url: "", caption: `${prefix} ${nextImages.length + 1}` });
   }
   return nextImages;
 }
@@ -146,7 +142,11 @@ export function CaseCmsManager() {
 
   function startCreate() {
     const nextOrder = sortedCases.length ? Math.max(...sortedCases.map((item) => item.order)) + 1 : 1;
-    setEditingCase({ ...createEmptyCaseCmsItem(nextOrder), galleryImages: normalizeGalleryForEdit([]) });
+    setEditingCase({
+      ...createEmptyCaseCmsItem(nextOrder),
+      galleryImages: normalizeGalleryForEdit([]),
+      assetImages: normalizeGalleryForEdit([], "运营补充图")
+    });
     setOriginalSlug("");
     setMessage("正在新增案例，请填写内容后保存。");
   }
@@ -155,7 +155,8 @@ export function CaseCmsManager() {
     setEditingCase({
       ...item,
       guideMapCaption: item.guideMapCaption || "项目导览图",
-      galleryImages: normalizeGalleryForEdit(item.galleryImages || [])
+      galleryImages: normalizeGalleryForEdit(item.galleryImages || []),
+      assetImages: normalizeGalleryForEdit(item.assetImages || [], "运营补充图")
     });
     setOriginalSlug(item.slug);
     setMessage(`正在编辑：${item.projectName}`);
@@ -203,12 +204,27 @@ export function CaseCmsManager() {
     updateGalleryImage(index, { ...(editingCase?.galleryImages[index] || { caption: `项目实景图 ${index + 1}` }), url });
   }
 
+  async function handleAssetImageUpload(index: number, file?: File) {
+    const url = await uploadCaseImage(file, `asset-${index + 1}`);
+    if (!url) return;
+    updateAssetImage(index, { ...(editingCase?.assetImages[index] || { caption: `运营补充图 ${index + 1}` }), url });
+  }
+
   function updateGalleryImage(index: number, image: CaseGalleryImage) {
     setEditingCase((current) => {
       if (!current) return current;
       const nextImages = normalizeGalleryForEdit(current.galleryImages);
       nextImages[index] = image;
       return { ...current, galleryImages: nextImages };
+    });
+  }
+
+  function updateAssetImage(index: number, image: CaseGalleryImage) {
+    setEditingCase((current) => {
+      if (!current) return current;
+      const nextImages = normalizeGalleryForEdit(current.assetImages, "运营补充图");
+      nextImages[index] = image;
+      return { ...current, assetImages: nextImages };
     });
   }
 
@@ -241,6 +257,7 @@ export function CaseCmsManager() {
         slug: normalizedSlug,
         order: Number(editingCase.order) || sortedCases.length + 1,
         galleryImages: editingCase.galleryImages.filter((image) => image.url),
+        assetImages: editingCase.assetImages.filter((image) => image.url),
         campCaseSections: []
       },
       originalSlug
@@ -449,7 +466,7 @@ export function CaseCmsManager() {
           <section className="mt-8 border border-line bg-rice p-5">
             <div>
               <p className="text-sm font-semibold text-ink">项目图集</p>
-              <p className="mt-2 text-xs leading-5 text-ink/52">最多预留 5 张项目实景图。上传几张，前台就显示几张；每张图片可填写图片名称。</p>
+              <p className="mt-2 text-xs leading-5 text-ink/52">最多预留 12 张项目实景图。上传几张，前台就显示几张；每张图片可填写图片名称。旧字段图片仍会在前台自动兼容展示，但不再建议继续维护。</p>
             </div>
             <div className="mt-5 grid gap-4 lg:grid-cols-2">
               {normalizeGalleryForEdit(editingCase.galleryImages).map((image, index) => (
@@ -469,6 +486,37 @@ export function CaseCmsManager() {
                     <input
                       value={image.caption}
                       onChange={(event) => updateGalleryImage(index, { ...image, caption: event.target.value })}
+                      className="mt-2 w-full border border-line bg-rice px-4 py-3 text-sm outline-none focus:border-ink"
+                    />
+                  </label>
+                </div>
+              ))}
+            </div>
+          </section>
+
+          <section className="mt-8 border border-line bg-rice p-5">
+            <div>
+              <p className="text-sm font-semibold text-ink">产业 / 产品 / 运营补充图</p>
+              <p className="mt-2 text-xs leading-5 text-ink/52">用于补充展示商业业态、产品细节、运营现场、人流活动等图片。每张图片支持 URL 和图片名称。</p>
+            </div>
+            <div className="mt-5 grid gap-4 lg:grid-cols-2">
+              {normalizeGalleryForEdit(editingCase.assetImages, "运营补充图").map((image, index) => (
+                <div key={`asset-${index}`} className="border border-line bg-paper p-4">
+                  <ImageUploadControl
+                    label={`运营补充图 ${index + 1}`}
+                    value={image.url}
+                    fallbackLabel={`运营补充图 ${index + 1}`}
+                    isUploading={uploadingKey === `asset-${index + 1}`}
+                    onChange={(value) => updateAssetImage(index, { ...image, url: value })}
+                    onUpload={(file) => handleAssetImageUpload(index, file)}
+                    onClear={() => updateAssetImage(index, { ...image, url: "" })}
+                    onCheck={() => checkImageUrl(image.url)}
+                  />
+                  <label className="mt-3 block">
+                    <span className="text-xs text-ink/44">图片名称 caption</span>
+                    <input
+                      value={image.caption}
+                      onChange={(event) => updateAssetImage(index, { ...image, caption: event.target.value })}
                       className="mt-2 w-full border border-line bg-rice px-4 py-3 text-sm outline-none focus:border-ink"
                     />
                   </label>

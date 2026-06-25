@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { ProjectConsultForm } from "@/components/ProjectConsultForm";
 import { SiteAssetImage } from "@/components/SiteAssetImage";
 import { SiteContentText } from "@/components/SiteContentText";
@@ -5,6 +6,17 @@ import { SiteHeader } from "@/components/SiteHeader";
 import type { SiteAsset } from "@/src/config/siteAssets";
 import { siteAssets } from "@/src/config/siteAssets";
 import { siteContentDefaults } from "@/src/config/siteContent";
+
+export const metadata: Metadata = {
+  title: "项目咨询与资料领取｜溯观文化发展有限公司",
+  description:
+    "提交研学亲子营地、乡村文旅、农文旅融合、品牌文创、招商运营与项目提升需求，获取溯观项目资料与初步沟通。",
+  openGraph: {
+    title: "项目咨询与资料领取｜溯观文化发展有限公司",
+    description: "通过官网提交项目所在地、项目类型、项目阶段和需求描述，溯观将尽快联系。",
+    type: "website"
+  }
+};
 
 const contactCards = [
   {

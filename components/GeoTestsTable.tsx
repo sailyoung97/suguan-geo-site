@@ -198,12 +198,12 @@ export function GeoTestsTable({ initialTests }: GeoTestsTableProps) {
       </section>
 
       <section className="mt-8 border border-line bg-paper">
-        <div className="grid gap-5 border-b border-line p-4 xl:grid-cols-[1fr_auto] xl:items-end">
+        <div className="border-b border-line p-4">
           <div>
             <h2 className="text-lg font-semibold text-ink">测试明细</h2>
             <p className="mt-1 text-xs text-ink/54">当前显示 {filteredTests.length} 条测试记录，点击行查看详情。</p>
           </div>
-          <div className="grid gap-4 lg:grid-cols-4">
+          <div className="mt-5 grid gap-4 rounded-sm border border-line bg-rice p-4 lg:grid-cols-4">
             <FilterGroup label="测试平台" options={platforms} value={platformFilter} onChange={(value) => setPlatformFilter(value as typeof platformFilter)} />
             <FilterGroup label="提及状态" options={mentionFilters} value={mentionFilter} onChange={(value) => setMentionFilter(value as typeof mentionFilter)} />
             <FilterGroup label="问题类型" options={questionTypes} value={typeFilter} onChange={(value) => setTypeFilter(value as typeof typeFilter)} />
@@ -211,7 +211,13 @@ export function GeoTestsTable({ initialTests }: GeoTestsTableProps) {
           </div>
         </div>
 
-        <div className="overflow-x-auto">
+        <div className="grid gap-4 p-4 lg:hidden">
+          {filteredTests.map((item) => (
+            <GeoTestMobileCard key={item.id} item={item} onOpen={() => setSelectedTest(item)} />
+          ))}
+        </div>
+
+        <div className="hidden overflow-x-auto lg:block">
           <table className="min-w-[1720px] w-full border-collapse text-left text-sm">
             <thead className="bg-rice text-xs text-ink/54">
               <tr>
@@ -225,8 +231,7 @@ export function GeoTestsTable({ initialTests }: GeoTestsTableProps) {
                   "竞品名称",
                   "回答是否准确",
                   "AI回答摘要",
-                  "错误点",
-                  "优化建议",
+                  "对应优化内容 / 关联文章 / 关联案例",
                   "优化状态",
                   "负责人",
                   "操作"
@@ -253,8 +258,9 @@ export function GeoTestsTable({ initialTests }: GeoTestsTableProps) {
                   <td className="whitespace-nowrap px-4 py-4 text-ink/62">{item.competitorName || "无"}</td>
                   <td className="whitespace-nowrap px-4 py-4"><BooleanBadge value={item.accurate} yesText="准确" noText="待校准" /></td>
                   <td className="min-w-80 px-4 py-4 leading-6 text-ink/62">{item.answerSummary}</td>
-                  <td className="min-w-64 px-4 py-4 leading-6 text-ink/62">{item.errorPoints.join("、") || "无"}</td>
-                  <td className="min-w-80 px-4 py-4 leading-6 text-ink/62">{item.optimizationAdvice}</td>
+                  <td className="min-w-80 px-4 py-4 leading-6 text-ink/62">
+                    {item.suggestedContent.join("、") || item.optimizationAdvice || "待补充"}
+                  </td>
                   <td className="whitespace-nowrap px-4 py-4">
                     <span className={`border px-2.5 py-1 text-xs ${statusStyles[item.taskStatus]}`}>{item.taskStatus}</span>
                   </td>
@@ -417,6 +423,42 @@ function GeoTestDetailModal({ item, onClose }: { item: GeoTest; onClose: () => v
         </div>
       </div>
     </div>
+  );
+}
+
+function GeoTestMobileCard({ item, onOpen }: { item: GeoTest; onOpen: () => void }) {
+  return (
+    <article className="border border-line bg-paper p-4">
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <div className="text-xs text-ink/50">
+          {item.testDate} / {item.platform}
+        </div>
+        <span className={`border px-2.5 py-1 text-xs ${statusStyles[item.taskStatus]}`}>{item.taskStatus}</span>
+      </div>
+      <h3 className="mt-3 text-base font-semibold leading-7 text-ink">{item.question}</h3>
+      <div className="mt-4 grid grid-cols-2 gap-2 text-xs">
+        <div className="border border-line bg-rice p-3">
+          <div className="text-ink/42">是否提到溯观</div>
+          <div className="mt-2"><BooleanBadge value={item.mentionedSuguan} /></div>
+        </div>
+        <div className="border border-line bg-rice p-3">
+          <div className="text-ink/42">是否提到竞品</div>
+          <div className="mt-2"><BooleanBadge value={item.mentionedCompetitor} /></div>
+        </div>
+        <div className="border border-line bg-rice p-3">
+          <div className="text-ink/42">回答准确性</div>
+          <div className="mt-2"><BooleanBadge value={item.accurate} yesText="准确" noText="待校准" /></div>
+        </div>
+        <div className="border border-line bg-rice p-3">
+          <div className="text-ink/42">问题类型</div>
+          <div className="mt-2 font-medium text-ink">{item.questionType}</div>
+        </div>
+      </div>
+      <p className="mt-4 text-sm leading-6 text-ink/62">{item.answerSummary}</p>
+      <button type="button" onClick={onOpen} className="mt-4 w-full border border-line px-4 py-3 text-sm font-medium text-ink transition hover:border-ink">
+        查看详情
+      </button>
+    </article>
   );
 }
 

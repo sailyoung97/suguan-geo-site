@@ -40,7 +40,7 @@ export type CaseCmsItem = {
   guideMapImage: string;
   guideMapCaption: string;
   galleryImages: CaseGalleryImage[];
-  assetImages: string[];
+  assetImages: CaseGalleryImage[];
   campCaseSections: CampCaseSection[];
   summary: string;
   background: string;

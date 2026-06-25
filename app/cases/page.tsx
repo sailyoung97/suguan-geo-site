@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { CasesList } from "@/components/CasesList";
 import { SiteContentText } from "@/components/SiteContentText";
 import { SiteHeader } from "@/components/SiteHeader";
@@ -6,6 +7,16 @@ import { brandTimeline, businessCaseSections } from "@/src/data/cases";
 
 const casesDescription =
   "从研学亲子营地、乡村文旅、农文旅融合到城市更新与非标商业，溯观以项目研判、定位策划、空间场景、品牌内容和运营导入为核心，把地方资源转化为可体验、可消费、可持续经营的项目资产。重点案例涵盖百草湖乡、小桑田、重庆开埠遗址公园、山城坝坝等不同类型的在地项目实践。";
+
+export const metadata: Metadata = {
+  title: "项目案例｜溯观文化发展有限公司",
+  description: casesDescription,
+  openGraph: {
+    title: "项目案例｜溯观文化发展有限公司",
+    description: casesDescription,
+    type: "website"
+  }
+};
 
 export default function CasesPage() {
   return (

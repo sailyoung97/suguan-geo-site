@@ -45,6 +45,26 @@ function normalizeGalleryImages(value: unknown, legacyImages: string[]): CaseGal
     .filter((image) => image.url);
 }
 
+function normalizeAssetImages(value: unknown): CaseGalleryImage[] {
+  if (!Array.isArray(value)) return [];
+
+  return value
+    .map((image, index) => {
+      if (typeof image === "string") {
+        return { url: image, caption: `运营补充图 ${index + 1}` };
+      }
+      if (image && typeof image === "object") {
+        const record = image as Partial<CaseGalleryImage>;
+        return {
+          url: record.url || "",
+          caption: record.caption || `运营补充图 ${index + 1}`
+        };
+      }
+      return { url: "", caption: `运营补充图 ${index + 1}` };
+    })
+    .filter((image) => image.url);
+}
+
 function normalizeCampCaseSections(value: unknown): CampCaseSection[] {
   if (!Array.isArray(value)) return [];
 
@@ -100,7 +120,7 @@ function normalizeCase(item: Partial<CaseCmsItem>, index: number): CaseCmsItem {
     galleryImages: normalizeGalleryImages(item.galleryImages, defaultCase?.galleryImages?.length ? [] : legacyGalleryImages).length
       ? normalizeGalleryImages(item.galleryImages, defaultCase?.galleryImages?.length ? [] : legacyGalleryImages)
       : defaultCase?.galleryImages || [],
-    assetImages: normalizeStringArray(item.assetImages),
+    assetImages: normalizeAssetImages(item.assetImages),
     campCaseSections: normalizeCampCaseSections(item.campCaseSections),
     summary: item.summary || defaultCase?.summary || "",
     background: item.background || defaultCase?.background || "",
