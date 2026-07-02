@@ -3,7 +3,13 @@
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { CaseImage } from "@/components/CaseImage";
-import { ArticleBlock, GeoContentTopic, getPublishedContentTopics, readStoredContentTopics } from "@/src/lib/contentTopics";
+import {
+  ArticleBlock,
+  GeoContentTopic,
+  getDefaultContentTopics,
+  getPublishedContentTopics,
+  readStoredContentTopics
+} from "@/src/lib/contentTopics";
 
 type LightboxImage = {
   src: string;
@@ -11,7 +17,9 @@ type LightboxImage = {
 };
 
 export function ArticleDetail({ slug }: { slug: string }) {
-  const [articles, setArticles] = useState<GeoContentTopic[]>([]);
+  const [articles, setArticles] = useState<GeoContentTopic[]>(() =>
+    getPublishedContentTopics(getDefaultContentTopics())
+  );
   const [lightbox, setLightbox] = useState<{ images: LightboxImage[]; index: number } | null>(null);
 
   useEffect(() => {

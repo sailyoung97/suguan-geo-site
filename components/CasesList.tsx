@@ -19,6 +19,7 @@ export function CasesList() {
             src={item.coverImage}
             className="aspect-[16/10]"
             fallbackLabel={`Case Image ${String(index + 1).padStart(2, "0")}`}
+            alt={`${item.projectName}案例封面图`}
           />
           <div className="flex min-h-[390px] flex-col p-6 sm:p-8">
             <div className="flex flex-wrap items-center gap-2 text-xs text-moss">

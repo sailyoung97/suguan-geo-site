@@ -218,6 +218,7 @@ export function CaseDetailTemplate({ slug }: CaseDetailTemplateProps) {
                 className="w-full border border-line bg-paper"
                 imageClassName="h-auto object-contain"
                 fallbackLabel="图片未配置或路径失效"
+                alt={`${item.projectName}${item.guideMapCaption || "项目导览图"}`}
               />
               <p className="mt-3 text-center text-sm text-ink/48">{item.guideMapCaption || "项目导览图"}</p>
             </button>
@@ -236,7 +237,12 @@ export function CaseDetailTemplate({ slug }: CaseDetailTemplateProps) {
             <div className="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
               {galleryImages.map((image, index) => (
                 <button key={`${image.src}-${index}`} type="button" onClick={() => openLightbox(galleryImages, index)} className="group text-left">
-                  <CaseImage src={image.src} className="aspect-[4/3] w-full transition group-hover:opacity-90" fallbackLabel="图片未配置或路径失效" />
+                  <CaseImage
+                    src={image.src}
+                    className="aspect-[4/3] w-full transition group-hover:opacity-90"
+                    fallbackLabel="图片未配置或路径失效"
+                    alt={`${item.projectName}${image.caption}`}
+                  />
                   <p className="mt-2 text-sm text-ink/48">{image.caption}</p>
                 </button>
               ))}

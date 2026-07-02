@@ -3,10 +3,12 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { CaseImage } from "@/components/CaseImage";
-import { GeoContentTopic, getPublishedContentTopics, readStoredContentTopics } from "@/src/lib/contentTopics";
+import { GeoContentTopic, getDefaultContentTopics, getPublishedContentTopics, readStoredContentTopics } from "@/src/lib/contentTopics";
 
 export function ArticlesList() {
-  const [articles, setArticles] = useState<GeoContentTopic[]>([]);
+  const [articles, setArticles] = useState<GeoContentTopic[]>(() =>
+    getPublishedContentTopics(getDefaultContentTopics())
+  );
 
   useEffect(() => {
     setArticles(getPublishedContentTopics(readStoredContentTopics()));
@@ -19,8 +21,12 @@ export function ArticlesList() {
           <div>
             <div className="flex flex-wrap gap-2 text-xs text-moss">
               <span>{article.category}</span>
-              <span>/</span>
-              <span>{article.coreKeywords || article.geoIntent}</span>
+              {article.coreKeywords ? (
+                <>
+                  <span>/</span>
+                  <span>{article.coreKeywords}</span>
+                </>
+              ) : null}
             </div>
             <Link href={`/articles/${article.slug}`} className="group mt-3 block">
               <h2 className="text-2xl font-semibold text-ink transition group-hover:text-clay">{article.title}</h2>
@@ -37,14 +43,10 @@ export function ArticlesList() {
                 </div>
               ) : null}
             </Link>
-            <div className="mt-4 flex flex-wrap gap-2 text-xs text-ink/48">
-              <span>{article.publishChannel}</span>
-              {article.relatedCases ? <span>关联案例：{article.relatedCases}</span> : null}
-            </div>
+            {article.relatedCases ? <div className="mt-4 text-xs text-ink/48">关联案例：{article.relatedCases}</div> : null}
           </div>
           <div className="text-sm text-ink/56 md:text-right">
-            <div>{article.status}</div>
-            <div className="mt-2">{article.plannedDate || "待发布"}</div>
+            <div>{article.plannedDate || "发布时间待定"}</div>
           </div>
         </article>
       ))}

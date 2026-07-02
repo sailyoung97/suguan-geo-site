@@ -41,3 +41,10 @@ tmp/
 temp/
 .cache/
 *.tmp
+
+# Local source-image batches. Production assets are copied to stable English filenames.
+public/uploads/WPS图片批量处理/
+public/uploads/WPS图片批量处理(1)/
+public/uploads/微信图片_2026-06-18_*
+public/uploads/DSC03316.jpg
+public/uploads/ScreenShot_2026-06-18_*.png

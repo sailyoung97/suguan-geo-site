@@ -1,6 +1,5 @@
 import type { MetadataRoute } from "next";
-
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || process.env.URL || "https://suguan-geo-site.netlify.app";
+import { siteUrl } from "@/src/config/site";
 
 export default function robots(): MetadataRoute.Robots {
   return {
@@ -8,7 +7,7 @@ export default function robots(): MetadataRoute.Robots {
       {
         userAgent: "*",
         allow: "/",
-        disallow: ["/admin", "/admin/", "/admin/*", "/login"]
+        disallow: ["/admin", "/admin/", "/admin/*", "/login", "/.netlify/functions/"]
       }
     ],
     sitemap: `${siteUrl}/sitemap.xml`

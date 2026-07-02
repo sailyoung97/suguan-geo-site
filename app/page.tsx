@@ -7,15 +7,18 @@ import { SiteContentText } from "@/components/SiteContentText";
 import { SiteHeader } from "@/components/SiteHeader";
 import { siteAssets } from "@/src/config/siteAssets";
 import { siteContentDefaults } from "@/src/config/siteContent";
+import { siteDescription } from "@/src/config/site";
+import { contactInfo } from "@/src/data/contact";
 
 export const metadata: Metadata = {
   title: "溯观文化发展有限公司｜研学亲子营地、乡村文旅与在地项目策划运营",
-  description:
-    "溯观深耕研学亲子营地、乡村文旅、农文旅融合与在地项目运营，提供项目研判、定位策划、空间场景、品牌内容、产品设计和持续运营服务。",
+  description: siteDescription,
+  alternates: { canonical: "/" },
   openGraph: {
     title: "溯观文化发展有限公司｜研学亲子营地、乡村文旅与在地项目策划运营",
-    description:
-      "从项目研判到持续经营，溯观将地方资源转化为可体验、可消费、可运营的文旅项目资产。",
+    description: siteDescription,
+    url: "/",
+    images: [{ url: "/uploads/home-hero.png", alt: "溯观文化发展有限公司" }],
     type: "website"
   }
 };
@@ -42,12 +45,6 @@ const serviceHighlights = [
     text: "保留城市更新和非标商业能力，将历史空间、存量资产和消费场景转化为更具运营价值的公共文旅空间。"
   }
 ];
-
-const heroContactInfo = {
-  phone01: "15823051516",
-  phone02: "18996527779",
-  companyAddress: "重庆市两江新区北滨二路保利中心B5栋1-2",
-};
 
 function HeroQrCard({ label, asset }: { label: string; asset: typeof siteAssets.contactQrCode01 }) {
   return (
@@ -77,14 +74,14 @@ function HeroContactPanel() {
         <div className="mt-4 space-y-3 text-sm leading-6 text-paper/78">
           <p>
             <span className="block text-paper/42">商务电话</span>
-            <a className="font-medium text-paper transition hover:text-clay" href={`tel:${heroContactInfo.phone01}`}>
-              {heroContactInfo.phone01}
+            <a className="font-medium text-paper transition hover:text-clay" href={`tel:${contactInfo.businessPhone}`}>
+              {contactInfo.businessPhone}
             </a>
           </p>
           <p>
             <span className="block text-paper/42">项目咨询</span>
-            <a className="font-medium text-paper transition hover:text-clay" href={`tel:${heroContactInfo.phone02}`}>
-              {heroContactInfo.phone02}
+            <a className="font-medium text-paper transition hover:text-clay" href={`tel:${contactInfo.projectPhone}`}>
+              {contactInfo.projectPhone}
             </a>
           </p>
         </div>
@@ -94,7 +91,7 @@ function HeroContactPanel() {
         <div className="mt-4 space-y-3 text-sm leading-6 text-paper/78">
           <p>
             <span className="block text-paper/42">公司地址</span>
-            <span>{heroContactInfo.companyAddress}</span>
+            <span>{contactInfo.address}</span>
           </p>
         </div>
       </div>
@@ -152,7 +149,7 @@ export default function HomePage() {
             </p>
           </div>
         </div>
-        <div className="relative left-1/2 right-1/2 -ml-[50vw] mt-10 w-screen border-y border-line bg-ink p-3 shadow-soft sm:p-6">
+        <div className="mt-10 w-full border-y border-line bg-ink p-3 shadow-soft sm:p-6">
           <SiteAssetImage
             asset={siteAssets.brandAssetsImage}
             className="mx-auto aspect-[16/10] w-full bg-ink"
@@ -214,17 +211,17 @@ export default function HomePage() {
             <div className="mt-6 grid gap-3 text-sm leading-6 text-ink/64 sm:grid-cols-3">
               <p>
                 商务电话：
-                <a className="transition hover:text-ink" href="tel:15823051516">
-                  15823051516
+                <a className="transition hover:text-ink" href={`tel:${contactInfo.businessPhone}`}>
+                  {contactInfo.businessPhone}
                 </a>
               </p>
               <p>
                 项目咨询：
-                <a className="transition hover:text-ink" href="tel:18996527779">
-                  18996527779
+                <a className="transition hover:text-ink" href={`tel:${contactInfo.projectPhone}`}>
+                  {contactInfo.projectPhone}
                 </a>
               </p>
-              <p>地址：重庆市两江新区北滨二路保利中心B5栋1-2</p>
+              <p>地址：{contactInfo.address}</p>
             </div>
           </div>
           <div className="flex flex-col gap-3 sm:flex-row lg:flex-col">

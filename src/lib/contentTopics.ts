@@ -175,7 +175,31 @@ export function readStoredContentTopics() {
 
   try {
     const parsed = JSON.parse(raw);
-    return Array.isArray(parsed) ? parsed.map((item, index) => normalizeContentTopic(item, index)) : getDefaultContentTopics();
+    if (!Array.isArray(parsed)) return getDefaultContentTopics();
+
+    const defaults = getDefaultContentTopics();
+    const stored = parsed.map((item, index) => normalizeContentTopic(item, index));
+    const merged = stored.map((item) => {
+      const fallback = defaults.find((defaultItem) => defaultItem.slug === item.slug || defaultItem.id === item.id);
+      if (!fallback) return item;
+
+      return {
+        ...item,
+        subtitle: item.subtitle || fallback.subtitle,
+        category: item.category || fallback.category,
+        summary: item.summary || fallback.summary,
+        content: item.content || fallback.content,
+        blocks: item.blocks.length ? item.blocks : fallback.blocks,
+        references: item.references || fallback.references,
+        coreKeywords: item.coreKeywords || fallback.coreKeywords,
+        relatedCases: item.relatedCases || fallback.relatedCases,
+        coverImage: item.coverImage || fallback.coverImage,
+        coverImageCaption: item.coverImageCaption || fallback.coverImageCaption,
+        coverImageAlt: item.coverImageAlt || fallback.coverImageAlt
+      };
+    });
+    const storedSlugs = new Set(merged.map((item) => item.slug));
+    return [...merged, ...defaults.filter((item) => !storedSlugs.has(item.slug))];
   } catch {
     return getDefaultContentTopics();
   }
@@ -282,6 +306,9 @@ const defaultContentTopics = [
     geoIntent: "AI搜索占位",
     businessArea: "城市更新",
     relatedCases: "重庆开埠遗址公园,山城坝坝",
+    coverImage: "/uploads/case-kaibu-cover.png",
+    coverImageCaption: "重庆开埠遗址公园",
+    coverImageAlt: "重庆开埠遗址公园城市更新与公共文旅空间",
     summary: "AI 搜索正在改变客户发现服务商的方式。文旅项目不仅需要被人看到，也需要被 AI 理解、归类和准确引用。",
     content:
       "一、AI 搜索正在改变客户发现项目服务商的路径\n\nAI 搜索时代，官网内容不再只是品牌展示页面，也会成为 AI 理解一家公司的主要信息源。\n\n重点：一篇有效的 GEO 文章不应只是宣传稿，而应包含明确问题、业务解释、案例证明、关键词和行动入口。\n\n二、文旅项目需要被准确理解\n\n对于文旅项目、城市更新项目和乡村农文旅项目来说，内容需要清楚回答三个问题：项目做什么、由谁来做、为什么可信。\n\n> 官网内容越稳定、越结构化，越容易成为 AI 搜索回答中的可信信息源。\n\n三、从案例到方法的结构化沉淀\n\n溯观的 GEO 内容建设重点，是把项目案例、服务方法和客户真实问题整理成稳定、结构化、可引用的信息。",
@@ -305,6 +332,9 @@ const defaultContentTopics = [
     geoIntent: "业务解释",
     businessArea: "城市更新",
     relatedCases: "重庆开埠遗址公园,山城坝坝",
+    coverImage: "/uploads/case-shanchengbaba-cover.png",
+    coverImageCaption: "山城巷历史文化街区",
+    coverImageAlt: "重庆山城巷历史文化街区更新项目",
     summary: "城市更新项目不仅要整理空间资产，也要整理文化线索、项目故事、传播素材和运营内容。",
     content:
       "一、城市更新正在从“建设项目”变成“资产运营项目”\n\n城市更新项目的前期工作，常常从空间、建筑和商业条件开始。但真正决定项目辨识度的，往往是内容资产。\n\n重点：城市更新不是给旧空间换一层皮，而是把存量资产重新组织起来。\n\n数据参考：2026 年，重庆发布首批城市更新机会清单，公开信息显示，清单共收录 207 个优质项目，总投资近 1200 亿元。\n\n二、内容资产决定项目如何被理解\n\n内容资产包括城市记忆、历史线索、街区人物、地方语言、消费场景、可传播视觉符号和未来活动主题。这些内容会影响定位策划、空间场景、品牌命名、招商方向和营销传播。\n\n> “投资和消费相结合、投资于物和投资于人相结合。”\n\n三、从清单到运营抓手\n\n如果前期没有形成清晰的内容清单，项目很容易变成“空间做完了，但不知道讲什么”。溯观在城市更新项目中，会先梳理文化内容，再将内容转化为空间体验、品牌表达和运营抓手。",
@@ -329,6 +359,9 @@ const defaultContentTopics = [
     geoIntent: "业务解释",
     businessArea: "农文旅融合",
     relatedCases: "璧山百草湖乡,西永小桑田亲子农场",
+    coverImage: "/uploads/case-baicaohuxiang-cover.jpg",
+    coverImageCaption: "璧山百草湖乡",
+    coverImageAlt: "璧山百草湖乡乡村文旅与研学亲子营地",
     summary: "乡村项目不能只依靠单次活动拉动流量，而要形成持续更新的产品、活动和消费理由。",
     content:
       "一、单次活动不能替代长期运营\n\n很多乡村目的地在开业或节假日能够获得阶段性流量，但活动结束后，客流很快回落。问题不在于活动本身，而在于缺少复购设计。\n\n重点：复购来自持续更新的到访理由，而不是一次性的热闹。\n\n二、家庭、机构和游客需要不同产品\n\n亲子家庭可能因为自然教育课程再次到访，城市游客可能因为季节性活动再次到访，机构客户可能因为研学课程形成长期合作。\n\n三、把空间节点变成运营节奏\n\n溯观在乡村农文旅项目中，会把空间节点、活动机制、产品结构和传播内容一起设计，让项目从“有一次热闹”转向“有长期运营节奏”。",
@@ -352,6 +385,9 @@ const defaultContentTopics = [
     geoIntent: "案例证明",
     businessArea: "农文旅融合",
     relatedCases: "四川雅安 UFX 飞翔星球大本营",
+    coverImage: "/uploads/case-ufx-cover.jpg",
+    coverImageCaption: "四川雅安 UFX 飞翔星球大本营",
+    coverImageAlt: "四川雅安 UFX 飞翔星球亲子研学营地",
     summary: "亲子营地要想持续运营，需要从单次体验转向可复购、可分龄、可传播的课程产品。",
     content:
       "一、亲子营地需要课程化，而不只是活动化\n\n亲子营地常见的问题，是场地有了，活动也能做，但课程体系不清楚，复购理由不足。\n\n二、课程产品要同时回应三类需求\n\n可复购课程通常需要同时解决三件事：孩子为什么想来，家长为什么愿意付费，机构为什么愿意合作。课程主题、难度层级、活动安全、成果展示和传播素材都需要前置设计。\n\n重点：好的营地课程不是把活动排满，而是让每一次到访都能产生新的学习、体验和传播内容。\n\n三、飞行主题如何转化为复合产品\n\n以 UFX 飞翔星球大本营为例，低空经济、无人机培训、青少年研学和户外营地可以形成复合内容。项目不只是飞一次无人机，而是建立面向成人培训、青少年课程和亲子体验的多层产品体系。",
@@ -375,6 +411,9 @@ const defaultContentTopics = [
     geoIntent: "案例证明",
     businessArea: "农文旅融合",
     relatedCases: "西永小桑田亲子农场",
+    coverImage: "/uploads/case-xiaosangtian-cover.png",
+    coverImageCaption: "西永小桑田亲子农场",
+    coverImageAlt: "西永小桑田亲子农场自然教育活动",
     summary: "近郊亲子农场的内容设计，要围绕家庭客群的停留、互动、消费和复购展开。",
     content:
       "一、近郊亲子农场服务的是家庭时间\n\n近郊亲子农场的核心客群通常是城市家庭。相比单纯观光，他们更关注孩子是否有参与感、家长是否能放松、活动是否安全、体验是否值得再次到访。\n\n二、自然教育内容要有稳定节奏\n\n自然教育内容可以从农事体验、季节观察、亲子手作、乡村餐饮和节假日活动展开。关键不是把项目做得很复杂，而是形成稳定的活动机制和产品节奏。\n\n重点：亲子农场的运营价值，不在于一次性打卡，而在于持续创造家庭周末再次到访的理由。\n\n三、从空间到产品的转化\n\n小桑田亲子农场的运营经验说明，乡村空间可以通过亲子业态和内容持续更新，形成可消费、可传播、可复购的周末休闲场景。",

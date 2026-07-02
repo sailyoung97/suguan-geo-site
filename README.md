@@ -1,6 +1,6 @@
-# 溯观 GEO 中台原型
+# 溯观官网与 GEO 中台
 
-本项目是一个本地可运行的 Next.js + React + Tailwind CSS 原型，第一阶段只使用本地 mock 数据，不接复杂 API 或真实数据库。
+本项目包含溯观对外官网与内部 GEO 中台，使用 Next.js、React 和 Tailwind CSS 构建。官网正式默认案例、文章、文案与公共素材路径随 Git 版本发布；后台保留浏览器存储与 Netlify Functions，用于临时编辑和演示。
 
 ## 项目目录结构
 
@@ -60,3 +60,13 @@ npm run dev
 ```
 
 默认访问 `http://localhost:3000`。
+
+## 正式站点配置
+
+复制 `.env.example` 并按环境配置：
+
+```bash
+NEXT_PUBLIC_SITE_URL=https://suguan2016.cn
+```
+
+腾讯云部署步骤见 [DEPLOY_TENCENT.md](./DEPLOY_TENCENT.md)。

@@ -6,11 +6,13 @@ import { SiteHeader } from "@/components/SiteHeader";
 import type { SiteAsset } from "@/src/config/siteAssets";
 import { siteAssets } from "@/src/config/siteAssets";
 import { siteContentDefaults } from "@/src/config/siteContent";
+import { contactInfo } from "@/src/data/contact";
 
 export const metadata: Metadata = {
-  title: "项目咨询与资料领取｜溯观文化发展有限公司",
+  title: "项目咨询与资料领取",
   description:
     "提交研学亲子营地、乡村文旅、农文旅融合、品牌文创、招商运营与项目提升需求，获取溯观项目资料与初步沟通。",
+  alternates: { canonical: "/contact" },
   openGraph: {
     title: "项目咨询与资料领取｜溯观文化发展有限公司",
     description: "通过官网提交项目所在地、项目类型、项目阶段和需求描述，溯观将尽快联系。",
@@ -21,19 +23,19 @@ export const metadata: Metadata = {
 const contactCards = [
   {
     label: "商务电话",
-    value: "15823051516",
+    value: contactInfo.businessPhone,
     hint: "工作日 10:00-18:00",
-    href: "tel:15823051516"
+    href: `tel:${contactInfo.businessPhone}`
   },
   {
     label: "项目咨询",
-    value: "18996527779",
+    value: contactInfo.projectPhone,
     hint: "项目沟通 / 资料领取",
-    href: "tel:18996527779"
+    href: `tel:${contactInfo.projectPhone}`
   },
   {
     label: "公司地址",
-    value: "重庆市两江新区北滨二路保利中心B5栋1-2",
+    value: contactInfo.address,
     hint: ""
   }
 ];
@@ -144,7 +146,7 @@ export default function ContactPage() {
             <p className="text-sm font-medium text-clay">PROJECT CONSULTATION</p>
             <h2 className="mt-3 font-serif text-4xl font-semibold text-ink">项目咨询表单</h2>
             <p className="mt-4 text-sm leading-6 text-ink/60">
-              当前为原型表单，先使用前端状态展示提交反馈，不接入真实后端或数据库。
+              请填写项目所在地、当前阶段与核心需求，我们会根据项目情况安排初步沟通。
             </p>
           </div>
           <ProjectConsultForm />
@@ -159,7 +161,7 @@ export default function ContactPage() {
               <h2 className="mt-3 font-serif text-4xl font-semibold text-ink">资料包领取</h2>
             </div>
             <p className="max-w-xl text-sm leading-6 text-ink/60">
-              可在项目咨询表单中备注希望领取的资料包类型，后续可接入资料包自动发送和 CRM 线索归档。
+              可在项目咨询表单中备注希望领取的资料包类型，我们会根据项目方向发送对应资料。
             </p>
           </div>
           <div className="grid gap-px overflow-hidden border border-line bg-line md:grid-cols-2 lg:grid-cols-5">

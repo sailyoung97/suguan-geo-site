@@ -13,6 +13,7 @@ export const metadata: Metadata = {
   title: "关于溯观｜研学亲子营地与乡村文旅运营服务商",
   description:
     "溯观是一家深耕西南地区研学亲子营地、乡村文旅、农文旅融合、城市更新与品牌文创领域的文化创意运营公司。",
+  alternates: { canonical: "/about" },
   openGraph: {
     title: "关于溯观｜研学亲子营地与乡村文旅运营服务商",
     description: "了解溯观的组织架构、方法论、代表项目和行业背书。",
@@ -48,6 +49,7 @@ export default function AboutPage() {
     <main>
       <SiteHeader />
 
+      <h1 className="sr-only">关于溯观</h1>
       <AboutHeroSection />
 
       <section className="mx-auto grid max-w-7xl gap-8 px-4 py-16 sm:px-6 lg:grid-cols-[0.4fr_0.6fr] lg:gap-12 lg:px-8">

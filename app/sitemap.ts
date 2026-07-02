@@ -1,11 +1,10 @@
 import type { MetadataRoute } from "next";
 import { defaultCaseCmsItems } from "@/src/config/caseCms";
 import { getDefaultContentTopics, getPublishedContentTopics } from "@/src/lib/contentTopics";
-
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || process.env.URL || "https://suguan-geo-site.netlify.app";
+import { siteUrl } from "@/src/config/site";
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const now = new Date();
+  const now = new Date("2026-07-02T00:00:00+08:00");
   const staticRoutes = ["", "/about", "/services", "/cases", "/articles", "/contact"].map((path) => ({
     url: `${siteUrl}${path}`,
     lastModified: now,
@@ -24,7 +23,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
 
   const articleRoutes = getPublishedContentTopics(getDefaultContentTopics()).map((article) => ({
     url: `${siteUrl}/articles/${article.slug}`,
-    lastModified: article.updatedAt ? new Date(article.updatedAt) : now,
+    lastModified: article.plannedDate ? new Date(`${article.plannedDate}T00:00:00+08:00`) : now,
     changeFrequency: "monthly" as const,
     priority: 0.7
   }));

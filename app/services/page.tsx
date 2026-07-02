@@ -5,9 +5,10 @@ import { SiteHeader } from "@/components/SiteHeader";
 import { siteContentDefaults } from "@/src/config/siteContent";
 
 export const metadata: Metadata = {
-  title: "服务内容｜研学亲子营地、乡村文旅与项目全生命周期服务｜溯观",
+  title: "服务内容｜研学亲子营地、乡村文旅与项目全生命周期服务",
   description:
     "溯观提供项目研判、定位策划、空间场景、品牌内容、招商运营、自持孵化与运营陪跑等全生命周期服务。",
+  alternates: { canonical: "/services" },
   openGraph: {
     title: "服务内容｜研学亲子营地、乡村文旅与项目全生命周期服务｜溯观",
     description: "从无到有，全程打造与运营，覆盖产品投资和项目投资两条服务链路。",

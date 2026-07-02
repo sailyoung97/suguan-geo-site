@@ -79,7 +79,7 @@ const assetRows: AssetRow[] = [
     size: "800 x 800px，正方形；前台显示约 120px",
     note: "用于首页首屏按钮下方联系区。未配置时前台显示“二维码待上传”占位，不出现破图。",
     fallbackLabel: "二维码待上传",
-    recommendedPath: "/uploads/contact-qrcode-01.png",
+    recommendedPath: "/uploads/qrcode-official.jpg",
     variant: "qr"
   },
   {
@@ -89,7 +89,7 @@ const assetRows: AssetRow[] = [
     size: "800 x 800px，正方形；前台显示约 120px",
     note: "用于首页首屏项目咨询入口，可放企业微信、客服或项目咨询二维码。",
     fallbackLabel: "二维码待上传",
-    recommendedPath: "/uploads/contact-qrcode-02.png",
+    recommendedPath: "/uploads/qrcode-wecom.png",
     variant: "qr"
   },
   {
@@ -99,7 +99,7 @@ const assetRows: AssetRow[] = [
     size: "800 x 800px，正方形",
     note: "替换为正式公众号二维码后，建议保留足够白边。",
     fallbackLabel: "QR",
-    recommendedPath: "/uploads/qrcode-official.png",
+    recommendedPath: "/uploads/qrcode-official.jpg",
     variant: "qr"
   },
   {

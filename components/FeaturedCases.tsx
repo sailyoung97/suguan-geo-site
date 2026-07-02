@@ -21,6 +21,7 @@ export function FeaturedCases() {
             src={item.coverImage}
             className="aspect-[4/3] border-b border-paper/14 bg-paper/8"
             fallbackLabel={item.projectName}
+            alt={`${item.projectName}精选案例封面图`}
           />
           <div className="p-5">
             <div className="text-xs text-paper/48">{item.location} / {item.year}</div>
