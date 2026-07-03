@@ -2,15 +2,35 @@ import { createHmac, timingSafeEqual } from "crypto";
 
 const sessionLifetimeSeconds = 60 * 60 * 24 * 7;
 
-function credentials() {
-  return {
-    username: process.env.ADMIN_USERNAME || "suguan",
-    password: process.env.ADMIN_PASSWORD || "Suguan@2026"
-  };
+type AdminCredentials = {
+  username: string;
+  password: string;
+};
+
+export function getAdminCredentials(): AdminCredentials | null {
+  const username = process.env.ADMIN_USERNAME?.trim();
+  const password = process.env.ADMIN_PASSWORD;
+
+  if (username && password) {
+    return { username, password };
+  }
+
+  if (process.env.NODE_ENV !== "production") {
+    return {
+      username: "suguan",
+      password: "Suguan@2026"
+    };
+  }
+
+  return null;
+}
+
+export function isAdminCredentialsConfigured() {
+  return Boolean(getAdminCredentials());
 }
 
 function sessionSecret() {
-  return process.env.ADMIN_SESSION_SECRET || credentials().password;
+  return process.env.ADMIN_SESSION_SECRET || getAdminCredentials()?.password || "unconfigured-admin-session";
 }
 
 function sign(payload: string) {
@@ -18,7 +38,8 @@ function sign(payload: string) {
 }
 
 export function validateAdminCredentials(username: string, password: string) {
-  const expected = credentials();
+  const expected = getAdminCredentials();
+  if (!expected) return false;
   return username.trim() === expected.username && password === expected.password;
 }
 

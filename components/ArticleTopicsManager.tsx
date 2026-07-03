@@ -3,11 +3,9 @@
 import { ChangeEvent, FormEvent, ReactNode, useEffect, useMemo, useRef, useState } from "react";
 import { CaseImage } from "@/components/CaseImage";
 import {
-  ArticleBlock,
   businessAreas,
   contentTopicsStorageKey,
   contentTypes,
-  createArticleBlock,
   geoIntents,
   GeoContentTopic,
   getDefaultContentTopics,
@@ -20,6 +18,7 @@ import {
   topicStatuses,
   writeRemoteContentTopics
 } from "@/src/lib/contentTopics";
+import { legacyBlocksToMarkdown } from "@/src/lib/articleMarkdown";
 import { uploadImage } from "@/src/lib/uploadImage";
 
 const allOption = "全部";
@@ -83,7 +82,7 @@ const defaultForm: TopicForm = {
   targetClient: "文旅投资方",
   summary: "",
   content: "",
-  blocks: [createArticleBlock("paragraph", "")],
+  blocks: [],
   outline: "",
   references: "",
   requiredAssets: "",
@@ -391,7 +390,14 @@ function TopicModal({
 }) {
   const [uploadingKey, setUploadingKey] = useState("");
   const [uploadMessage, setUploadMessage] = useState("");
+  const contentRef = useRef<HTMLTextAreaElement>(null);
+  const contentImageInputRef = useRef<HTMLInputElement>(null);
+  const latestContentRef = useRef(form.content);
   const articleSlug = form.slug || slugify(form.title || "article");
+
+  useEffect(() => {
+    latestContentRef.current = form.content;
+  }, [form.content]);
 
   async function handleArticleImageUpload(file: File | undefined, fieldKey: string, onUrl: (url: string) => void) {
     if (!file) return;
@@ -412,28 +418,48 @@ function TopicModal({
     }
   }
 
-  function updateBlock(index: number, patch: Partial<ArticleBlock>) {
-    const nextBlocks = [...form.blocks];
-    nextBlocks[index] = { ...nextBlocks[index], ...patch };
-    onChange("blocks", nextBlocks as TopicForm["blocks"]);
+  function insertMarkdown(prefix: string, suffix = "", placeholder = "文字内容") {
+    const textarea = contentRef.current;
+    const currentContent = latestContentRef.current;
+    const start = textarea?.selectionStart ?? currentContent.length;
+    const end = textarea?.selectionEnd ?? start;
+    const selected = currentContent.slice(start, end) || placeholder;
+    const replacement = `${prefix}${selected}${suffix}`;
+    const nextContent = `${currentContent.slice(0, start)}${replacement}${currentContent.slice(end)}`;
+    latestContentRef.current = nextContent;
+    onChange("content", nextContent);
+
+    requestAnimationFrame(() => {
+      if (!textarea) return;
+      textarea.focus();
+      const selectionStart = start + prefix.length;
+      textarea.setSelectionRange(selectionStart, selectionStart + selected.length);
+    });
   }
 
-  function addBlock(type: ArticleBlock["type"] = "paragraph") {
-    onChange("blocks", [...form.blocks, createArticleBlock(type)] as TopicForm["blocks"]);
+  function insertStandaloneMarkdown(value: string) {
+    const textarea = contentRef.current;
+    const currentContent = latestContentRef.current;
+    const start = textarea?.selectionStart ?? currentContent.length;
+    const before = currentContent.slice(0, start);
+    const after = currentContent.slice(textarea?.selectionEnd ?? start);
+    const leadingBreak = before && !before.endsWith("\n\n") ? "\n\n" : "";
+    const trailingBreak = after && !after.startsWith("\n\n") ? "\n\n" : "";
+    const nextContent = `${before}${leadingBreak}${value}${trailingBreak}${after}`;
+    latestContentRef.current = nextContent;
+    onChange("content", nextContent);
+    requestAnimationFrame(() => {
+      if (!textarea) return;
+      const cursor = before.length + leadingBreak.length + value.length;
+      textarea.focus();
+      textarea.setSelectionRange(cursor, cursor);
+    });
   }
 
-  function removeBlock(index: number) {
-    const nextBlocks = form.blocks.filter((_, blockIndex) => blockIndex !== index);
-    onChange("blocks", (nextBlocks.length ? nextBlocks : [createArticleBlock("paragraph")]) as TopicForm["blocks"]);
-  }
-
-  function moveBlock(index: number, direction: -1 | 1) {
-    const targetIndex = index + direction;
-    if (targetIndex < 0 || targetIndex >= form.blocks.length) return;
-    const nextBlocks = [...form.blocks];
-    const [block] = nextBlocks.splice(index, 1);
-    nextBlocks.splice(targetIndex, 0, block);
-    onChange("blocks", nextBlocks as TopicForm["blocks"]);
+  async function uploadContentImage(file?: File) {
+    await handleArticleImageUpload(file, "content-image", (url) => {
+      insertStandaloneMarkdown(`![图片说明](${url})`);
+    });
   }
 
   return (
@@ -556,8 +582,50 @@ function TopicModal({
             <Field label="内容摘要">
               <textarea value={form.summary} onChange={(event) => onChange("summary", event.target.value)} className={textareaClassName} />
             </Field>
-            <Field label="文章正文 content">
-              <textarea value={form.content} onChange={(event) => onChange("content", event.target.value)} className={`${textareaClassName} min-h-[600px]`} />
+            <Field label="文章正文 content（Markdown）" className="md:col-span-2">
+              <div className="overflow-hidden border border-line bg-rice">
+                <div className="flex flex-wrap gap-2 border-b border-line bg-paper p-3">
+                  <MarkdownToolButton label="H1" title="插入一级标题" onClick={() => insertMarkdown("# ", "", "一级标题")} />
+                  <MarkdownToolButton label="H2" title="插入二级标题" onClick={() => insertMarkdown("## ", "", "二级标题")} />
+                  <MarkdownToolButton label="H3" title="插入三级标题" onClick={() => insertMarkdown("### ", "", "三级标题")} />
+                  <MarkdownToolButton label="正文" title="插入普通段落" onClick={() => insertStandaloneMarkdown("普通段落")} />
+                  <MarkdownToolButton label="B" title="加粗选中文字" onClick={() => insertMarkdown("**", "**", "加粗文字")} />
+                  <MarkdownToolButton label="引用" title="插入引用段落" onClick={() => insertMarkdown("> ", "", "引用内容")} />
+                  <MarkdownToolButton label="重点" title="插入重点提示" onClick={() => insertMarkdown("重点：", "", "重点内容")} />
+                  <MarkdownToolButton label="陶土色" title="插入陶土色重点文字" onClick={() => insertMarkdown("{{clay:", "}}", "重点文字")} />
+                  <MarkdownToolButton label="墨绿色" title="插入墨绿色重点文字" onClick={() => insertMarkdown("{{moss:", "}}", "重点文字")} />
+                  <MarkdownToolButton label="分隔线" title="插入分隔线" onClick={() => insertStandaloneMarkdown("---")} />
+                  <MarkdownToolButton
+                    label={uploadingKey === "content-image" ? "上传中..." : "插入图片"}
+                    title="上传图片并插入到当前光标位置"
+                    disabled={uploadingKey === "content-image"}
+                    onClick={() => contentImageInputRef.current?.click()}
+                  />
+                  <input
+                    ref={contentImageInputRef}
+                    type="file"
+                    accept="image/jpeg,image/png,image/webp"
+                    className="hidden"
+                    onChange={(event) => {
+                      void uploadContentImage(event.target.files?.[0]);
+                      event.target.value = "";
+                    }}
+                  />
+                </div>
+                <textarea
+                  ref={contentRef}
+                  value={form.content}
+                  onChange={(event) => {
+                    latestContentRef.current = event.target.value;
+                    onChange("content", event.target.value);
+                  }}
+                  className="min-h-[600px] w-full resize-y bg-rice px-4 py-4 font-mono text-sm leading-7 text-ink outline-none"
+                  placeholder={"## 二级标题\n\n正文段落，支持 **加粗**、> 引用、重点提示和图片。\n\n![图片说明](/uploads/article-image.jpg)"}
+                />
+              </div>
+              <span className="text-xs font-normal leading-6 text-ink/48">
+                正文统一保存为 Markdown 文本。图片上传后只写入公网 URL，不保存 base64；可直接编辑图片语法中的说明文字。
+              </span>
             </Field>
             <Field label="文章大纲">
               <textarea value={form.outline} onChange={(event) => onChange("outline", event.target.value)} className={textareaClassName} />
@@ -571,49 +639,6 @@ function TopicModal({
             <Field label="审核意见">
               <textarea value={form.reviewNotes} onChange={(event) => onChange("reviewNotes", event.target.value)} className={textareaClassName} />
             </Field>
-          </FormSection>
-
-          <FormSection title="正文图文编辑器" columns="md:grid-cols-1">
-            <div className="rounded-sm border border-line bg-rice p-4">
-              <p className="text-sm leading-6 text-ink/58">
-                使用结构化 blocks 编辑正文。图片块上传成功后只保存公网 URL，不保存 base64；旧文章仍可通过下方 content 字段兼容显示。
-              </p>
-              <div className="mt-4 flex flex-wrap gap-2">
-                {[
-                  ["heading2", "二级标题"],
-                  ["heading3", "三级标题"],
-                  ["paragraph", "普通段落"],
-                  ["emphasis", "重点段落"],
-                  ["quote", "引用段落"],
-                  ["image", "图片"],
-                  ["divider", "分隔线"]
-                ].map(([type, label]) => (
-                  <button
-                    key={type}
-                    type="button"
-                    onClick={() => addBlock(type as ArticleBlock["type"])}
-                    className="border border-line bg-paper px-3 py-2 text-xs text-ink/64 transition hover:border-ink hover:text-ink"
-                  >
-                    新增{label}
-                  </button>
-                ))}
-              </div>
-            </div>
-            <div className="grid gap-4">
-              {form.blocks.map((block, index) => (
-                <ArticleBlockEditor
-                  key={block.id}
-                  block={block}
-                  index={index}
-                  isUploading={uploadingKey === `block-${index}`}
-                  onChange={(patch) => updateBlock(index, patch)}
-                  onUpload={(file) => handleArticleImageUpload(file, `block-${index}`, (url) => updateBlock(index, { image: url }))}
-                  onMoveUp={() => moveBlock(index, -1)}
-                  onMoveDown={() => moveBlock(index, 1)}
-                  onRemove={() => removeBlock(index)}
-                />
-              ))}
-            </div>
           </FormSection>
 
           <FormSection title="发布复盘">
@@ -734,92 +759,27 @@ function ArticleImageField({
   );
 }
 
-function ArticleBlockEditor({
-  block,
-  index,
-  isUploading,
-  onChange,
-  onUpload,
-  onMoveUp,
-  onMoveDown,
-  onRemove
+function MarkdownToolButton({
+  label,
+  title,
+  onClick,
+  disabled = false
 }: {
-  block: ArticleBlock;
-  index: number;
-  isUploading: boolean;
-  onChange: (patch: Partial<ArticleBlock>) => void;
-  onUpload: (file?: File) => void;
-  onMoveUp: () => void;
-  onMoveDown: () => void;
-  onRemove: () => void;
+  label: string;
+  title: string;
+  onClick: () => void;
+  disabled?: boolean;
 }) {
-  const inputRef = useRef<HTMLInputElement>(null);
-
   return (
-    <div className="border border-line bg-paper p-4">
-      <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-center">
-        <div className="text-sm font-semibold text-ink">Block {index + 1}</div>
-        <div className="flex flex-wrap gap-2">
-          <select value={block.type} onChange={(event) => onChange({ type: event.target.value as ArticleBlock["type"] })} className="h-9 border border-line bg-rice px-2 text-xs text-ink">
-            <option value="heading2">二级标题</option>
-            <option value="heading3">三级标题</option>
-            <option value="paragraph">普通段落</option>
-            <option value="emphasis">重点段落</option>
-            <option value="quote">引用段落</option>
-            <option value="image">图片</option>
-            <option value="divider">分隔线</option>
-          </select>
-          <button type="button" onClick={onMoveUp} className="border border-line px-3 py-2 text-xs text-ink/62">上移</button>
-          <button type="button" onClick={onMoveDown} className="border border-line px-3 py-2 text-xs text-ink/62">下移</button>
-          <button type="button" onClick={onRemove} className="border border-clay/30 px-3 py-2 text-xs text-clay">删除</button>
-        </div>
-      </div>
-
-      {block.type === "divider" ? (
-        <div className="mt-4 border-t border-line pt-4 text-xs text-ink/42">前台将渲染为分隔线。</div>
-      ) : block.type === "image" ? (
-        <div className="mt-4 grid gap-4 lg:grid-cols-[18rem_1fr]">
-          <CaseImage src={block.image} className="aspect-[16/10] border border-line bg-rice" fallbackLabel={block.caption || "项目实景图"} />
-          <div className="grid gap-3">
-            <input value={block.image} onChange={(event) => onChange({ image: event.target.value })} placeholder="图片 URL" className={inputClassName} />
-            <input value={block.caption} onChange={(event) => onChange({ caption: event.target.value })} placeholder="图片名称 caption" className={inputClassName} />
-            <input value={block.alt} onChange={(event) => onChange({ alt: event.target.value })} placeholder="图片 alt" className={inputClassName} />
-            <div className="grid gap-3 sm:grid-cols-2">
-              <select value={block.width} onChange={(event) => onChange({ width: event.target.value as ArticleBlock["width"] })} className={inputClassName}>
-                <option value="normal">正常宽度</option>
-                <option value="wide">宽幅</option>
-                <option value="full">全宽</option>
-              </select>
-              <select value={block.align} onChange={(event) => onChange({ align: event.target.value as ArticleBlock["align"] })} className={inputClassName}>
-                <option value="center">居中</option>
-                <option value="left">左对齐</option>
-              </select>
-            </div>
-            <input
-              ref={inputRef}
-              type="file"
-              accept="image/jpeg,image/png,image/webp"
-              className="hidden"
-              onChange={(event) => {
-                onUpload(event.target.files?.[0]);
-                event.target.value = "";
-              }}
-            />
-            <button type="button" disabled={isUploading} onClick={() => inputRef.current?.click()} className="w-fit bg-ink px-4 py-3 text-sm font-medium text-paper transition hover:bg-moss disabled:opacity-60">
-              {isUploading ? "上传中..." : "上传正文图片"}
-            </button>
-          </div>
-        </div>
-      ) : (
-        <textarea
-          value={block.content}
-          onChange={(event) => onChange({ content: event.target.value })}
-          rows={block.type === "heading2" || block.type === "heading3" ? 2 : 6}
-          className="mt-4 min-h-24 w-full border border-line bg-rice px-3 py-3 text-sm leading-7 text-ink outline-none focus:border-ink"
-          placeholder="输入正文内容"
-        />
-      )}
-    </div>
+    <button
+      type="button"
+      title={title}
+      disabled={disabled}
+      onClick={onClick}
+      className="h-9 border border-line bg-rice px-3 text-xs font-medium text-ink/68 transition hover:border-ink hover:text-ink disabled:cursor-wait disabled:opacity-50"
+    >
+      {label}
+    </button>
   );
 }
 
@@ -872,6 +832,7 @@ function toForm(topic: GeoContentTopic): TopicForm {
   const { id: _id, createdAt: _createdAt, updatedAt: _updatedAt, views, leads, aiRecognized, aiCited, publishToWebsite, ...rest } = topic;
   return {
     ...rest,
+    content: topic.content?.trim() || legacyBlocksToMarkdown(topic.blocks),
     views: String(views),
     leads: String(leads),
     aiRecognized: aiRecognized ? "是" : "否",

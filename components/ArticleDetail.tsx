@@ -3,8 +3,9 @@
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { CaseImage } from "@/components/CaseImage";
+import { MarkdownArticleContent } from "@/components/MarkdownArticleContent";
+import { extractMarkdownImages, getArticleMarkdown } from "@/src/lib/articleMarkdown";
 import {
-  ArticleBlock,
   GeoContentTopic,
   getDefaultContentTopics,
   getPublishedContentTopics,
@@ -21,18 +22,47 @@ export function ArticleDetail({ slug }: { slug: string }) {
   const [articles, setArticles] = useState<GeoContentTopic[]>(() =>
     getPublishedContentTopics(getDefaultContentTopics())
   );
+  const [isResolved, setIsResolved] = useState(false);
   const [lightbox, setLightbox] = useState<{ images: LightboxImage[]; index: number } | null>(null);
 
   useEffect(() => {
     setArticles(getPublishedContentTopics(readStoredContentTopics()));
     readRemoteContentTopics()
       .then((remoteArticles) => setArticles(getPublishedContentTopics(remoteArticles)))
-      .catch(() => undefined);
+      .catch(() => undefined)
+      .finally(() => setIsResolved(true));
   }, []);
 
   const article = useMemo(() => articles.find((item) => item.slug === slug), [articles, slug]);
 
-  if (articles.length > 0 && !article) {
+  useEffect(() => {
+    if (!lightbox) return;
+    function handleKeyDown(event: KeyboardEvent) {
+      if (event.key === "Escape") setLightbox(null);
+      if (event.key === "ArrowLeft") {
+        setLightbox((current) => current
+          ? { ...current, index: current.index === 0 ? current.images.length - 1 : current.index - 1 }
+          : current);
+      }
+      if (event.key === "ArrowRight") {
+        setLightbox((current) => current
+          ? { ...current, index: current.index === current.images.length - 1 ? 0 : current.index + 1 }
+          : current);
+      }
+    }
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [lightbox]);
+
+  if (!article && !isResolved) {
+    return (
+      <section className="mx-auto max-w-4xl px-4 py-20 sm:px-6 lg:px-8">
+        <div className="h-44 animate-pulse border border-line bg-rice" />
+      </section>
+    );
+  }
+
+  if (!article) {
     return (
       <section className="mx-auto max-w-4xl px-4 py-20 sm:px-6 lg:px-8">
         <p className="text-sm font-medium text-clay">ARTICLE NOT FOUND</p>
@@ -45,25 +75,17 @@ export function ArticleDetail({ slug }: { slug: string }) {
     );
   }
 
-  if (!article) {
-    return (
-      <section className="mx-auto max-w-4xl px-4 py-20 sm:px-6 lg:px-8">
-        <div className="h-44 animate-pulse border border-line bg-rice" />
-      </section>
-    );
-  }
-
-  const relatedCases = splitList(article.relatedCases || article.relatedCase);
-  const keywords = splitList(article.coreKeywords);
-  const references = article.references
+  const articleTitle = article.title || "未命名文章";
+  const articleContent = getArticleMarkdown(article.content, article.blocks);
+  const relatedCases = splitList(article.relatedCases || article.relatedCase || "");
+  const keywords = splitList(article.coreKeywords || "");
+  const references = (article.references || "")
     .split(/\r?\n/)
     .map((item) => item.trim())
     .filter(Boolean);
-  const blockImages = article.blocks
-    .filter((block) => block.type === "image" && block.image)
-    .map((block) => ({ src: block.image, caption: block.caption || "项目实景图" }));
+  const contentImages = extractMarkdownImages(articleContent);
   const coverImage = article.coverImage ? [{ src: article.coverImage, caption: article.coverImageCaption || "文章主图" }] : [];
-  const allImages = [...coverImage, ...blockImages];
+  const allImages = [...coverImage, ...contentImages];
   const activeImage = lightbox ? lightbox.images[lightbox.index] : null;
 
   function openLightbox(images: LightboxImage[], index: number) {
@@ -85,17 +107,6 @@ export function ArticleDetail({ slug }: { slug: string }) {
     });
   }
 
-  useEffect(() => {
-    if (!lightbox) return;
-    function handleKeyDown(event: KeyboardEvent) {
-      if (event.key === "Escape") setLightbox(null);
-      if (event.key === "ArrowLeft") showPreviousImage();
-      if (event.key === "ArrowRight") showNextImage();
-    }
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [lightbox]);
-
   return (
     <article>
       <section className="border-b border-line bg-paper">
@@ -103,9 +114,9 @@ export function ArticleDetail({ slug }: { slug: string }) {
           <div className="flex flex-wrap gap-2 text-xs font-medium text-clay">
             <span>观点文章</span>
             <span>/</span>
-            <span>{article.category}</span>
+            <span>{article.category || "观点文章"}</span>
           </div>
-          <h1 className="mt-5 max-w-4xl font-serif text-4xl font-semibold leading-tight text-ink sm:text-5xl">{article.title}</h1>
+          <h1 className="mt-5 max-w-4xl font-serif text-4xl font-semibold leading-tight text-ink sm:text-5xl">{articleTitle}</h1>
           {article.subtitle ? <p className="mt-5 max-w-3xl text-xl leading-8 text-ink/72">{article.subtitle}</p> : null}
           <div className="mt-6 text-sm text-ink/50">{article.plannedDate || "发布时间待定"}</div>
           {article.summary ? <p className="mt-8 max-w-3xl border-l-2 border-clay pl-5 text-lg leading-8 text-ink/68">{article.summary}</p> : null}
@@ -115,7 +126,7 @@ export function ArticleDetail({ slug }: { slug: string }) {
                 src={article.coverImage}
                 className="aspect-[16/9] w-full overflow-hidden border border-line bg-rice"
                 fallbackLabel={article.coverImageCaption || "文章主图"}
-                alt={article.coverImageAlt || article.coverImageCaption || article.title}
+                alt={article.coverImageAlt || article.coverImageCaption || articleTitle}
               />
               <p className="mt-3 text-center text-sm text-ink/46">{article.coverImageCaption || "项目实景图"}</p>
             </button>
@@ -126,7 +137,7 @@ export function ArticleDetail({ slug }: { slug: string }) {
       <section className="mx-auto grid max-w-6xl gap-10 px-4 py-12 sm:px-6 lg:grid-cols-[minmax(0,840px)_18rem] lg:px-8">
         <div className="min-w-0">
           <div className="max-w-[840px]">
-            <StructuredContent articleTitle={article.title} blocks={article.blocks} content={article.content} images={allImages} onOpenImage={openLightbox} />
+            <MarkdownArticleContent content={articleContent} articleTitle={articleTitle} onOpenImage={openLightbox} />
             <ReferencesList references={references} />
             <div className="mt-12 border-t border-line pt-8">
               <p className="max-w-2xl text-sm leading-7 text-ink/62">
@@ -163,7 +174,7 @@ export function ArticleDetail({ slug }: { slug: string }) {
               </button>
             </div>
             <div className="relative border border-paper/20 bg-ink">
-              <CaseImage src={activeImage.src} className="max-h-[85vh] w-full bg-ink" imageClassName="max-h-[85vh] object-contain" fallbackLabel={activeImage.caption || "项目实景图"} alt={activeImage.caption || article.title} />
+              <CaseImage src={activeImage.src} className="max-h-[85vh] w-full bg-ink" imageClassName="max-h-[85vh] object-contain" fallbackLabel={activeImage.caption || "文章图片"} alt={activeImage.caption || articleTitle} />
               {lightbox.images.length > 1 ? (
                 <>
                   <button type="button" onClick={showPreviousImage} className="absolute left-3 top-1/2 -translate-y-1/2 border border-paper/30 bg-ink/50 px-4 py-3 text-paper transition hover:bg-paper hover:text-ink">
@@ -180,129 +191,6 @@ export function ArticleDetail({ slug }: { slug: string }) {
       ) : null}
     </article>
   );
-}
-
-function StructuredContent({
-  articleTitle,
-  blocks,
-  content,
-  images,
-  onOpenImage
-}: {
-  articleTitle: string;
-  blocks: ArticleBlock[];
-  content: string;
-  images: LightboxImage[];
-  onOpenImage: (images: LightboxImage[], index: number) => void;
-}) {
-  if (blocks.length > 0) {
-    return (
-      <div className="space-y-8 text-[17px] leading-[2] text-ink/76">
-        {blocks.map((block) => (
-          <ArticleBlockView key={block.id} block={block} articleTitle={articleTitle} images={images} onOpenImage={onOpenImage} />
-        ))}
-      </div>
-    );
-  }
-
-  const legacyBlocks = content
-    .trim()
-    .split(/\n{2,}|\r\n{2,}/)
-    .map((item) => item.trim())
-    .filter(Boolean);
-
-  if (legacyBlocks.length === 0) {
-    return <div className="border border-line bg-rice p-8 text-sm text-ink/62">文章内容正在整理中。</div>;
-  }
-
-  return (
-    <div className="space-y-8 text-[17px] leading-[2] text-ink/76">
-      {legacyBlocks.map((block, index) => {
-        if (isHeading(block)) {
-          return (
-            <h2 key={`${block}-${index}`} className="pt-5 font-serif text-2xl font-semibold leading-snug text-ink">
-              {stripHeadingMarker(block)}
-            </h2>
-          );
-        }
-
-        if (block.startsWith("> ")) {
-          return (
-            <blockquote key={`${block}-${index}`} className="border-l-2 border-ink/30 bg-rice px-5 py-5 text-lg leading-8 text-ink/72">
-              {block.replace(/^>\s*/, "")}
-            </blockquote>
-          );
-        }
-
-        if (block.startsWith("数据参考：") || block.startsWith("数据：")) {
-          return (
-            <div key={`${block}-${index}`} className="border border-line bg-paper p-5">
-              <p className="text-xs font-medium text-clay">数据参考</p>
-              <p className="mt-3 text-base leading-8 text-ink/70">{block.replace(/^数据参考：|^数据：/, "")}</p>
-            </div>
-          );
-        }
-
-        if (block.startsWith("重点：")) {
-          return (
-            <div key={`${block}-${index}`} className="border-l-2 border-clay bg-rice px-5 py-5 text-lg leading-8 text-ink/76">
-              {block.replace(/^重点：/, "")}
-            </div>
-          );
-        }
-
-        return (
-          <p key={`${block}-${index}`} className="text-[17px] leading-[2] text-ink/76">
-            {block}
-          </p>
-        );
-      })}
-    </div>
-  );
-}
-
-function ArticleBlockView({
-  block,
-  articleTitle,
-  images,
-  onOpenImage
-}: {
-  block: ArticleBlock;
-  articleTitle: string;
-  images: LightboxImage[];
-  onOpenImage: (images: LightboxImage[], index: number) => void;
-}) {
-  if (block.type === "heading2") {
-    return <h2 className="pt-6 font-serif text-3xl font-semibold leading-snug text-ink">{block.content}</h2>;
-  }
-  if (block.type === "heading3") {
-    return <h3 className="pt-4 text-xl font-semibold leading-snug text-ink">{block.content}</h3>;
-  }
-  if (block.type === "emphasis") {
-    return <div className="border-l-2 border-clay bg-rice px-5 py-5 text-lg font-medium leading-8 text-ink/78">{block.content}</div>;
-  }
-  if (block.type === "quote") {
-    return <blockquote className="border-l-2 border-ink/30 bg-rice px-5 py-5 text-lg leading-8 text-ink/72">{block.content}</blockquote>;
-  }
-  if (block.type === "divider") {
-    return <hr className="border-line" />;
-  }
-  if (block.type === "image") {
-    if (!block.image) return null;
-    const imageIndex = Math.max(0, images.findIndex((image) => image.src === block.image));
-    const widthClassName = block.width === "full" ? "max-w-none" : block.width === "wide" ? "max-w-5xl" : "max-w-[840px]";
-    const alignClassName = block.align === "left" ? "mr-auto" : "mx-auto";
-    return (
-      <figure className={`my-10 ${widthClassName} ${alignClassName}`}>
-        <button type="button" onClick={() => onOpenImage(images, imageIndex)} className="block w-full text-left">
-          <CaseImage src={block.image} className="aspect-[16/10] w-full overflow-hidden border border-line bg-rice" fallbackLabel={block.caption || "项目实景图"} alt={block.alt || block.caption || articleTitle} />
-        </button>
-        <figcaption className="mt-3 text-center text-sm text-ink/46">{block.caption || "项目实景图"}</figcaption>
-        <span className="sr-only">{block.alt || block.caption || articleTitle}</span>
-      </figure>
-    );
-  }
-  return <p className="text-[17px] leading-[2] text-ink/76">{block.content}</p>;
 }
 
 function ReferencesList({ references }: { references: string[] }) {
@@ -339,15 +227,8 @@ function InfoBlock({ title, items, emptyText }: { title: string; items: string[]
   );
 }
 
-function isHeading(value: string) {
-  return /^##\s+/.test(value) || /^[一二三四五六七八九十]+、/.test(value);
-}
-
-function stripHeadingMarker(value: string) {
-  return value.replace(/^##\s+/, "");
-}
-
-function splitList(value: string) {
+function splitList(value?: string | null) {
+  if (typeof value !== "string") return [];
   return value
     .split(/[,，、]/)
     .map((item) => item.trim())

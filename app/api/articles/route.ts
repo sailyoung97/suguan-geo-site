@@ -1,6 +1,6 @@
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
-import { getDefaultContentTopics, type GeoContentTopic } from "@/src/lib/contentTopics";
+import { getDefaultContentTopics, normalizeContentTopic } from "@/src/lib/contentTopics";
 import { apiError, unauthorized } from "@/src/server/apiResponse";
 import { isAdminApiRequest } from "@/src/server/apiAuth";
 import { readJsonData, writeJsonData } from "@/src/server/jsonStorage";
@@ -9,7 +9,8 @@ export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 export async function GET() {
-  return NextResponse.json(await readJsonData<GeoContentTopic[]>("articles", getDefaultContentTopics()));
+  const articles = await readJsonData<unknown[]>("articles", getDefaultContentTopics());
+  return NextResponse.json(articles.map((article, index) => normalizeContentTopic(article, index)));
 }
 
 export async function POST(request: NextRequest) {
@@ -21,8 +22,9 @@ export async function POST(request: NextRequest) {
     if (!Array.isArray(articles)) {
       return NextResponse.json({ error: "文章数据必须为数组。" }, { status: 400 });
     }
-    await writeJsonData("articles", articles);
-    return NextResponse.json({ ok: true, articles });
+    const normalizedArticles = articles.map((article, index) => normalizeContentTopic(article, index));
+    await writeJsonData("articles", normalizedArticles);
+    return NextResponse.json({ ok: true, articles: normalizedArticles });
   } catch (error) {
     return apiError(error);
   }
