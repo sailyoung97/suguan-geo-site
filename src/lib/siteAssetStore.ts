@@ -1,5 +1,7 @@
 export type StoredSiteAssets = Record<string, string>;
 
+import { readServerJson, writeServerJson } from "@/src/lib/serverDataClient";
+
 export const siteAssetStorageKey = "suguan.siteAssets.v1";
 export const siteAssetChangedEvent = "suguan-site-assets-changed";
 
@@ -97,27 +99,10 @@ export function clearStoredSiteAssets() {
 }
 
 export async function readRemoteSiteAssets(): Promise<StoredSiteAssets> {
-  try {
-    const response = await fetch("/.netlify/functions/site-assets", {
-      cache: "no-store"
-    });
-    if (!response.ok) return {};
-    return normalizeStoredAssets(await response.json());
-  } catch {
-    return {};
-  }
+  return normalizeStoredAssets(await readServerJson("/api/site-assets"));
 }
 
 export async function writeRemoteSiteAssets(assets: StoredSiteAssets) {
-  try {
-    await fetch("/.netlify/functions/site-assets", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({ assets })
-    });
-  } catch {
-    // Netlify remote sync is best-effort; local state still updates immediately.
-  }
+  await writeServerJson("/api/site-assets", { assets });
+  return assets;
 }

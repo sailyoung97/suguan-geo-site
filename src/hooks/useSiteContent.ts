@@ -4,12 +4,14 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import type { SiteContentKey } from "@/src/config/siteContent";
 import {
   clearStoredSiteContent,
+  readRemoteSiteContent,
   readStoredSiteContent,
   removeStoredSiteContent,
   setStoredSiteContent,
   siteContentChangedEvent,
   siteContentStorageKey,
-  type StoredSiteContent
+  type StoredSiteContent,
+  writeRemoteSiteContent
 } from "@/src/lib/siteContentStore";
 
 export function useSiteContent() {
@@ -19,6 +21,13 @@ export function useSiteContent() {
     const syncContent = () => setContentState(readStoredSiteContent());
 
     syncContent();
+    readRemoteSiteContent()
+      .then((remoteContent) => {
+        window.localStorage.setItem(siteContentStorageKey, JSON.stringify(remoteContent));
+        window.dispatchEvent(new Event(siteContentChangedEvent));
+        setContentState(remoteContent);
+      })
+      .catch(() => undefined);
     window.addEventListener("storage", syncContent);
     window.addEventListener(siteContentChangedEvent, syncContent);
 
@@ -33,17 +42,23 @@ export function useSiteContent() {
     [content]
   );
 
-  const setContent = useCallback((key: SiteContentKey, value: string) => {
+  const setContent = useCallback(async (key: SiteContentKey, value: string) => {
+    const nextContent = { ...content, [key]: value.trim() };
+    await writeRemoteSiteContent(nextContent);
     setStoredSiteContent(key, value);
-    setContentState(readStoredSiteContent());
-  }, []);
+    setContentState(nextContent);
+  }, [content]);
 
-  const resetContent = useCallback((key: SiteContentKey) => {
+  const resetContent = useCallback(async (key: SiteContentKey) => {
+    const nextContent = { ...content };
+    delete nextContent[key];
+    await writeRemoteSiteContent(nextContent);
     removeStoredSiteContent(key);
-    setContentState(readStoredSiteContent());
-  }, []);
+    setContentState(nextContent);
+  }, [content]);
 
-  const resetAll = useCallback(() => {
+  const resetAll = useCallback(async () => {
+    await writeRemoteSiteContent({});
     clearStoredSiteContent();
     setContentState({});
   }, []);

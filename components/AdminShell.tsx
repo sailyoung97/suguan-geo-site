@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { clearAdminAuth, readAdminAuth, writeAdminAuth } from "@/src/lib/adminAuth";
+import { clearAdminAuth } from "@/src/lib/adminAuth";
 
 const adminNav = [
   { href: "/admin/leads", label: "客户线索 CRM" },
@@ -22,20 +22,22 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
   const [isReady, setIsReady] = useState(false);
 
   useEffect(() => {
-    const auth = readAdminAuth();
-    if (!auth) {
-      router.replace(`/login?redirect=${encodeURIComponent(pathname || "/admin/leads")}`);
-      return;
-    }
-    if (typeof auth.username === "string") {
-      writeAdminAuth(auth.username);
-    }
-    setIsReady(true);
+    fetch("/api/auth/session", { cache: "no-store" })
+      .then((response) => {
+        if (!response.ok) {
+          router.replace(`/login?redirect=${encodeURIComponent(pathname || "/admin/leads")}`);
+          return;
+        }
+        setIsReady(true);
+      })
+      .catch(() => router.replace(`/login?redirect=${encodeURIComponent(pathname || "/admin/leads")}`));
   }, [pathname, router]);
 
-  const logout = () => {
+  const logout = async () => {
+    await fetch("/api/auth/logout", { method: "POST" }).catch(() => undefined);
     clearAdminAuth();
     router.replace("/login");
+    router.refresh();
   };
 
   if (!isReady) {

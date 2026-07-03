@@ -16,7 +16,7 @@ function buildDrafts() {
 export function SiteContentManager() {
   const { content, getContent, setContent, resetContent, resetAll, storageKey } = useSiteContent();
   const [drafts, setDrafts] = useState<DraftState>(() => buildDrafts());
-  const [message, setMessage] = useState("当前为本地 mock 文案管理，保存后会写入浏览器 localStorage。");
+  const [message, setMessage] = useState("网页文案正式数据保存到服务器 JSON；浏览器仅保留同步缓存。");
 
   useEffect(() => {
     setDrafts(
@@ -36,30 +36,42 @@ export function SiteContentManager() {
     }));
   }
 
-  function handleSave(key: SiteContentKey) {
+  async function handleSave(key: SiteContentKey) {
     const value = drafts[key]?.trim();
     if (!value) {
       setMessage("文案不能为空，请填写内容后再保存。");
       return;
     }
 
-    setContent(key, value);
-    setMessage("已保存文案，刷新前台页面后仍然生效。");
+    try {
+      await setContent(key, value);
+      setMessage("文案已保存到服务器。");
+    } catch (error) {
+      setMessage(error instanceof Error ? `保存失败：${error.message}` : "保存失败，请检查服务器数据目录。");
+    }
   }
 
-  function handleReset(key: SiteContentKey) {
-    resetContent(key);
-    setDrafts((currentDrafts) => ({
-      ...currentDrafts,
-      [key]: siteContentDefaults[key]
-    }));
-    setMessage("已恢复该字段默认文案。");
+  async function handleReset(key: SiteContentKey) {
+    try {
+      await resetContent(key);
+      setDrafts((currentDrafts) => ({
+        ...currentDrafts,
+        [key]: siteContentDefaults[key]
+      }));
+      setMessage("该字段已恢复默认并同步到服务器。");
+    } catch (error) {
+      setMessage(error instanceof Error ? `恢复失败：${error.message}` : "恢复失败，请检查服务器数据目录。");
+    }
   }
 
-  function handleResetAll() {
-    resetAll();
-    setDrafts(buildDrafts());
-    setMessage("已恢复全部默认文案。");
+  async function handleResetAll() {
+    try {
+      await resetAll();
+      setDrafts(buildDrafts());
+      setMessage("全部默认文案已同步到服务器。");
+    } catch (error) {
+      setMessage(error instanceof Error ? `恢复失败：${error.message}` : "恢复失败，请检查服务器数据目录。");
+    }
   }
 
   return (
@@ -85,7 +97,7 @@ export function SiteContentManager() {
         <div className="mt-6 grid gap-3 text-sm text-ink/62 md:grid-cols-3">
           <div className="border border-line bg-rice p-4">
             <div className="text-xs text-ink/44">存储方式</div>
-            <div className="mt-2 font-semibold text-ink">localStorage</div>
+            <div className="mt-2 font-semibold text-ink">服务器 JSON</div>
           </div>
           <div className="border border-line bg-rice p-4">
             <div className="text-xs text-ink/44">存储键名</div>

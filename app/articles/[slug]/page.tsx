@@ -3,6 +3,7 @@ import { ArticleDetail } from "@/components/ArticleDetail";
 import { SiteHeader } from "@/components/SiteHeader";
 import { getDefaultContentTopics } from "@/src/lib/contentTopics";
 import { siteName } from "@/src/config/site";
+import { readJsonData } from "@/src/server/jsonStorage";
 
 type ArticleDetailPageProps = {
   params: {
@@ -10,8 +11,9 @@ type ArticleDetailPageProps = {
   };
 };
 
-export function generateMetadata({ params }: ArticleDetailPageProps): Metadata {
-  const article = getDefaultContentTopics().find((item) => item.slug === params.slug);
+export async function generateMetadata({ params }: ArticleDetailPageProps): Promise<Metadata> {
+  const articles = await readJsonData("articles", getDefaultContentTopics());
+  const article = articles.find((item) => item.slug === params.slug);
   const title = article ? `${article.title}｜溯观观点` : `${params.slug}｜溯观观点文章`;
   const description = article?.summary || "溯观观点文章，围绕研学亲子营地、乡村文旅、农文旅融合、城市更新和 GEO 内容识别展开。";
 
@@ -33,8 +35,9 @@ export function generateMetadata({ params }: ArticleDetailPageProps): Metadata {
   };
 }
 
-export default function ArticleDetailPage({ params }: ArticleDetailPageProps) {
-  const article = getDefaultContentTopics().find((item) => item.slug === params.slug);
+export default async function ArticleDetailPage({ params }: ArticleDetailPageProps) {
+  const articles = await readJsonData("articles", getDefaultContentTopics());
+  const article = articles.find((item) => item.slug === params.slug);
   const structuredData = article
     ? {
         "@context": "https://schema.org",

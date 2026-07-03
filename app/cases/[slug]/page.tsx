@@ -3,6 +3,7 @@ import { CaseDetailTemplate } from "@/components/CaseDetailTemplate";
 import { SiteHeader } from "@/components/SiteHeader";
 import { defaultCaseCmsItems } from "@/src/config/caseCms";
 import { siteName } from "@/src/config/site";
+import { readJsonData } from "@/src/server/jsonStorage";
 
 type CaseDetailPageProps = {
   params: {
@@ -10,8 +11,9 @@ type CaseDetailPageProps = {
   };
 };
 
-export function generateMetadata({ params }: CaseDetailPageProps): Metadata {
-  const item = defaultCaseCmsItems.find((caseItem) => caseItem.slug === params.slug);
+export async function generateMetadata({ params }: CaseDetailPageProps): Promise<Metadata> {
+  const cases = await readJsonData("cases", defaultCaseCmsItems);
+  const item = cases.find((caseItem) => caseItem.slug === params.slug);
   const title = item
     ? `${item.projectName}｜${item.projectType}案例`
     : `${params.slug}｜溯观项目案例`;
@@ -33,8 +35,9 @@ export function generateMetadata({ params }: CaseDetailPageProps): Metadata {
   };
 }
 
-export default function CaseDetailPage({ params }: CaseDetailPageProps) {
-  const item = defaultCaseCmsItems.find((caseItem) => caseItem.slug === params.slug);
+export default async function CaseDetailPage({ params }: CaseDetailPageProps) {
+  const cases = await readJsonData("cases", defaultCaseCmsItems);
+  const item = cases.find((caseItem) => caseItem.slug === params.slug);
   const structuredData = item
     ? {
         "@context": "https://schema.org",

@@ -4,7 +4,7 @@ import { FormEvent, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { SiteAssetImage } from "@/components/SiteAssetImage";
 import { siteAssets } from "@/src/config/siteAssets";
-import { validateAdminCredentials, writeAdminAuth } from "@/src/lib/adminAuth";
+import { writeAdminAuth } from "@/src/lib/adminAuth";
 
 export function LoginForm() {
   const router = useRouter();
@@ -13,23 +13,26 @@ export function LoginForm() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
 
-  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setError("");
 
-    if (!validateAdminCredentials(username, password)) {
-      setError("账号或密码错误，请重新输入。");
+    const response = await fetch("/api/auth/login", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ username, password })
+    }).catch(() => null);
+    const payload = await response?.json().catch(() => ({}));
+
+    if (!response?.ok) {
+      setError(payload?.error || "登录失败，请检查服务器连接。");
       return;
     }
 
-    const saved = writeAdminAuth(username.trim());
-    if (!saved) {
-      setError("登录状态保存失败，请检查浏览器本地存储设置。");
-      return;
-    }
-
+    writeAdminAuth(username.trim());
     const redirect = searchParams.get("redirect");
     router.replace(redirect?.startsWith("/admin") ? redirect : "/admin/leads");
+    router.refresh();
   };
 
   return (

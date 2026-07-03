@@ -1,3 +1,5 @@
+import { readServerJson, writeServerJson } from "@/src/lib/serverDataClient";
+
 export const contentTopicsStorageKey = "suguan.contentTopics.v1";
 
 export const contentTypes = ["官网文章", "案例解读", "服务说明", "公众号长文", "小红书短文", "知乎问答", "视频号", "资料包", "FAQ"] as const;
@@ -203,6 +205,17 @@ export function readStoredContentTopics() {
   } catch {
     return getDefaultContentTopics();
   }
+}
+
+export async function readRemoteContentTopics() {
+  const parsed = await readServerJson<unknown>("/api/articles");
+  if (!Array.isArray(parsed)) return getDefaultContentTopics();
+  return parsed.map((item, index) => normalizeContentTopic(item, index));
+}
+
+export async function writeRemoteContentTopics(items: GeoContentTopic[]) {
+  await writeServerJson("/api/articles", { articles: items });
+  return items;
 }
 
 export function getPublishedContentTopics(topics: GeoContentTopic[]) {

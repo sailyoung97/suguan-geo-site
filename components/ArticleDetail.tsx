@@ -8,6 +8,7 @@ import {
   GeoContentTopic,
   getDefaultContentTopics,
   getPublishedContentTopics,
+  readRemoteContentTopics,
   readStoredContentTopics
 } from "@/src/lib/contentTopics";
 
@@ -24,6 +25,9 @@ export function ArticleDetail({ slug }: { slug: string }) {
 
   useEffect(() => {
     setArticles(getPublishedContentTopics(readStoredContentTopics()));
+    readRemoteContentTopics()
+      .then((remoteArticles) => setArticles(getPublishedContentTopics(remoteArticles)))
+      .catch(() => undefined);
   }, []);
 
   const article = useMemo(() => articles.find((item) => item.slug === slug), [articles, slug]);

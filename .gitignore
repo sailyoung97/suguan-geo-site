@@ -41,6 +41,7 @@ tmp/
 temp/
 .cache/
 *.tmp
+.data/
 
 # Local source-image batches. Production assets are copied to stable English filenames.
 public/uploads/WPS图片批量处理/

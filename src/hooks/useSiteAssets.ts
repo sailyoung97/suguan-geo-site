@@ -28,7 +28,7 @@ export function useSiteAssets() {
         writeStoredSiteAssets(remoteAssets);
         setUploadedAssets(remoteAssets);
       }
-    });
+    }).catch(() => undefined);
 
     const handleStorage = (event: StorageEvent) => {
       if (!event.key || event.key === siteAssetStorageKey) {
@@ -45,33 +45,29 @@ export function useSiteAssets() {
     };
   }, [refresh]);
 
-  const setAssetPath = useCallback((assetKey: string, path: string) => {
-    const result = setStoredSiteAssetPath(assetKey, path);
-    const nextAssets = readStoredSiteAssets();
-    setUploadedAssets(nextAssets);
-    if (result.ok) {
-      writeRemoteSiteAssets(nextAssets);
-    }
+  const setAssetPath = useCallback(async (assetKey: string, path: string) => {
+    const cleanPath = path.trim();
+    const currentAssets = readStoredSiteAssets();
+    const nextAssets = { ...currentAssets, [assetKey]: cleanPath };
+    await writeRemoteSiteAssets(nextAssets);
+    const result = setStoredSiteAssetPath(assetKey, cleanPath);
+    setUploadedAssets(readStoredSiteAssets());
     return result;
   }, []);
 
-  const removeAsset = useCallback((assetKey: string) => {
+  const removeAsset = useCallback(async (assetKey: string) => {
+    const nextAssets = { ...readStoredSiteAssets() };
+    delete nextAssets[assetKey];
+    await writeRemoteSiteAssets(nextAssets);
     const result = removeStoredSiteAsset(assetKey);
-    const nextAssets = readStoredSiteAssets();
-    setUploadedAssets(nextAssets);
-    if (result.ok) {
-      writeRemoteSiteAssets(nextAssets);
-    }
+    setUploadedAssets(readStoredSiteAssets());
     return result;
   }, []);
 
-  const clearAssets = useCallback(() => {
+  const clearAssets = useCallback(async () => {
+    await writeRemoteSiteAssets({});
     const result = clearStoredSiteAssets();
-    const nextAssets = readStoredSiteAssets();
-    setUploadedAssets(nextAssets);
-    if (result.ok) {
-      writeRemoteSiteAssets(nextAssets);
-    }
+    setUploadedAssets({});
     return result;
   }, []);
 

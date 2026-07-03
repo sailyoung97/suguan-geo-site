@@ -1,6 +1,6 @@
 # 溯观官网与 GEO 中台
 
-本项目包含溯观对外官网与内部 GEO 中台，使用 Next.js、React 和 Tailwind CSS 构建。官网正式默认案例、文章、文案与公共素材路径随 Git 版本发布；后台保留浏览器存储与 Netlify Functions，用于临时编辑和演示。
+本项目包含溯观对外官网与内部 GEO 中台，使用 Next.js、React 和 Tailwind CSS 构建。案例、文章、网页文案和素材配置通过服务器 JSON 文件持久化，图片保存到独立 uploads 目录；浏览器 localStorage 仅作为同步缓存。
 
 ## 项目目录结构
 

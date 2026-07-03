@@ -13,10 +13,12 @@ import {
   getDefaultContentTopics,
   normalizeContentTopic,
   publishChannels,
+  readRemoteContentTopics,
   readStoredContentTopics,
   slugify,
   targetClients,
-  topicStatuses
+  topicStatuses,
+  writeRemoteContentTopics
 } from "@/src/lib/contentTopics";
 import { uploadImage } from "@/src/lib/uploadImage";
 
@@ -108,12 +110,18 @@ export function ArticleTopicsManager({ initialTopics }: ArticleTopicsManagerProp
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingTopicId, setEditingTopicId] = useState<string | null>(null);
   const [form, setForm] = useState<TopicForm>(defaultForm);
-  const [message, setMessage] = useState("当前数据保存在浏览器 localStorage，可导出 JSON 作为演示备份。");
+  const [message, setMessage] = useState("文章正式数据保存到服务器 JSON；浏览器仅保留同步缓存。");
   const [generatedQuestions, setGeneratedQuestions] = useState<string[] | null>(null);
 
   useEffect(() => {
     const stored = readStoredContentTopics();
     setTopics(stored.length > 0 ? stored : initialTopics.map((item, index) => normalizeContentTopic(item, index)));
+    readRemoteContentTopics()
+      .then((remoteTopics) => {
+        setTopics(remoteTopics);
+        window.localStorage.setItem(contentTopicsStorageKey, JSON.stringify(remoteTopics));
+      })
+      .catch(() => undefined);
   }, [initialTopics]);
 
   const owners = useMemo(() => {
@@ -130,7 +138,8 @@ export function ArticleTopicsManager({ initialTopics }: ArticleTopicsManagerProp
       .filter((topic) => filters.owner === allOption || topic.owner === filters.owner);
   }, [filters, topics]);
 
-  function persist(nextTopics: GeoContentTopic[], nextMessage?: string) {
+  async function persist(nextTopics: GeoContentTopic[], nextMessage?: string) {
+    await writeRemoteContentTopics(nextTopics);
     setTopics(nextTopics);
     window.localStorage.setItem(contentTopicsStorageKey, JSON.stringify(nextTopics));
     if (nextMessage) setMessage(nextMessage);
@@ -171,7 +180,7 @@ export function ArticleTopicsManager({ initialTopics }: ArticleTopicsManagerProp
     });
   }
 
-  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const now = new Date().toISOString();
     const normalizedSlug = slugify(form.slug || form.title);
@@ -188,14 +197,22 @@ export function ArticleTopicsManager({ initialTopics }: ArticleTopicsManagerProp
       return;
     }
     const nextTopics = editingTopicId ? topics.map((topic) => (topic.id === editingTopicId ? nextTopic : topic)) : [nextTopic, ...topics];
-    persist(nextTopics, editingTopicId ? "内容记录已更新。" : "新内容选题已保存。");
-    closeModal();
+    try {
+      await persist(nextTopics, editingTopicId ? "内容记录已更新并保存到服务器。" : "新内容选题已保存到服务器。");
+      closeModal();
+    } catch (error) {
+      setMessage(error instanceof Error ? `保存失败：${error.message}` : "保存失败，请检查服务器数据目录。");
+    }
   }
 
-  function handleDelete(topicId: string) {
+  async function handleDelete(topicId: string) {
     const target = topics.find((topic) => topic.id === topicId);
     if (!target || !window.confirm(`确认删除内容记录「${target.title}」吗？`)) return;
-    persist(topics.filter((topic) => topic.id !== topicId), "内容记录已删除。");
+    try {
+      await persist(topics.filter((topic) => topic.id !== topicId), "内容记录已从服务器删除。");
+    } catch (error) {
+      setMessage(error instanceof Error ? `删除失败：${error.message}` : "删除失败，请检查服务器数据目录。");
+    }
   }
 
   function exportJson() {
@@ -222,14 +239,18 @@ export function ArticleTopicsManager({ initialTopics }: ArticleTopicsManagerProp
         setMessage("导入失败：JSON 须为内容记录数组。");
         return;
       }
-      persist(parsed.map((item, index) => normalizeContentTopic(item, index)), "导入成功，已写入 GEO 内容选题与发布记录。");
+      await persist(parsed.map((item, index) => normalizeContentTopic(item, index)), "导入成功，已保存到服务器。");
     } catch {
       setMessage("导入失败：请确认文件是有效 JSON。");
     }
   }
 
-  function resetToDefault() {
-    persist(getDefaultContentTopics(), "已恢复默认内容选题数据。");
+  async function resetToDefault() {
+    try {
+      await persist(getDefaultContentTopics(), "默认内容选题数据已保存到服务器。");
+    } catch (error) {
+      setMessage(error instanceof Error ? `恢复失败：${error.message}` : "恢复失败，请检查服务器数据目录。");
+    }
   }
 
   function generateGeoQuestions(topic: GeoContentTopic) {

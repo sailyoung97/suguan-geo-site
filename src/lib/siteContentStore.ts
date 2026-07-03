@@ -1,4 +1,5 @@
 import type { SiteContentKey } from "@/src/config/siteContent";
+import { readServerJson, writeServerJson } from "@/src/lib/serverDataClient";
 
 export const siteContentStorageKey = "suguan.siteContent.v1";
 export const siteContentChangedEvent = "suguan-site-content-changed";
@@ -67,4 +68,13 @@ export function clearStoredSiteContent() {
 
   window.localStorage.removeItem(siteContentStorageKey);
   window.dispatchEvent(new Event(siteContentChangedEvent));
+}
+
+export async function readRemoteSiteContent() {
+  return readServerJson<StoredSiteContent>("/api/site-content");
+}
+
+export async function writeRemoteSiteContent(content: StoredSiteContent) {
+  await writeServerJson("/api/site-content", { content });
+  return content;
 }

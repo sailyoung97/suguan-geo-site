@@ -1,4 +1,5 @@
 import { defaultCaseCmsItems, type CampCaseSection, type CaseCmsItem, type CaseGalleryImage } from "@/src/config/caseCms";
+import { readServerJson, writeServerJson } from "@/src/lib/serverDataClient";
 import {
   businessCategories,
   caseDisplayPriority,
@@ -212,29 +213,13 @@ export function clearStoredCases() {
 }
 
 export async function readRemoteCases(): Promise<CaseCmsItem[]> {
-  try {
-    const response = await fetch("/.netlify/functions/cases", {
-      cache: "no-store"
-    });
-    if (!response.ok) return [];
-    const parsed = await response.json();
-    if (!Array.isArray(parsed)) return [];
-    return mergeWithDefaultCases(parsed.map(normalizeCase));
-  } catch {
-    return [];
-  }
+  const parsed = await readServerJson<unknown>("/api/cases");
+  if (!Array.isArray(parsed)) return [];
+  return sortCaseCmsItems(parsed.map(normalizeCase));
 }
 
 export async function writeRemoteCases(items: CaseCmsItem[]) {
-  try {
-    await fetch("/.netlify/functions/cases", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({ cases: sortCaseCmsItems(items.map(normalizeCase)) })
-    });
-  } catch {
-    // Remote sync is best-effort; local state still updates immediately.
-  }
+  const cases = sortCaseCmsItems(items.map(normalizeCase));
+  await writeServerJson("/api/cases", { cases });
+  return cases;
 }

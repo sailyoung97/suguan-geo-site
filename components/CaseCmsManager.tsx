@@ -134,7 +134,7 @@ export function CaseCmsManager() {
   const { cases, upsertCase, deleteCase, saveCases, restoreDefaults, storageKey } = useCaseCms();
   const [editingCase, setEditingCase] = useState<CaseCmsItem | null>(null);
   const [originalSlug, setOriginalSlug] = useState("");
-  const [message, setMessage] = useState("当前为案例 CMS，数据保存到浏览器 localStorage，并尝试同步到 Netlify Functions。");
+  const [message, setMessage] = useState("案例正式数据保存到服务器 JSON；浏览器仅保留同步缓存。");
   const [uploadingKey, setUploadingKey] = useState("");
   const importInputRef = useRef<HTMLInputElement>(null);
 
@@ -238,7 +238,7 @@ export function CaseCmsManager() {
     setMessage(isValid ? "图片可访问。" : "图片路径无效或图片不存在。");
   }
 
-  function handleSave() {
+  async function handleSave() {
     if (!editingCase) return;
     if (!editingCase.projectName.trim() || !editingCase.slug.trim()) {
       setMessage("项目名称和案例 slug 必填。");
@@ -251,29 +251,37 @@ export function CaseCmsManager() {
       return;
     }
 
-    upsertCase(
-      {
-        ...editingCase,
-        slug: normalizedSlug,
-        order: Number(editingCase.order) || sortedCases.length + 1,
-        galleryImages: editingCase.galleryImages.filter((image) => image.url),
-        assetImages: editingCase.assetImages.filter((image) => image.url),
-        campCaseSections: []
-      },
-      originalSlug
-    );
-    setEditingCase(null);
-    setOriginalSlug("");
-    setMessage("案例已保存，前台案例列表和详情页会读取最新数据。");
+    try {
+      await upsertCase(
+        {
+          ...editingCase,
+          slug: normalizedSlug,
+          order: Number(editingCase.order) || sortedCases.length + 1,
+          galleryImages: editingCase.galleryImages.filter((image) => image.url),
+          assetImages: editingCase.assetImages.filter((image) => image.url),
+          campCaseSections: []
+        },
+        originalSlug
+      );
+      setEditingCase(null);
+      setOriginalSlug("");
+      setMessage("已保存到服务器，前台案例列表和详情页将读取最新数据。");
+    } catch (error) {
+      setMessage(error instanceof Error ? `保存失败：${error.message}` : "保存失败，请检查服务器数据目录。");
+    }
   }
 
-  function handleDelete(slug: string) {
+  async function handleDelete(slug: string) {
     const target = cases.find((item) => item.slug === slug);
     const confirmed = window.confirm(`确认删除案例「${target?.projectName || slug}」吗？删除后前台不再显示。`);
     if (!confirmed) return;
-    deleteCase(slug);
-    if (editingCase?.slug === slug) setEditingCase(null);
-    setMessage("案例已删除。");
+    try {
+      await deleteCase(slug);
+      if (editingCase?.slug === slug) setEditingCase(null);
+      setMessage("案例已从服务器删除。");
+    } catch (error) {
+      setMessage(error instanceof Error ? `删除失败：${error.message}` : "删除失败，请检查服务器数据目录。");
+    }
   }
 
   function handleExport() {
@@ -291,15 +299,15 @@ export function CaseCmsManager() {
     const file = event.target.files?.[0];
     if (!file) return;
     const reader = new FileReader();
-    reader.onload = () => {
+    reader.onload = async () => {
       try {
         const parsed = JSON.parse(String(reader.result || "[]"));
         if (!Array.isArray(parsed)) {
           setMessage("导入失败：JSON 必须为案例数组。");
           return;
         }
-        saveCases(parsed as CaseCmsItem[]);
-        setMessage("案例 JSON 已导入。");
+        await saveCases(parsed as CaseCmsItem[]);
+        setMessage("案例 JSON 已导入并保存到服务器。");
       } catch {
         setMessage("导入失败：JSON 格式不正确。");
       } finally {
@@ -309,12 +317,16 @@ export function CaseCmsManager() {
     reader.readAsText(file);
   }
 
-  function handleRestoreDefaults() {
+  async function handleRestoreDefaults() {
     const confirmed = window.confirm("确认恢复默认案例数据吗？当前本地编辑的案例会被清除。");
     if (!confirmed) return;
-    restoreDefaults();
-    setEditingCase(null);
-    setMessage("已恢复默认案例数据。");
+    try {
+      await restoreDefaults();
+      setEditingCase(null);
+      setMessage("默认案例数据已保存到服务器。");
+    } catch (error) {
+      setMessage(error instanceof Error ? `恢复失败：${error.message}` : "恢复失败，请检查服务器数据目录。");
+    }
   }
 
   return (

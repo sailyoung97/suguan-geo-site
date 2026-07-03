@@ -22,6 +22,13 @@ type BackupPayload = {
   data: Record<string, unknown>;
 };
 
+const serverEndpoints: Partial<Record<(typeof backupKeys)[number], string>> = {
+  "suguan.cases.v1": "/api/cases",
+  "suguan.siteAssets.v1": "/api/site-assets",
+  "suguan.siteContent.v1": "/api/site-content",
+  "suguan.contentTopics.v1": "/api/articles"
+};
+
 function readStorageValue(key: string) {
   const rawValue = window.localStorage.getItem(key);
   if (rawValue === null) {
@@ -46,17 +53,27 @@ function writeStorageValue(key: string, value: unknown) {
 
 export function DemoDataBackup() {
   const inputRef = useRef<HTMLInputElement>(null);
-  const [message, setMessage] = useState("可将当前浏览器中的演示数据导出为 JSON 文件，再在外网展示环境导入恢复。");
+  const [message, setMessage] = useState("案例、文章、素材和网页文案从服务器导出；其他演示模块继续导出浏览器缓存。");
 
-  const exportData = () => {
+  const exportData = async () => {
+    const data: Record<string, unknown> = {};
+    await Promise.all(
+      backupKeys.map(async (key) => {
+        const endpoint = serverEndpoints[key];
+        if (endpoint) {
+          const response = await fetch(endpoint, { cache: "no-store" });
+          data[key] = response.ok ? await response.json() : readStorageValue(key);
+        } else {
+          data[key] = readStorageValue(key);
+        }
+      })
+    );
+
     const payload: BackupPayload = {
       app: "suguan-geo-demo",
       version: 1,
       exportedAt: new Date().toISOString(),
-      data: backupKeys.reduce<Record<string, unknown>>((nextData, key) => {
-        nextData[key] = readStorageValue(key);
-        return nextData;
-      }, {})
+      data
     };
 
     const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
@@ -88,15 +105,36 @@ export function DemoDataBackup() {
         return;
       }
 
-      backupKeys.forEach((key) => {
+      for (const key of backupKeys) {
         if (Object.prototype.hasOwnProperty.call(parsed.data, key)) {
-          writeStorageValue(key, parsed.data?.[key]);
+          const value = parsed.data?.[key];
+          const endpoint = serverEndpoints[key];
+          if (endpoint && value !== null && typeof value !== "undefined") {
+            const body =
+              key === "suguan.cases.v1"
+                ? { cases: value }
+                : key === "suguan.siteAssets.v1"
+                  ? { assets: value }
+                  : key === "suguan.siteContent.v1"
+                    ? { content: value }
+                    : { articles: value };
+            const response = await fetch(endpoint, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify(body)
+            });
+            if (!response.ok) {
+              const error = await response.json().catch(() => ({}));
+              throw new Error(error?.error || `服务器导入失败：${key}`);
+            }
+          }
+          writeStorageValue(key, value);
         }
-      });
+      }
 
-      setMessage("导入成功。请刷新页面后查看恢复后的演示数据。");
-    } catch {
-      setMessage("导入失败：请确认选择的是有效 JSON 文件。");
+      setMessage("导入成功，正式内容已写入服务器。请刷新页面查看。");
+    } catch (error) {
+      setMessage(error instanceof Error ? `导入失败：${error.message}` : "导入失败：请确认文件有效。");
     }
   };
 
@@ -107,8 +145,8 @@ export function DemoDataBackup() {
           <p className="text-sm font-medium text-clay">DATA BACKUP</p>
           <h2 className="mt-3 font-serif text-4xl font-semibold text-ink">数据备份与恢复</h2>
           <p className="mt-4 text-sm leading-7 text-ink/62">
-            当前中台使用浏览器 localStorage 保存演示数据。部署到外网后，不同电脑不会自动共享数据，
-            可通过导出 / 导入 JSON 的方式迁移演示内容。
+            案例、文章、素材和网页文案使用服务器 JSON 持久化；CRM、GEO 测试等未迁移模块仍保存在浏览器缓存。
+            本工具可同时导出两类数据，方便备份与后续迁移。
           </p>
         </div>
 

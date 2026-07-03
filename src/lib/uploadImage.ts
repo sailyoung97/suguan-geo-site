@@ -1,6 +1,6 @@
 "use client";
 
-const maxUploadFileSize = 5 * 1024 * 1024;
+const maxUploadFileSize = 10 * 1024 * 1024;
 const allowedUploadMimeTypes = new Set(["image/jpeg", "image/png", "image/webp"]);
 
 export function validateUploadImage(file: File) {
@@ -9,7 +9,7 @@ export function validateUploadImage(file: File) {
   }
 
   if (file.size > maxUploadFileSize) {
-    return "单张图片不能超过 5MB。";
+    return "单张图片不能超过 10MB。";
   }
 
   return "";
@@ -23,37 +23,21 @@ type UploadImageOptions = {
   fieldKey?: string;
 };
 
-function readFileAsBase64(file: File) {
-  return new Promise<string>((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => {
-      const result = String(reader.result || "");
-      const [, base64 = ""] = result.split(",");
-      resolve(base64);
-    };
-    reader.onerror = () => reject(new Error("图片读取失败。"));
-    reader.readAsDataURL(file);
-  });
-}
-
 export async function uploadImage(file: File, options: UploadImageOptions = {}) {
   const validationError = validateUploadImage(file);
   if (validationError) {
     throw new Error(validationError);
   }
 
-  const base64 = await readFileAsBase64(file);
-  const response = await fetch("/.netlify/functions/upload-image", {
+  const formData = new FormData();
+  formData.set("file", file);
+  Object.entries(options).forEach(([key, value]) => {
+    if (value) formData.set(key, value);
+  });
+
+  const response = await fetch("/api/upload", {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify({
-      ...options,
-      fileName: file.name,
-      mimeType: file.type,
-      base64
-    })
+    body: formData
   });
   const payload = await response.json().catch(() => ({}));
 

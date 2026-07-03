@@ -3,7 +3,13 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { CaseImage } from "@/components/CaseImage";
-import { GeoContentTopic, getDefaultContentTopics, getPublishedContentTopics, readStoredContentTopics } from "@/src/lib/contentTopics";
+import {
+  GeoContentTopic,
+  getDefaultContentTopics,
+  getPublishedContentTopics,
+  readRemoteContentTopics,
+  readStoredContentTopics
+} from "@/src/lib/contentTopics";
 
 export function ArticlesList() {
   const [articles, setArticles] = useState<GeoContentTopic[]>(() =>
@@ -12,6 +18,9 @@ export function ArticlesList() {
 
   useEffect(() => {
     setArticles(getPublishedContentTopics(readStoredContentTopics()));
+    readRemoteContentTopics()
+      .then((remoteArticles) => setArticles(getPublishedContentTopics(remoteArticles)))
+      .catch(() => undefined);
   }, []);
 
   return (

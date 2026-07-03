@@ -143,17 +143,17 @@ export function SiteAssetsManager() {
     });
   };
 
-  const clearAllAssets = () => {
-    const result = clearAssets();
-    setPreviewUrls((current) => {
-      Object.values(current).forEach((url) => URL.revokeObjectURL(url));
-      return {};
-    });
-    setMessage(
-      result.ok
-        ? "已清空本地上传素材配置。"
-        : "本地存储空间不足，请压缩图片或清理已上传素材。"
-    );
+  const clearAllAssets = async () => {
+    try {
+      await clearAssets();
+      setPreviewUrls((current) => {
+        Object.values(current).forEach((url) => URL.revokeObjectURL(url));
+        return {};
+      });
+      setMessage("服务器素材配置已清空。");
+    } catch (error) {
+      setMessage(error instanceof Error ? `清空失败：${error.message}` : "清空失败，请检查服务器数据目录。");
+    }
   };
 
   return (
@@ -164,7 +164,7 @@ export function SiteAssetsManager() {
           <div>
             <h1 className="font-serif text-4xl font-semibold text-ink">网站素材管理</h1>
             <p className="mt-4 max-w-3xl text-sm leading-7 text-ink/62">
-              当前网站部署于 Netlify。后台图片上传将通过 Netlify Functions 存入线上存储，上传成功后会自动生成图片地址并写入当前字段。也可以手动填写已有图片 URL。
+              正式素材配置保存到服务器 JSON，图片上传到服务器 uploads 目录并生成 /uploads/ 地址。浏览器仅保留同步缓存。
             </p>
           </div>
           <div className="grid gap-3 sm:grid-cols-2 lg:block">
@@ -184,7 +184,7 @@ export function SiteAssetsManager() {
         </div>
 
         <div className="mt-6 grid gap-3 text-sm text-ink/62 md:grid-cols-3">
-          <div className="border border-line bg-rice p-4">线上上传：通过 Netlify Functions 写入线上存储并返回图片 URL。</div>
+          <div className="border border-line bg-rice p-4">服务器上传：图片写入 uploads 目录并返回稳定的 /uploads/ 地址。</div>
           <div className="border border-line bg-rice p-4">手动 URL：可填写已有图片地址或 /uploads 静态路径。</div>
           <div className="border border-line bg-rice p-4">本地预览：只用于当前浏览器看效果，不会保存为公网图片。</div>
         </div>
@@ -270,24 +270,22 @@ function AssetCard({
       return;
     }
 
-    const result = setAssetPath(item.asset.key, cleanPath);
-    onMessage(
-      result.ok
-        ? `已保存路径：${item.name}`
-        : result.error === "invalid-path"
-          ? "请填写有效图片路径，例如 /uploads/home-hero.jpg。"
-          : "本地存储空间不足，请压缩图片或清理已上传素材。"
-    );
+    try {
+      const result = await setAssetPath(item.asset.key, cleanPath);
+      onMessage(result.ok ? `已保存到服务器：${item.name}` : "浏览器缓存写入失败，但服务器数据已保存。");
+    } catch (error) {
+      onMessage(error instanceof Error ? `保存失败：${error.message}` : "保存失败，请检查服务器数据目录。");
+    }
   };
 
-  const removePath = () => {
-    const result = removeAsset(item.asset.key);
-    setPathValue("");
-    onMessage(
-      result.ok
-        ? `已移除路径：${item.name}`
-        : "本地存储空间不足，请压缩图片或清理已上传素材。"
-    );
+  const removePath = async () => {
+    try {
+      await removeAsset(item.asset.key);
+      setPathValue("");
+      onMessage(`已从服务器移除路径：${item.name}`);
+    } catch (error) {
+      onMessage(error instanceof Error ? `移除失败：${error.message}` : "移除失败，请检查服务器数据目录。");
+    }
   };
 
   const copyRecommendedPath = async () => {
@@ -353,14 +351,14 @@ function AssetCard({
         scope: "site-assets",
         assetKey: item.asset.key
       });
-      const result = setAssetPath(item.asset.key, url);
+      const result = await setAssetPath(item.asset.key, url);
       setPathValue(url);
       onPreviewReady("");
       setAccessStatus("ok");
       onMessage(
         result.ok
-          ? `上传成功，已写入图片地址：${item.name}`
-          : "图片已上传，但本地保存失败，请复制返回 URL 后重试。"
+          ? `上传成功，图片和素材路径均已保存到服务器：${item.name}`
+          : "图片已上传到服务器，但浏览器缓存写入失败。"
       );
     } catch (error) {
       onMessage(error instanceof Error ? error.message : "图片上传失败，请稍后重试。");

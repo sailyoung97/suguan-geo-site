@@ -25,7 +25,7 @@ export function useCaseCms() {
         writeStoredCases(remoteCases);
         setCasesState(remoteCases);
       }
-    });
+    }).catch(() => undefined);
     window.addEventListener("storage", syncCases);
     window.addEventListener(caseCmsChangedEvent, syncCases);
 
@@ -35,32 +35,33 @@ export function useCaseCms() {
     };
   }, []);
 
-  const saveCases = useCallback((nextCases: CaseCmsItem[]) => {
+  const saveCases = useCallback(async (nextCases: CaseCmsItem[]) => {
     const sortedCases = sortCaseCmsItems(nextCases);
+    await writeRemoteCases(sortedCases);
     writeStoredCases(sortedCases);
     setCasesState(sortedCases);
-    writeRemoteCases(sortedCases);
+    return sortedCases;
   }, []);
 
   const upsertCase = useCallback(
-    (nextCase: CaseCmsItem, originalSlug?: string) => {
+    async (nextCase: CaseCmsItem, originalSlug?: string) => {
       const nextCases = cases.filter((item) => item.slug !== (originalSlug || nextCase.slug));
-      saveCases([...nextCases, nextCase]);
+      return saveCases([...nextCases, nextCase]);
     },
     [cases, saveCases]
   );
 
   const deleteCase = useCallback(
-    (slug: string) => {
-      saveCases(cases.filter((item) => item.slug !== slug));
+    async (slug: string) => {
+      return saveCases(cases.filter((item) => item.slug !== slug));
     },
     [cases, saveCases]
   );
 
-  const restoreDefaults = useCallback(() => {
+  const restoreDefaults = useCallback(async () => {
+    await writeRemoteCases(defaultCaseCmsItems);
     clearStoredCases();
     setCasesState(defaultCaseCmsItems);
-    writeRemoteCases(defaultCaseCmsItems);
   }, []);
 
   const publishedCases = useMemo(
