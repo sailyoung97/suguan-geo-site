@@ -1,5 +1,23 @@
+import type { Metadata } from "next";
 import { ArticlesList } from "@/components/ArticlesList";
 import { SiteHeader } from "@/components/SiteHeader";
+
+const description =
+  "围绕研学亲子营地、乡村文旅、农文旅融合、城市更新与品牌文创，分享溯观的项目方法、案例观察与运营经验。";
+
+export const metadata: Metadata = {
+  title: "观点文章",
+  description,
+  alternates: {
+    canonical: "/articles"
+  },
+  openGraph: {
+    title: "观点文章｜溯观文化发展有限公司",
+    description,
+    url: "/articles",
+    type: "website"
+  }
+};
 
 export default function InsightsPage() {
   return (

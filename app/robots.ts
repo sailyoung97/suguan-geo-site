@@ -7,7 +7,7 @@ export default function robots(): MetadataRoute.Robots {
       {
         userAgent: "*",
         allow: "/",
-        disallow: ["/admin", "/admin/", "/admin/*", "/login", "/.netlify/functions/"]
+        disallow: "/admin"
       }
     ],
     sitemap: `${siteUrl}/sitemap.xml`

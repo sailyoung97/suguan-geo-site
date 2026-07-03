@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import { SiteFooter } from "@/components/SiteFooter";
 import { siteDescription, siteName, siteUrl } from "@/src/config/site";
 
 export const metadata: Metadata = {
@@ -33,7 +34,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="zh-CN">
-      <body className="grain overflow-x-hidden">{children}</body>
+      <body className="grain overflow-x-hidden">
+        {children}
+        <SiteFooter />
+      </body>
     </html>
   );
 }
