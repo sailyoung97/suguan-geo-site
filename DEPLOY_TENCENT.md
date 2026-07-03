@@ -16,10 +16,12 @@ npm install -g pm2
 ## 2. 拉取代码
 
 ```bash
-git clone https://github.com/sailyoung97/suguan-geo-site.git
-cd suguan-geo-site
+git clone https://github.com/sailyoung97/suguan-geo-site.git /www/wwwroot/suguan2016.cn
+cd /www/wwwroot/suguan2016.cn
 npm install
 ```
+
+GitHub 仓库名称继续使用 `suguan-geo-site`；`/www/wwwroot/suguan2016.cn` 仅为正式服务器的网站目录名称，两者不需要保持一致。
 
 ## 3. 创建持久化目录
 
@@ -190,7 +192,7 @@ pm2 restart suguan-site
 ## 12. 后续更新
 
 ```bash
-cd suguan-geo-site
+cd /www/wwwroot/suguan2016.cn
 git pull origin main
 npm install
 npm run build
