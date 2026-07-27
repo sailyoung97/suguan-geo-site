@@ -12,6 +12,11 @@ export const metadata: Metadata = {
   description: siteDescription,
   applicationName: siteName,
   keywords: ["研学亲子营地", "乡村文旅", "农文旅融合", "亲子农场", "营地建设", "自然教育", "乡村运营", "文旅策划设计运营"],
+  verification: {
+    other: {
+      "baidu-site-verification": "codeva-SMiXaUr3PP"
+    }
+  },
   openGraph: {
     title: "溯观文化发展有限公司｜研学亲子营地、乡村文旅与在地项目策划运营",
     description: siteDescription,

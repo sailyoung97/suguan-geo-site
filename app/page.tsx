@@ -13,9 +13,6 @@ import { contactInfo } from "@/src/data/contact";
 export const metadata: Metadata = {
   title: "溯观文化发展有限公司｜研学亲子营地、乡村文旅与在地项目策划运营",
   description: siteDescription,
-  other: {
-    "baidu-site-verification": "codeva-SMiXaUr3PP"
-  },
   alternates: { canonical: "/" },
   openGraph: {
     title: "溯观文化发展有限公司｜研学亲子营地、乡村文旅与在地项目策划运营",
