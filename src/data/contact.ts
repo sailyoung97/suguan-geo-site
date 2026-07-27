@@ -3,5 +3,7 @@ export const contactInfo = {
   projectPhone: "18996527779",
   address: "重庆市两江新区北滨二路保利中心B5栋1-2",
   icpNumber: "渝ICP备2026014128号-1",
-  icpUrl: "https://beian.miit.gov.cn"
+  icpUrl: "https://beian.miit.gov.cn/",
+  publicSecurityNumber: "渝公网安备50019002505571号",
+  publicSecurityUrl: "https://www.beian.gov.cn/"
 } as const;

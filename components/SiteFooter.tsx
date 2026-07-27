@@ -58,18 +58,28 @@ export function SiteFooter() {
           </div>
         </div>
 
-        <div className="flex flex-col gap-3 pt-6 text-xs leading-6 text-paper/46 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex flex-col gap-4 pt-6 text-xs leading-6 text-paper/46 sm:flex-row sm:items-start sm:justify-between">
           <p>© {new Date().getFullYear()} 溯观文化发展有限公司</p>
-          <div className="flex flex-wrap items-center gap-x-5 gap-y-2">
-            <a
-              href={contactInfo.icpUrl}
-              target="_blank"
-              rel="noreferrer"
-              className="w-fit transition hover:text-paper"
-            >
-              {contactInfo.icpNumber}
-            </a>
-            <Link href="/login" className="transition hover:text-paper">
+          <div className="flex min-w-0 flex-col gap-1.5 sm:items-end">
+            <div className="flex min-w-0 flex-col gap-1 text-paper/42 sm:items-end">
+              <a
+                href={contactInfo.icpUrl}
+                target="_blank"
+                rel="noreferrer"
+                className="w-fit whitespace-nowrap transition hover:text-paper/78"
+              >
+                {contactInfo.icpNumber}
+              </a>
+              <a
+                href={contactInfo.publicSecurityUrl}
+                target="_blank"
+                rel="noreferrer"
+                className="w-fit whitespace-nowrap transition hover:text-paper/78"
+              >
+                {contactInfo.publicSecurityNumber}
+              </a>
+            </div>
+            <Link href="/login" className="mt-1 w-fit transition hover:text-paper">
               内部入口
             </Link>
           </div>
