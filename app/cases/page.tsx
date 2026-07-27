@@ -28,7 +28,7 @@ export default function CasesPage() {
         <div className="grid gap-10 lg:grid-cols-[0.82fr_1fr] lg:items-end">
           <div>
             <p className="text-sm font-medium tracking-[0.24em] text-clay">SELECTED CASES</p>
-            <h1 className="mt-5 font-serif text-5xl font-semibold leading-tight text-ink sm:text-6xl">
+            <h1 className="mt-5 font-serif text-[clamp(42px,8vw,60px)] font-semibold leading-[1.12] text-ink">
               <SiteContentText fieldKey="cases.title" defaultText={siteContentDefaults["cases.title"]} />
             </h1>
           </div>
@@ -39,10 +39,10 @@ export default function CasesPage() {
       </section>
 
       <section className="border-y border-line bg-paper/68">
-        <div className="mx-auto grid max-w-7xl gap-px overflow-hidden px-4 sm:px-6 md:grid-cols-3 lg:px-8">
-          {["在地资源转译", "项目运营闭环", "GEO 内容资产"].map((item) => (
-            <div key={item} className="py-6 md:border-r md:border-line md:last:border-r-0">
-              <span className="text-sm font-medium text-ink/72">{item}</span>
+        <div className="mx-auto grid max-w-7xl grid-cols-3 gap-px overflow-hidden px-4 sm:px-6 lg:px-8">
+          {["研学亲子营地", "乡村文旅运营", "城市更新实践"].map((item) => (
+            <div key={item} className="min-w-0 border-r border-line py-5 text-center last:border-r-0 sm:py-6">
+              <span className="text-xs font-medium leading-5 text-ink/72 sm:text-sm">{item}</span>
             </div>
           ))}
         </div>

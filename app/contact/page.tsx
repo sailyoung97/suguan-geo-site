@@ -78,10 +78,10 @@ export default function ContactPage() {
       <SiteHeader />
 
       <section className="mx-auto max-w-7xl px-4 pb-12 pt-16 sm:px-6 lg:px-8">
-        <div className="grid gap-10 lg:grid-cols-[0.82fr_1fr] lg:items-end">
+        <div className="grid gap-8 lg:grid-cols-[0.95fr_1.05fr] lg:items-end">
           <div>
             <p className="text-sm font-medium tracking-[0.24em] text-clay">CONTACT SUGUAN</p>
-            <h1 className="mt-5 font-serif text-5xl font-semibold leading-tight text-ink sm:text-6xl">
+            <h1 className="mt-5 max-w-2xl font-serif text-[clamp(42px,5vw,64px)] font-semibold leading-[1.12] text-ink">
               <SiteContentText fieldKey="contact.title" defaultText={siteContentDefaults["contact.title"]} />
             </h1>
           </div>
@@ -141,7 +141,7 @@ export default function ContactPage() {
           </div>
         </aside>
 
-        <section id="project-consultation" className="border border-line bg-paper p-6 sm:p-8">
+        <section id="project-consultation" className="scroll-mt-24 border border-line bg-paper p-5 sm:p-8">
           <div className="mb-8">
             <p className="text-sm font-medium text-clay">PROJECT CONSULTATION</p>
             <h2 className="mt-3 font-serif text-4xl font-semibold text-ink">项目咨询表单</h2>

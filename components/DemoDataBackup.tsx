@@ -23,6 +23,7 @@ type BackupPayload = {
 };
 
 const serverEndpoints: Partial<Record<(typeof backupKeys)[number], string>> = {
+  "suguan.leads.v1": "/api/leads",
   "suguan.cases.v1": "/api/cases",
   "suguan.siteAssets.v1": "/api/site-assets",
   "suguan.siteContent.v1": "/api/site-content",
@@ -53,7 +54,7 @@ function writeStorageValue(key: string, value: unknown) {
 
 export function DemoDataBackup() {
   const inputRef = useRef<HTMLInputElement>(null);
-  const [message, setMessage] = useState("案例、文章、素材和网页文案从服务器导出；其他演示模块继续导出浏览器缓存。");
+  const [message, setMessage] = useState("客户线索、案例、文章、素材和网页文案从服务器导出；其他演示模块继续导出浏览器缓存。");
 
   const exportData = async () => {
     const data: Record<string, unknown> = {};
@@ -111,7 +112,9 @@ export function DemoDataBackup() {
           const endpoint = serverEndpoints[key];
           if (endpoint && value !== null && typeof value !== "undefined") {
             const body =
-              key === "suguan.cases.v1"
+              key === "suguan.leads.v1"
+                ? { leads: value }
+                : key === "suguan.cases.v1"
                 ? { cases: value }
                 : key === "suguan.siteAssets.v1"
                   ? { assets: value }
@@ -145,7 +148,7 @@ export function DemoDataBackup() {
           <p className="text-sm font-medium text-clay">DATA BACKUP</p>
           <h2 className="mt-3 font-serif text-4xl font-semibold text-ink">数据备份与恢复</h2>
           <p className="mt-4 text-sm leading-7 text-ink/62">
-            案例、文章、素材和网页文案使用服务器 JSON 持久化；CRM、GEO 测试等未迁移模块仍保存在浏览器缓存。
+            客户线索、案例、文章、素材和网页文案使用服务器 JSON 持久化；GEO 测试等演示模块仍保存在浏览器缓存。
             本工具可同时导出两类数据，方便备份与后续迁移。
           </p>
         </div>

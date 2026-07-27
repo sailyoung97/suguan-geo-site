@@ -66,7 +66,7 @@ function HeroQrCard({ label, asset }: { label: string; asset: typeof siteAssets.
 
 function HeroContactPanel() {
   return (
-    <div className="mt-12 grid gap-px overflow-hidden border border-paper/14 bg-paper/14 sm:mt-14 sm:grid-cols-2 lg:grid-cols-4">
+    <div className="mt-10 grid min-w-0 gap-px overflow-hidden border border-paper/14 bg-paper/14 sm:mt-14 sm:grid-cols-2 lg:grid-cols-4">
       <HeroQrCard label="公众号二维码" asset={siteAssets.contactQrCode01} />
       <HeroQrCard label="项目咨询二维码" asset={siteAssets.contactQrCode02} />
       <div className="bg-ink/58 p-4 backdrop-blur-sm">
@@ -104,15 +104,15 @@ export default function HomePage() {
     <main>
       <section className="relative min-h-screen overflow-hidden border-b border-paper/10 bg-ink text-paper">
         <SiteHeader variant="dark" />
-        <div className="pointer-events-none absolute inset-x-0 top-[104px] select-none overflow-hidden whitespace-nowrap text-center font-sans text-[clamp(72px,21vw,112px)] font-semibold uppercase leading-none tracking-[-0.04em] text-paper/[0.08] sm:top-[10vh] sm:text-[22vw] sm:text-paper/[0.1] lg:text-[16vw] xl:text-[15vw]">
+        <div aria-hidden="true" className="pointer-events-none absolute inset-x-0 top-[96px] w-full select-none overflow-hidden whitespace-nowrap text-center font-sans text-[clamp(58px,19vw,112px)] font-semibold uppercase leading-none text-paper/[0.08] sm:top-[10vh] sm:text-[22vw] sm:text-paper/[0.1] lg:text-[16vw] xl:text-[15vw]">
           SUGUAN
         </div>
         <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_72%_18%,rgba(154,94,55,0.18),transparent_32%),linear-gradient(180deg,rgba(31,36,33,0)_0%,rgba(31,36,33,0.46)_100%)]" />
 
-        <div className="relative mx-auto grid min-h-[calc(100svh-68px)] max-w-7xl content-center px-6 pb-12 pt-8 sm:min-h-[calc(100vh-74px)] sm:px-6 sm:pb-16 sm:pt-32 lg:px-8">
-          <div className="max-w-[760px] pt-[132px] sm:pt-[20vh] lg:pt-[22vh]">
+        <div className="relative mx-auto grid min-h-[calc(100svh-64px)] w-full max-w-7xl min-w-0 content-center px-4 pb-10 pt-6 sm:min-h-[calc(100vh-74px)] sm:px-6 sm:pb-16 sm:pt-32 lg:px-8">
+          <div className="min-w-0 max-w-[760px] pt-[116px] sm:pt-[20vh] lg:pt-[22vh]">
             <p className="text-sm font-medium uppercase tracking-[0.32em] text-clay">SUGUAN DESIGN</p>
-            <h1 className="mt-6 font-serif text-[40px] font-semibold leading-[1.12] text-paper sm:text-5xl lg:text-6xl">
+            <h1 className="mt-6 max-w-full break-words font-serif text-[clamp(34px,10vw,40px)] font-semibold leading-[1.16] text-paper sm:text-5xl lg:text-6xl">
               <SiteContentText fieldKey="home.title" defaultText={siteContentDefaults["home.title"]} />
             </h1>
             <p className="mt-7 text-base leading-8 text-paper/70 sm:text-lg">
@@ -164,7 +164,7 @@ export default function HomePage() {
         <div className="mb-9 flex flex-col justify-between gap-4 md:flex-row md:items-end">
           <div>
             <p className="text-sm font-medium tracking-[0.22em] text-clay">SERVICE SYSTEM</p>
-          <h2 className="mt-3 font-serif text-4xl font-semibold text-ink sm:text-5xl">溯观服务内容</h2>
+            <h2 className="mt-3 font-serif text-4xl font-semibold text-ink sm:text-5xl">溯观服务内容</h2>
           </div>
           <p className="max-w-2xl text-sm leading-7 text-ink/62">
             围绕研学亲子营地、乡村文旅与农文旅融合项目，溯观提供从资源判断、产品策划、空间场景到建设落地、运营导入的全链路服务。

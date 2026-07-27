@@ -35,7 +35,13 @@ export default function RootLayout({
   return (
     <html lang="zh-CN">
       <body className="grain overflow-x-hidden">
-        {children}
+        <a
+          href="#main-content"
+          className="fixed left-4 top-4 z-[100] -translate-y-24 bg-paper px-4 py-3 text-sm font-medium text-ink shadow-soft transition focus:translate-y-0"
+        >
+          跳到主要内容
+        </a>
+        <div id="main-content">{children}</div>
         <SiteFooter />
       </body>
     </html>

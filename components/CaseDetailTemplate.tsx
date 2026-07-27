@@ -125,11 +125,38 @@ export function CaseDetailTemplate({ slug }: CaseDetailTemplateProps) {
   const [lightbox, setLightbox] = useState<LightboxState>(null);
   const item = cases.find((caseItem) => caseItem.slug === slug);
 
+  useEffect(() => {
+    if (!lightbox) return;
+
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+
+    function handleKeyDown(event: KeyboardEvent) {
+      if (event.key === "Escape") setLightbox(null);
+      if (event.key === "ArrowLeft") {
+        setLightbox((current) => current
+          ? { ...current, index: current.index === 0 ? current.images.length - 1 : current.index - 1 }
+          : current);
+      }
+      if (event.key === "ArrowRight") {
+        setLightbox((current) => current
+          ? { ...current, index: current.index === current.images.length - 1 ? 0 : current.index + 1 }
+          : current);
+      }
+    }
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [lightbox]);
+
   if (!item || !item.isPublished) {
     return (
       <section className="mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:px-8">
         <p className="text-sm font-medium tracking-[0.24em] text-clay">CASE NOT FOUND</p>
-        <h1 className="mt-4 font-serif text-5xl font-semibold text-ink">案例未找到</h1>
+        <h1 className="mt-4 font-serif text-[clamp(40px,9vw,56px)] font-semibold leading-tight text-ink">案例未找到</h1>
         <p className="mt-5 max-w-xl text-sm leading-6 text-ink/62">该案例可能尚未发布，或已在后台案例管理中删除。</p>
         <Link href="/cases" className="mt-8 inline-block border border-ink px-5 py-3 text-sm font-medium text-ink transition hover:bg-ink hover:text-paper">
           返回项目案例
@@ -176,25 +203,6 @@ export function CaseDetailTemplate({ slug }: CaseDetailTemplateProps) {
     });
   }
 
-  useEffect(() => {
-    if (!lightbox) return;
-
-    function handleKeyDown(event: KeyboardEvent) {
-      if (event.key === "Escape") {
-        setLightbox(null);
-      }
-      if (event.key === "ArrowLeft") {
-        showPreviousImage();
-      }
-      if (event.key === "ArrowRight") {
-        showNextImage();
-      }
-    }
-
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [lightbox]);
-
   return (
     <>
       <section className="mx-auto max-w-7xl px-4 pb-12 pt-10 sm:px-6 lg:px-8">
@@ -204,7 +212,7 @@ export function CaseDetailTemplate({ slug }: CaseDetailTemplateProps) {
 
         <div className="mx-auto mt-10 max-w-5xl text-center">
           <div className="text-sm leading-6 text-moss">{metaLine}</div>
-          <h1 className="mx-auto mt-6 max-w-5xl font-serif text-5xl font-semibold leading-tight text-ink sm:text-6xl">{item.projectName}</h1>
+          <h1 className="mx-auto mt-6 max-w-5xl break-words font-serif text-[clamp(40px,8vw,60px)] font-semibold leading-[1.14] text-ink">{item.projectName}</h1>
           <div className="mx-auto mt-7 max-w-4xl text-lg leading-8 text-ink/66">
             <TextWithLineBreaks text={item.summary} />
           </div>
@@ -335,7 +343,12 @@ export function CaseDetailTemplate({ slug }: CaseDetailTemplateProps) {
       </section>
 
       {activeImage && lightbox ? (
-        <div className="fixed inset-0 z-50 grid place-items-center bg-black/75 px-4 py-6 backdrop-blur-md">
+        <div
+          className="fixed inset-0 z-50 grid place-items-center bg-black/75 px-3 py-4 backdrop-blur-md sm:px-4 sm:py-6"
+          role="dialog"
+          aria-modal="true"
+          aria-label={`查看${activeImage.caption}`}
+        >
           <button type="button" className="absolute inset-0 cursor-default" onClick={() => setLightbox(null)} aria-label="关闭图集" />
           <div className="relative z-10 w-full max-w-6xl">
             <div className="mb-4 flex items-center justify-between gap-4 text-paper">
@@ -351,11 +364,11 @@ export function CaseDetailTemplate({ slug }: CaseDetailTemplateProps) {
               <CaseImage src={activeImage.src} className="max-h-[85vh] w-full bg-ink" imageClassName="max-h-[85vh] object-contain" fallbackLabel={activeImage.caption || "项目图片"} />
               {lightbox.images.length > 1 ? (
                 <>
-                  <button type="button" onClick={showPreviousImage} className="absolute left-3 top-1/2 -translate-y-1/2 border border-paper/30 bg-ink/50 px-4 py-3 text-paper transition hover:bg-paper hover:text-ink">
-                    上一张
+                  <button type="button" aria-label="上一张图片" onClick={showPreviousImage} className="absolute left-2 top-1/2 min-h-11 -translate-y-1/2 border border-paper/30 bg-ink/65 px-3 py-3 text-sm text-paper transition hover:bg-paper hover:text-ink sm:left-3 sm:px-4">
+                    <span className="hidden sm:inline">上一张</span><span className="sm:hidden">‹</span>
                   </button>
-                  <button type="button" onClick={showNextImage} className="absolute right-3 top-1/2 -translate-y-1/2 border border-paper/30 bg-ink/50 px-4 py-3 text-paper transition hover:bg-paper hover:text-ink">
-                    下一张
+                  <button type="button" aria-label="下一张图片" onClick={showNextImage} className="absolute right-2 top-1/2 min-h-11 -translate-y-1/2 border border-paper/30 bg-ink/65 px-3 py-3 text-sm text-paper transition hover:bg-paper hover:text-ink sm:right-3 sm:px-4">
+                    <span className="hidden sm:inline">下一张</span><span className="sm:hidden">›</span>
                   </button>
                 </>
               ) : null}

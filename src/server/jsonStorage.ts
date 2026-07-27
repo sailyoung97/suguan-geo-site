@@ -6,7 +6,8 @@ const dataFileNames = {
   cases: "cases.json",
   articles: "articles.json",
   siteAssets: "site-assets.json",
-  siteContent: "site-content.json"
+  siteContent: "site-content.json",
+  leads: "leads.json"
 } as const;
 
 export type JsonDataKey = keyof typeof dataFileNames;
@@ -115,8 +116,19 @@ export async function writeJsonData<T>(
   }
 
   const temporaryPath = `${filePath}.${randomUUID()}.tmp`;
-  await writeFile(temporaryPath, `${JSON.stringify(value, null, 2)}\n`, "utf8");
-  await rename(temporaryPath, filePath);
+  const serializedValue = `${JSON.stringify(value, null, 2)}\n`;
+  await writeFile(temporaryPath, serializedValue, "utf8");
+
+  try {
+    await rename(temporaryPath, filePath);
+  } catch (error) {
+    const code = error instanceof Error && "code" in error ? String(error.code) : "";
+    if (code !== "EPERM" && code !== "EEXIST") throw error;
+
+    // Windows may lock an existing JSON file briefly while Next.js is reading it.
+    await writeFile(filePath, serializedValue, "utf8");
+    await unlink(temporaryPath).catch(() => undefined);
+  }
 }
 
 export async function saveUploadedImage(fileName: string, bytes: Uint8Array) {

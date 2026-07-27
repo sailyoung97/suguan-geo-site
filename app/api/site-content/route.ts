@@ -2,6 +2,7 @@ import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 import { siteContentDefaults, type SiteContentKey } from "@/src/config/siteContent";
 import type { StoredSiteContent } from "@/src/lib/siteContentStore";
+import { hasTextEncodingDamage } from "@/src/lib/textIntegrity";
 import { apiError, unauthorized } from "@/src/server/apiResponse";
 import { isAdminApiRequest } from "@/src/server/apiAuth";
 import { readJsonData, writeJsonData } from "@/src/server/jsonStorage";
@@ -18,10 +19,20 @@ function normalizeContent(value: unknown): StoredSiteContent {
   );
 }
 
+function repairContent(value: StoredSiteContent): StoredSiteContent {
+  return Object.fromEntries(
+    Object.entries(value).map(([key, content]) => [
+      key,
+      hasTextEncodingDamage(content) ? siteContentDefaults[key as SiteContentKey] : content
+    ])
+  ) as StoredSiteContent;
+}
+
 export async function GET() {
-  return NextResponse.json(
-    await readJsonData<StoredSiteContent>("siteContent", siteContentDefaults)
-  );
+  const storedContent = await readJsonData<StoredSiteContent>("siteContent", siteContentDefaults);
+  const content = repairContent(normalizeContent(storedContent));
+  if (hasTextEncodingDamage(storedContent)) await writeJsonData("siteContent", content);
+  return NextResponse.json(content);
 }
 
 export async function POST(request: NextRequest) {
@@ -29,7 +40,7 @@ export async function POST(request: NextRequest) {
 
   try {
     const body = await request.json();
-    const content = normalizeContent(body.content || body);
+    const content = repairContent(normalizeContent(body.content || body));
     await writeJsonData("siteContent", content);
     return NextResponse.json({ ok: true, content });
   } catch (error) {

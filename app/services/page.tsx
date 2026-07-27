@@ -209,7 +209,7 @@ export default function ServicesPage() {
         <div className="grid gap-10 lg:grid-cols-[0.82fr_1fr] lg:items-end">
           <div>
             <p className="text-sm font-medium tracking-[0.24em] text-clay">SERVICE SYSTEM</p>
-            <h1 className="mt-5 font-serif text-5xl font-semibold leading-tight text-ink sm:text-6xl">
+            <h1 className="mt-5 font-serif text-[clamp(42px,8vw,60px)] font-semibold leading-[1.12] text-ink">
               <SiteContentText fieldKey="services.title" defaultText={siteContentDefaults["services.title"]} />
             </h1>
           </div>
@@ -222,10 +222,17 @@ export default function ServicesPage() {
       <section className="border-y border-line bg-paper/72">
         <div className="mx-auto grid max-w-7xl gap-px overflow-hidden px-4 py-8 sm:px-6 md:grid-cols-2 lg:grid-cols-4 lg:px-8">
           {serviceDetails.map((service, index) => (
-            <a key={service.name} href={`#service-${index}`} className="bg-paper p-5 transition hover:bg-rice">
+            <a
+              key={service.name}
+              href={`#service-${index}`}
+              className={`group flex min-h-64 min-w-0 flex-col border border-line bg-paper p-5 transition hover:-translate-y-0.5 hover:border-ink hover:bg-rice ${
+                index === serviceDetails.length - 1 ? "lg:col-span-2" : ""
+              }`}
+            >
               <div className="font-serif text-3xl text-ink/14">0{index + 1}</div>
               <h2 className="mt-5 text-xl font-semibold text-ink">{service.name}</h2>
               <p className="mt-3 line-clamp-3 text-sm leading-6 text-ink/58">{service.description}</p>
+              <span className="mt-auto pt-6 text-sm font-medium text-clay transition group-hover:text-ink">查看详细服务 ↓</span>
             </a>
           ))}
         </div>

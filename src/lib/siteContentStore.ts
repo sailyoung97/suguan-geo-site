@@ -1,5 +1,6 @@
 import type { SiteContentKey } from "@/src/config/siteContent";
 import { readServerJson, writeServerJson } from "@/src/lib/serverDataClient";
+import { hasTextEncodingDamage } from "@/src/lib/textIntegrity";
 
 export const siteContentStorageKey = "suguan.siteContent.v1";
 export const siteContentChangedEvent = "suguan-site-content-changed";
@@ -27,7 +28,7 @@ export function readStoredSiteContent(): StoredSiteContent {
     }
 
     return Object.fromEntries(
-      Object.entries(parsed).filter(([, value]) => typeof value === "string")
+      Object.entries(parsed).filter(([, value]) => typeof value === "string" && !hasTextEncodingDamage(value))
     ) as StoredSiteContent;
   } catch {
     return {};

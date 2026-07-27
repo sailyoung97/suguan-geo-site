@@ -1,4 +1,5 @@
 import { readServerJson, writeServerJson } from "@/src/lib/serverDataClient";
+import { repairEncodingDamage } from "@/src/lib/textIntegrity";
 
 export const contentTopicsStorageKey = "suguan.contentTopics.v1";
 
@@ -105,7 +106,11 @@ export function slugify(value: string) {
 }
 
 export function normalizeContentTopic(item: unknown, index = 0): GeoContentTopic {
-  const record = isRecord(item) ? item : {};
+  const rawRecord = isRecord(item) ? item : {};
+  const rawSlug = readString(rawRecord, "slug");
+  const rawId = readString(rawRecord, "id");
+  const fallback = defaultContentTopics.find((topic) => topic.slug === rawSlug || topic.id === rawId) || {};
+  const record = repairEncodingDamage(rawRecord, fallback);
   const now = new Date().toISOString();
   const title = readString(record, "title") || "未命名文章";
   const slug = readString(record, "slug") || slugify(title) || `article-${index + 1}`;

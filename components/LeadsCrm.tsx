@@ -154,7 +154,7 @@ function formToLead(form: LeadForm, base?: Lead): Lead {
 }
 
 export function LeadsCrm({ initialLeads }: LeadsCrmProps) {
-  const { leads, setLeads } = useLeads(initialLeads);
+  const { leads, setLeads, saveStatus, saveError } = useLeads(initialLeads);
   const [intentFilter, setIntentFilter] = useState<(typeof intentLevels)[number]>(allLabel);
   const [typeFilter, setTypeFilter] = useState<(typeof projectTypes)[number]>(allLabel);
   const [sourceFilter, setSourceFilter] = useState<(typeof sourceFilters)[number]>(allLabel);
@@ -318,6 +318,19 @@ export function LeadsCrm({ initialLeads }: LeadsCrmProps) {
           </button>
         </div>
       </div>
+
+      {saveStatus !== "idle" ? (
+        <div
+          className={`mt-5 border px-4 py-3 text-sm ${
+            saveStatus === "error" ? "border-clay/30 bg-clay/10 text-clay" : "border-moss/25 bg-moss/10 text-moss"
+          }`}
+        >
+          {saveStatus === "loading" ? "正在读取服务器线索…" : null}
+          {saveStatus === "saving" ? "正在保存到服务器…" : null}
+          {saveStatus === "saved" ? "已保存到服务器。" : null}
+          {saveStatus === "error" ? saveError : null}
+        </div>
+      ) : null}
 
       <section className="mt-8 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
         {[

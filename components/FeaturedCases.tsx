@@ -13,6 +13,17 @@ export function FeaturedCases() {
     return item ? [item] : [];
   });
 
+  if (visibleCases.length === 0) {
+    return (
+      <div className="border border-paper/14 bg-paper/5 px-6 py-14 text-center">
+        <p className="font-serif text-2xl font-semibold text-paper">精选案例正在整理中</p>
+        <Link href="/cases" className="mt-6 inline-flex min-h-11 items-center border border-paper/35 px-5 text-sm text-paper transition hover:border-paper hover:bg-paper hover:text-ink">
+          查看项目案例
+        </Link>
+      </div>
+    );
+  }
+
   return (
     <div className="grid gap-px overflow-hidden border border-paper/14 bg-paper/14 md:grid-cols-2 xl:grid-cols-4">
       {visibleCases.map((item) => (

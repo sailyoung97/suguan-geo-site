@@ -2,7 +2,7 @@
 
 import { FormEvent, useState } from "react";
 import type { Lead } from "@/data/mock";
-import { appendStoredLead } from "@/src/lib/leadsStore";
+import { submitWebsiteLead } from "@/src/lib/leadsStore";
 
 const projectTypes = [
   "城市更新 / 商业街区",
@@ -20,9 +20,10 @@ const inputClassName =
   "h-12 w-full border border-line bg-rice px-4 text-sm text-ink outline-none transition placeholder:text-ink/35 focus:border-ink";
 
 export function ProjectConsultForm() {
-  const [status, setStatus] = useState<"idle" | "success" | "error">("idle");
+  const [status, setStatus] = useState<"idle" | "submitting" | "success" | "error">("idle");
+  const [errorMessage, setErrorMessage] = useState("");
 
-  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const form = event.currentTarget;
     const formData = new FormData(form);
@@ -30,6 +31,9 @@ export function ProjectConsultForm() {
     const contact = String(formData.get("phone") || "").trim();
     const demand = String(formData.get("demand") || "").trim();
     const today = new Date().toISOString().slice(0, 10);
+
+    setStatus("submitting");
+    setErrorMessage("");
 
     try {
       const nextLead: Lead = {
@@ -57,10 +61,11 @@ export function ProjectConsultForm() {
         followRecords: []
       };
 
-      appendStoredLead(nextLead);
+      await submitWebsiteLead(nextLead, String(formData.get("website") || ""));
       setStatus("success");
       form.reset();
-    } catch {
+    } catch (error) {
+      setErrorMessage(error instanceof Error ? error.message : "提交失败，请稍后重试或直接联系商务。");
       setStatus("error");
     }
   }
@@ -77,19 +82,26 @@ export function ProjectConsultForm() {
       ) : null}
       {status === "error" ? (
         <div className="border border-clay/30 bg-clay/10 px-4 py-3 text-sm font-medium text-clay">
-          提交失败，请稍后重试或直接联系商务。
+          {errorMessage || "提交失败，请稍后重试或直接联系商务。"}
         </div>
       ) : null}
 
+      <div className="sr-only" aria-hidden="true">
+        <label>
+          网站
+          <input name="website" tabIndex={-1} autoComplete="off" />
+        </label>
+      </div>
+
       <div className="grid gap-5 md:grid-cols-2">
-        <Field label="姓名">
+        <Field label="姓名" required>
           <input className={inputClassName} name="name" placeholder="请输入您的姓名" required />
         </Field>
         <Field label="公司/单位">
           <input className={inputClassName} name="organization" placeholder="请输入公司或机构名称" />
         </Field>
-        <Field label="联系电话">
-          <input className={inputClassName} name="phone" placeholder="请输入手机号或座机" required />
+        <Field label="联系电话" required>
+          <input className={inputClassName} name="phone" type="tel" inputMode="tel" autoComplete="tel" placeholder="请输入手机号或座机" required />
         </Field>
         <Field label="微信号">
           <input className={inputClassName} name="wechat" placeholder="便于后续发送资料包" />
@@ -123,17 +135,25 @@ export function ProjectConsultForm() {
         </Field>
       </div>
 
-      <Field label="需求描述">
+      <Field label="需求描述" required>
         <textarea
           className={`${inputClassName} min-h-32 py-4 leading-6`}
           name="demand"
           placeholder="请简要说明项目背景、所在区域、当前阶段、希望解决的问题和需要领取的资料包"
+          required
         />
       </Field>
 
-      <button type="submit" className="bg-ink px-6 py-4 text-sm font-medium text-paper transition hover:bg-moss">
-        提交项目咨询
+      <button
+        type="submit"
+        disabled={status === "submitting"}
+        className="min-h-12 bg-ink px-6 py-4 text-sm font-medium text-paper transition hover:bg-moss disabled:cursor-wait disabled:opacity-60"
+      >
+        {status === "submitting" ? "正在提交…" : "提交项目咨询"}
       </button>
+      <p className="text-xs leading-6 text-ink/45">
+        提交即表示您同意溯观仅将上述信息用于项目沟通与资料发送，我们不会公开您的联系方式。
+      </p>
     </form>
   );
 }
@@ -147,10 +167,13 @@ function mapProjectType(value: string): Lead["projectType"] {
   return "城市更新";
 }
 
-function Field({ label, children }: { label: string; children: React.ReactNode }) {
+function Field({ label, children, required = false }: { label: string; children: React.ReactNode; required?: boolean }) {
   return (
     <label className="grid gap-2 text-sm font-medium text-ink/64">
-      {label}
+      <span>
+        {label}
+        {required ? <span className="ml-1 text-clay">*</span> : null}
+      </span>
       {children}
     </label>
   );

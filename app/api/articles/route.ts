@@ -1,6 +1,7 @@
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 import { getDefaultContentTopics, normalizeContentTopic } from "@/src/lib/contentTopics";
+import { hasTextEncodingDamage } from "@/src/lib/textIntegrity";
 import { apiError, unauthorized } from "@/src/server/apiResponse";
 import { isAdminApiRequest } from "@/src/server/apiAuth";
 import { readJsonData, writeJsonData } from "@/src/server/jsonStorage";
@@ -9,8 +10,10 @@ export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 export async function GET() {
-  const articles = await readJsonData<unknown[]>("articles", getDefaultContentTopics());
-  return NextResponse.json(articles.map((article, index) => normalizeContentTopic(article, index)));
+  const storedArticles = await readJsonData<unknown[]>("articles", getDefaultContentTopics());
+  const articles = storedArticles.map((article, index) => normalizeContentTopic(article, index));
+  if (hasTextEncodingDamage(storedArticles)) await writeJsonData("articles", articles);
+  return NextResponse.json(articles);
 }
 
 export async function POST(request: NextRequest) {

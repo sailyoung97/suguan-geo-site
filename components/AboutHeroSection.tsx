@@ -15,6 +15,9 @@ export function AboutHeroSection() {
           src={backgroundSrc}
           alt={siteAssets.aboutHeroImage.alt}
           className="block h-auto w-full object-contain sm:absolute sm:inset-0 sm:h-full sm:w-full sm:object-cover"
+          loading="eager"
+          decoding="async"
+          fetchPriority="high"
         />
       ) : (
         <div className="h-[320px] bg-[linear-gradient(135deg,#1f2421,#111310)] sm:absolute sm:inset-0 sm:h-auto" />

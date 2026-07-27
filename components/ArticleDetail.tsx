@@ -37,6 +37,8 @@ export function ArticleDetail({ slug }: { slug: string }) {
 
   useEffect(() => {
     if (!lightbox) return;
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
     function handleKeyDown(event: KeyboardEvent) {
       if (event.key === "Escape") setLightbox(null);
       if (event.key === "ArrowLeft") {
@@ -51,7 +53,10 @@ export function ArticleDetail({ slug }: { slug: string }) {
       }
     }
     window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      window.removeEventListener("keydown", handleKeyDown);
+    };
   }, [lightbox]);
 
   if (!article && !isResolved) {
@@ -66,7 +71,7 @@ export function ArticleDetail({ slug }: { slug: string }) {
     return (
       <section className="mx-auto max-w-4xl px-4 py-20 sm:px-6 lg:px-8">
         <p className="text-sm font-medium text-clay">ARTICLE NOT FOUND</p>
-        <h1 className="mt-4 font-serif text-5xl font-semibold text-ink">文章不存在</h1>
+        <h1 className="mt-4 font-serif text-[clamp(40px,9vw,56px)] font-semibold leading-tight text-ink">文章不存在</h1>
         <p className="mt-5 text-sm leading-7 text-ink/62">这篇文章可能还未发布，或路径已经调整。</p>
         <Link href="/articles" className="mt-8 inline-flex border border-ink px-5 py-3 text-sm font-medium text-ink transition hover:bg-ink hover:text-paper">
           返回观点文章
@@ -116,7 +121,7 @@ export function ArticleDetail({ slug }: { slug: string }) {
             <span>/</span>
             <span>{article.category || "观点文章"}</span>
           </div>
-          <h1 className="mt-5 max-w-4xl font-serif text-4xl font-semibold leading-tight text-ink sm:text-5xl">{articleTitle}</h1>
+          <h1 className="mt-5 max-w-4xl break-words font-serif text-[clamp(36px,7vw,48px)] font-semibold leading-[1.16] text-ink">{articleTitle}</h1>
           {article.subtitle ? <p className="mt-5 max-w-3xl text-xl leading-8 text-ink/72">{article.subtitle}</p> : null}
           <div className="mt-6 text-sm text-ink/50">{article.plannedDate || "发布时间待定"}</div>
           {article.summary ? <p className="mt-8 max-w-3xl border-l-2 border-clay pl-5 text-lg leading-8 text-ink/68">{article.summary}</p> : null}
@@ -161,7 +166,12 @@ export function ArticleDetail({ slug }: { slug: string }) {
         </aside>
       </section>
       {activeImage && lightbox ? (
-        <div className="fixed inset-0 z-50 grid place-items-center bg-black/75 px-4 py-6 backdrop-blur-md">
+        <div
+          className="fixed inset-0 z-50 grid place-items-center bg-black/75 px-3 py-4 backdrop-blur-md sm:px-4 sm:py-6"
+          role="dialog"
+          aria-modal="true"
+          aria-label={`查看${activeImage.caption || "文章图片"}`}
+        >
           <button type="button" className="absolute inset-0 cursor-default" onClick={() => setLightbox(null)} aria-label="关闭图片" />
           <div className="relative z-10 w-full max-w-6xl">
             <div className="mb-4 flex items-center justify-between gap-4 text-paper">
@@ -177,11 +187,11 @@ export function ArticleDetail({ slug }: { slug: string }) {
               <CaseImage src={activeImage.src} className="max-h-[85vh] w-full bg-ink" imageClassName="max-h-[85vh] object-contain" fallbackLabel={activeImage.caption || "文章图片"} alt={activeImage.caption || articleTitle} />
               {lightbox.images.length > 1 ? (
                 <>
-                  <button type="button" onClick={showPreviousImage} className="absolute left-3 top-1/2 -translate-y-1/2 border border-paper/30 bg-ink/50 px-4 py-3 text-paper transition hover:bg-paper hover:text-ink">
-                    上一张
+                  <button type="button" aria-label="上一张图片" onClick={showPreviousImage} className="absolute left-2 top-1/2 min-h-11 -translate-y-1/2 border border-paper/30 bg-ink/65 px-3 py-3 text-sm text-paper transition hover:bg-paper hover:text-ink sm:left-3 sm:px-4">
+                    <span className="hidden sm:inline">上一张</span><span className="sm:hidden">‹</span>
                   </button>
-                  <button type="button" onClick={showNextImage} className="absolute right-3 top-1/2 -translate-y-1/2 border border-paper/30 bg-ink/50 px-4 py-3 text-paper transition hover:bg-paper hover:text-ink">
-                    下一张
+                  <button type="button" aria-label="下一张图片" onClick={showNextImage} className="absolute right-2 top-1/2 min-h-11 -translate-y-1/2 border border-paper/30 bg-ink/65 px-3 py-3 text-sm text-paper transition hover:bg-paper hover:text-ink sm:right-3 sm:px-4">
+                    <span className="hidden sm:inline">下一张</span><span className="sm:hidden">›</span>
                   </button>
                 </>
               ) : null}

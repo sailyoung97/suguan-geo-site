@@ -1,5 +1,6 @@
 import { defaultCaseCmsItems, type CampCaseSection, type CaseCmsItem, type CaseGalleryImage } from "@/src/config/caseCms";
 import { readServerJson, writeServerJson } from "@/src/lib/serverDataClient";
+import { repairEncodingDamage } from "@/src/lib/textIntegrity";
 import {
   businessCategories,
   caseDisplayPriority,
@@ -92,6 +93,7 @@ function normalizeCase(item: Partial<CaseCmsItem>, index: number): CaseCmsItem {
   const slug = normalizeSlug(item.slug || `case-${index + 1}`);
   const officialMeta = officialCaseMeta[slug];
   const defaultCase = defaultCaseCmsItems.find((caseItem) => caseItem.slug === slug);
+  item = repairEncodingDamage(item, defaultCase || {});
   const candidateCategory = item.businessCategory as BusinessCategory | undefined;
   const legacyGalleryImages = [item.heroImage, item.sceneImage01, item.sceneImage02].filter(
     (image): image is string => typeof image === "string" && Boolean(image)
@@ -135,6 +137,13 @@ function normalizeCase(item: Partial<CaseCmsItem>, index: number): CaseCmsItem {
     geoKeywords: Array.isArray(item.geoKeywords) ? item.geoKeywords : defaultCase?.geoKeywords || [],
     tags: Array.isArray(item.tags) ? item.tags : defaultCase?.tags || []
   };
+}
+
+export function normalizeCaseCmsItems(items: unknown[]): CaseCmsItem[] {
+  return sortCaseCmsItems(items.map((item, index) => normalizeCase(
+    item && typeof item === "object" ? item as Partial<CaseCmsItem> : {},
+    index
+  )));
 }
 
 function shouldHideCase(item: CaseCmsItem) {
@@ -187,7 +196,7 @@ export function readStoredCases(): CaseCmsItem[] {
       return defaultCaseCmsItems;
     }
 
-    return mergeWithDefaultCases(parsed.map(normalizeCase));
+    return mergeWithDefaultCases(normalizeCaseCmsItems(parsed));
   } catch {
     return defaultCaseCmsItems;
   }
@@ -198,7 +207,7 @@ export function writeStoredCases(items: CaseCmsItem[]) {
     return;
   }
 
-  const normalizedCases = items.map(normalizeCase);
+  const normalizedCases = normalizeCaseCmsItems(items);
   window.localStorage.setItem(caseCmsStorageKey, JSON.stringify(sortCaseCmsItems(normalizedCases)));
   window.dispatchEvent(new Event(caseCmsChangedEvent));
 }
@@ -215,11 +224,11 @@ export function clearStoredCases() {
 export async function readRemoteCases(): Promise<CaseCmsItem[]> {
   const parsed = await readServerJson<unknown>("/api/cases");
   if (!Array.isArray(parsed)) return [];
-  return sortCaseCmsItems(parsed.map(normalizeCase));
+  return normalizeCaseCmsItems(parsed);
 }
 
 export async function writeRemoteCases(items: CaseCmsItem[]) {
-  const cases = sortCaseCmsItems(items.map(normalizeCase));
+  const cases = normalizeCaseCmsItems(items);
   await writeServerJson("/api/cases", { cases });
   return cases;
 }

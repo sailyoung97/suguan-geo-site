@@ -15,6 +15,7 @@ type SiteAssetImageProps = {
   fallbackAsset?: SiteAsset;
   hideFallback?: boolean;
   alt?: string;
+  priority?: boolean;
 };
 
 export function SiteAssetImage({
@@ -27,7 +28,8 @@ export function SiteAssetImage({
   srcOverride,
   fallbackAsset,
   hideFallback = false,
-  alt
+  alt,
+  priority = false
 }: SiteAssetImageProps) {
   const [failed, setFailed] = useState(false);
   const { getAssetSrc } = useSiteAssets();
@@ -47,6 +49,9 @@ export function SiteAssetImage({
           src={src}
           alt={alt || asset?.alt || fallbackLabel || "图片"}
           className={`h-full w-full ${fitClassName} ${imageClassName}`}
+          loading={priority ? "eager" : "lazy"}
+          decoding="async"
+          fetchPriority={priority ? "high" : "auto"}
           onError={() => setFailed(true)}
         />
       </div>

@@ -1,4 +1,5 @@
 import { leads as defaultLeads, type Lead } from "@/data/mock";
+import { readServerJson, writeServerJson } from "@/src/lib/serverDataClient";
 
 export const leadsStorageKey = "suguan.leads.v1";
 export const leadsChangedEvent = "suguan-leads-changed";
@@ -66,4 +67,16 @@ export function writeStoredLeads(nextLeads: Lead[]) {
 export function appendStoredLead(nextLead: Lead) {
   const currentLeads = readStoredLeads();
   writeStoredLeads([nextLead, ...currentLeads]);
+}
+
+export async function readRemoteLeads() {
+  return readServerJson<Lead[]>("/api/leads");
+}
+
+export async function writeRemoteLeads(leads: Lead[]) {
+  return writeServerJson<{ ok: boolean; leads: Lead[] }>("/api/leads", { leads });
+}
+
+export async function submitWebsiteLead(lead: Lead, website = "") {
+  return writeServerJson<{ ok: boolean; lead?: Lead }>("/api/leads", { lead, website });
 }
