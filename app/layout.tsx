@@ -14,7 +14,8 @@ export const metadata: Metadata = {
   keywords: ["研学亲子营地", "乡村文旅", "农文旅融合", "亲子农场", "营地建设", "自然教育", "乡村运营", "文旅策划设计运营"],
   verification: {
     other: {
-      "baidu-site-verification": "codeva-SMiXaUr3PP"
+      "baidu-site-verification": "codeva-SMiXaUr3PP",
+      "360-site-verification": "6d3d56c88ca4d68fd05d9ef1b0a8ed"
     }
   },
   openGraph: {
