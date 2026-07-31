@@ -15,7 +15,8 @@ export const metadata: Metadata = {
   verification: {
     other: {
       "baidu-site-verification": "codeva-SMiXaUr3PP",
-      "360-site-verification": "6d3d56c88ca4d6f8df05d09ef1b0a8ed"
+      "360-site-verification": "6d3d56c88ca4d6f8df05d09ef1b0a8ed",
+      "msvalidate.01": "0638C467888EF2C5CB3D48BE54D402FE"
     }
   },
   openGraph: {
